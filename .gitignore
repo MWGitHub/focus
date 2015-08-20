@@ -1,0 +1,13 @@
+._*
+*.iml
+server/node_modules
+server/kndexfile.js
+server/knex
+server/lab
+.idea
+server/favicon.ico
+client/bower_components
+client/build
+client/media
+client/node_modules
+client/working

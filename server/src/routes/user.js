@@ -1,0 +1,66 @@
+var UserAPI = require('../handlers/user');
+var Joi = require('joi');
+var API = require('../lib/api');
+
+var routes = [
+    {
+        method: 'POST',
+        path: API.route + '/user/register',
+        handler: UserAPI.register,
+        config: {
+            validate: {
+                payload: {
+                    username: Joi.string().min(3).max(20).token().required(),
+                    password: Joi.string().min(6).max(100).required()
+                }
+            },
+            cors: true
+        }
+    },
+    {
+        method: 'POST',
+        path: API.route + '/user/login',
+        handler: UserAPI.login,
+        config: {
+            validate: {
+                payload: {
+                    username: Joi.string().min(3).max(20).token().required(),
+                    password: Joi.string().min(6).max(100).required()
+                }
+            },
+            cors: true
+        }
+    },
+    {
+        method: 'GET',
+        path: API.route + '/user/logout',
+        handler: UserAPI.logout,
+        config: {
+            auth: {
+                strategy: 'simple',
+                mode: 'optional'
+            },
+            cors: true
+        }
+    },
+    {
+        method: 'GET',
+        path: API.route + '/user/delete',
+        handler: UserAPI.deleteSelf,
+        config: {
+            auth: 'jwt',
+            cors: true
+        }
+    },
+    {
+        method: 'GET',
+        path: API.route + '/user',
+        handler: UserAPI.retrieve,
+        config: {
+            auth: 'jwt',
+            cors: true
+        }
+    }
+];
+
+module.exports = routes;
