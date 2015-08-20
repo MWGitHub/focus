@@ -28,15 +28,33 @@ class AuthStore extends BaseStore {
 
     _actionHandler(action) {
         switch (action.actionType) {
-            // Log in and save the session.
-            case Actions.login:
-                this._registerData = null;
-                if (action.state === Actions.State.complete) {
-                    this._jwt = action.jwt;
-                    LocalForage.setItem(StorageKeys.JWT, this._jwt, (err, result) => {
-                        if (err) this._jwt = null;
-                    });
+            // Save the log in session once registered
+            case Actions.register:
+                if (action.state === Actions.State.failed) {
+                    this._jwt = null;
                     this.emitChange();
+                } else if (action.state === Actions.State.complete) {
+                    LocalForage.setItem(StorageKeys.JWT, action.jwt, (err, result) => {
+                        this._jwt = action.jwt;
+                        if (err) {
+                            this._jwt = null;
+                        } else {
+                            this.emitChange();
+                        }
+                    });
+                }
+                break;
+            // Save the log in session
+            case Actions.login:
+                if (action.state === Actions.State.complete) {
+                    LocalForage.setItem(StorageKeys.JWT, action.jwt, (err, result) => {
+                        this._jwt = action.jwt;
+                        if (err) {
+                            this._jwt = null;
+                        } else {
+                            this.emitChange();
+                        }
+                    });
                 } else if (action.state === Actions.State.failed) {
                     this._jwt = null;
                     this.emitChange();
@@ -44,11 +62,10 @@ class AuthStore extends BaseStore {
                 break;
             // Log out and delete the session.
             case Actions.logout:
-                this._registerData = null;
                 LocalForage.removeItem(StorageKeys.JWT, (err, result) => {
                     if (!err) this._jwt = null;
+                    this.emitChange();
                 });
-                this.emitChange();
                 break;
         }
     }

@@ -19,7 +19,12 @@ export default class BaseStore extends EventEmitter {
         this.removeListener(CHANGE, cb);
     }
 
+    /**
+     * Subscribes to the dispatcher.
+     * @param {*} action the action handler.
+     * @returns {string} the dispatch token.
+     */
     static subscribe(action) {
-        Dispatcher.register(action);
+        return Dispatcher.register(action);
     }
 }

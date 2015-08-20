@@ -2,6 +2,7 @@ import Dispatcher from '../utils/dispatcher';
 import Actions from '../constants/actions';
 import request from 'reqwest';
 import API from '../utils/api';
+import Auth from '../utils/Auth';
 
 var RegisterActions = {
     register: function(username, password, onError) {
@@ -24,12 +25,30 @@ var RegisterActions = {
                 password: password
             },
             success: function(resp) {
+                // Log in after registering.
+                Auth.login(username, password, function(token) {
+                    Dispatcher.dispatch({
+                        actionType: Actions.register,
+                        state: Actions.State.complete,
+                        jwt: token
+                    });
+                }, function(err) {
+                    Dispatcher.dispatch({
+                        actionType: Actions.register,
+                        state: Actions.State.failed
+                    });
+                    if (onError) {
+                        onError(err);
+                    }
+                });
+                /*
                 Dispatcher.dispatch({
                     actionType: Actions.register,
                     state: Actions.State.complete,
                     username: username,
                     password: password
                 });
+                */
             },
             error: function(err) {
                 Dispatcher.dispatch({

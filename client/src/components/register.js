@@ -67,7 +67,7 @@ class RegisterBox extends React.Component {
      * @param transition
      */
     static willTransitionTo(transition) {
-        if (AuthStore.getJWT()) {
+        if (AuthStore.isLoggedIn()) {
             transition.redirect('/');
         }
     }
@@ -77,18 +77,10 @@ class RegisterBox extends React.Component {
     }
 
     _onChange() {
-        /*
-        console.log(AuthStore.isLoggedIn());
-        console.log(AuthStore.isRegistered());
+        // Go back to the index if already logged in
         if (AuthStore.isLoggedIn()) {
             RouterUtil.transitionTo('/');
-        } else if (AuthStore.isRegistered()) {
-            var registerData = AuthStore.getRegisterData();
-            if (registerData) {
-                LoginActions.login(registerData.username, registerData.password);
-            }
         }
-        */
     }
 
     componentDidMount() {
