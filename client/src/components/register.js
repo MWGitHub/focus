@@ -1,4 +1,4 @@
-import API from '../utils/api';
+import API from '../utils/API';
 import React from 'react';
 import RegisterActions from '../actions/RegisterActions';
 import AuthStore from '../stores/AuthStore';

@@ -1,6 +1,6 @@
 import React from 'react';
 import Router from 'react-router';
-import Routes from '../constants/routes';
+import Routes from '../constants/Routes';
 import AuthStore from '../stores/AuthStore';
 
 class Nav extends React.Component {
