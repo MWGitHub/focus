@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import AuthStore from '../stores/AuthStore';
-import Routes from '../constants/routes';
+import Routes from '../constants/Routes';
 
 /**
  * Wraps the given component in order to prevent overwriting functions.

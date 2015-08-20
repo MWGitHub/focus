@@ -1,9 +1,9 @@
-import API from '../utils/api';
+import API from '../utils/API';
 import React from 'react';
 import Router from 'react-router';
 
-import Header from './header';
-import Footer from './footer';
+import Header from './Header';
+import Footer from './Footer';
 
 class Index extends React.Component {
     constructor() {

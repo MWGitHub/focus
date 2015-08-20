@@ -2,7 +2,7 @@
  * Stores the user data and authentication data.
  */
 import BaseStore from './BaseStore';
-import Actions from '../constants/actions';
+import Actions from '../constants/Actions';
 import StorageKeys from '../constants/StorageKeys';
 
 var user = null;

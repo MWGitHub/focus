@@ -1,7 +1,7 @@
 /**
  * Stores authentication info.
  */
-import Actions from '../constants/actions';
+import Actions from '../constants/Actions';
 import BaseStore from './BaseStore';
 import StorageKeys from '../constants/StorageKeys';
 import LocalForage from 'localforage';

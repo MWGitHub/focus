@@ -1,10 +1,10 @@
 import React from 'react';
 import Router from 'react-router';
 import RouterUtil from './utils/RouterUtil';
-import Register from './components/register';
-import Login from './components/login';
+import Register from './components/Register';
+import Login from './components/Login';
 import Index from './components/Index';
-import Routes from './constants/routes';
+import Routes from './constants/Routes';
 import Logout from './components/LogOut';
 import Board from './components/Board';
 

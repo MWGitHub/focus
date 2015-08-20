@@ -1,5 +1,5 @@
 import {EventEmitter} from 'events';
-import Dispatcher from '../utils/dispatcher.js';
+import Dispatcher from '../utils/Dispatcher';
 
 const CHANGE = 'CHANGE';
 export default class BaseStore extends EventEmitter {

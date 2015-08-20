@@ -1,7 +1,7 @@
 /**
  * Handles authentication to the server.
  */
-import API from './api';
+import API from './API';
 import request from 'reqwest';
 
 var Auth = {

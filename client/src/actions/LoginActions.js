@@ -1,7 +1,7 @@
-import Dispatcher from '../utils/dispatcher';
-import Actions from '../constants/actions';
+import Dispatcher from '../utils/Dispatcher';
+import Actions from '../constants/Actions';
 import request from 'reqwest';
-import API from '../utils/api';
+import API from '../utils/API';
 import Auth from '../utils/Auth';
 
 var LoginActions = {
