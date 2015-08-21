@@ -16,7 +16,7 @@ var RegisterActions = {
         });
 
         request({
-            url: API.register,
+            url: API.routes.register,
             method: 'post',
             contentType: 'application/x-www-form-urlencoded',
             crossOrigin: true,

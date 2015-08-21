@@ -14,7 +14,7 @@ var Auth = {
      */
     login: function(username, password, success, error) {
         request({
-            url: API.login,
+            url: API.routes.login,
             method: 'post',
             contentType: 'application/x-www-form-urlencoded',
             crossOrigin: true,

@@ -1,3 +1,4 @@
 export default {
-    JWT: 'jwt'
+    JWT: 'jwt',
+    Data: 'data'
 };

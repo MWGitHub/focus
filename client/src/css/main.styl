@@ -1,10 +1,69 @@
+contrast-background = #111
+contrast-color = #FEFEFE
+
+*
+  box-sizing border-box
+
 body
   width 100%
   background-color #D2EDFF
   color #222
+  font-size 100%
 
+// Property styles
+.no-margin
+  margin 0
+
+.container:after
+  content ""
+  display table
+  clear both
+
+.block
+  display block
+
+.float-left
+  float left
+
+.float-right
+  float right
+
+.visibility-hidden
+  display none
+
+.visibility-shown
+  display default
+
+
+// Page layout styles
 #content
   width 100%
 
-.task-box
-  background-color #FEFEFE
+#header
+  background-color contrast-background
+  color contrast-color
+  padding 1em
+  h2
+    float left
+
+.nav-menu a
+  color contrast-color
+
+.nav-menu ul
+  float left
+  margin 0
+  li
+    float left
+    margin 0
+    list-style none
+
+div.board
+  width 100%
+
+div.list
+  width 25%
+  float left
+
+#footer
+  width 100%
+  clear both

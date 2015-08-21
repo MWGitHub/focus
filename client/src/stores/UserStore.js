@@ -1,11 +1,11 @@
 /**
- * Stores the user data and authentication data.
+ * Stores all the user data.
  */
 import BaseStore from './BaseStore';
 import Actions from '../constants/Actions';
 import StorageKeys from '../constants/StorageKeys';
 
-var user = null;
+var data = null;
 class UserStore extends BaseStore {
     constructor() {
         super();
@@ -15,15 +15,20 @@ class UserStore extends BaseStore {
 
     _userActions(action) {
         switch (action.actionType) {
+            case Actions.retrieveUser:
+                if (action.state === Actions.State.complete) {
+                    data = action.data;
+                    this.emitChange();
+                } else if (action.state === Actions.State.failed) {
+                    data = null;
+                    this.emitChange();
+                }
+                break;
         }
     }
 
-    getUser() {
-        return user;
-    }
-
-    isLoggedIn() {
-        return !!this._user;
+    getData() {
+        return data;
     }
 }
 

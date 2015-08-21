@@ -9,11 +9,11 @@ import Routes from '../constants/Routes';
 
 /**
  * Wraps the given component in order to prevent overwriting functions.
- * @param {React.Component} component the component to wrap.
+ * @param {React.Component} Component the component to wrap.
  * @returns {React.Component} the wrapping component.
  * @constructor
  */
-function Authenticator(component) {
+function Authenticator(Component) {
     return class AuthenticatorComponent extends React.Component {
         static willTransitionTo(transition) {
             if (!AuthStore.isLoggedIn()) {
@@ -48,7 +48,7 @@ function Authenticator(component) {
 
         render() {
             return (
-                <component {...this.props} isLoggedIn={this.state.isLoggedIn} jwt={this.state.jwt} />
+                <Component {...this.props} isLoggedIn={this.state.isLoggedIn} jwt={this.state.jwt} />
             )
         }
     };

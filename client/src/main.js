@@ -7,6 +7,7 @@ import Index from './components/Index';
 import Routes from './constants/Routes';
 import Logout from './components/LogOut';
 import Board from './components/Board';
+import AuthStore from './stores/AuthStore';
 
 var Route = Router.Route;
 var routes = (
@@ -24,7 +25,17 @@ var router = Router.create({
 });
 RouterUtil.setRouter(router);
 
-router.run((Root) => {
-    "use strict";
-    React.render(<Root/>, document.getElementById('content'));
-});
+// Load the auth if it exists
+AuthStore.loadAuth(
+    () => {
+        router.run((Root) => {
+            "use strict";
+            React.render(<Root/>, document.getElementById('content'));
+        });
+    },
+    () => {
+        router.run((Root) => {
+            "use strict";
+            React.render(<Root/>, document.getElementById('content'));
+        });
+    });

@@ -14,14 +14,24 @@ class AuthStore extends BaseStore {
         this._jwt = null;
 
         // Load initial auth data if available.
+        this.loadAuth();
+    }
+
+    /**
+     * Load auth data.
+     * @param {Function<String>?} success the callback to run on success which takes in a token.
+     * @param {Function<Error>?} error the error callback which takes in an error.
+     */
+    loadAuth(success, error) {
         LocalForage.getItem(StorageKeys.JWT, (err, value) => {
             if (err) {
-                console.log(err);
                 this._jwt = null;
                 this.emitChange();
+                if (error) error(err);
             } else {
                 this._jwt = value;
                 this.emitChange();
+                if (success) success(value);
             }
         });
     }
