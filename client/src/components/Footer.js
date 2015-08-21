@@ -4,9 +4,9 @@ class Footer extends React.Component {
     render() {
         "use strict";
         return (
-            <div>
+            <footer id="footer">
                 Footer
-            </div>
+            </footer>
         )
     }
 }

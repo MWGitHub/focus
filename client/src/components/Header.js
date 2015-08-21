@@ -6,9 +6,10 @@ import AuthStore from '../stores/AuthStore';
 class Nav extends React.Component {
     render() {
         "use strict";
+
         if (this.props.authenticated) {
             return (
-                <div>
+                <div className="nav-menu container">
                     <ul>
                         <li><Router.Link to="/">Home</Router.Link></li>
                         <li><Router.Link to={Routes.board}>Board</Router.Link></li>
@@ -18,7 +19,7 @@ class Nav extends React.Component {
             )
         } else {
             return (
-                <div>
+                <div className="nav-menu container">
                     <ul>
                         <li><Router.Link to="/">Home</Router.Link></li>
                         <li><Router.Link to={Routes.register}>Register</Router.Link></li>
@@ -57,7 +58,7 @@ class Header extends React.Component {
         "use strict";
         return (
             <header id="header">
-                <h1>Focus</h1>
+                <h2 className="no-margin">Focus</h2>
                 <Nav authenticated={this.state.isLoggedIn} />
             </header>
         );

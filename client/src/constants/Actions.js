@@ -8,7 +8,11 @@ var Actions = {
     register: 'register',
     login: 'login',
     logout: 'logout',
-    retrieveUser: 'retrieveUser'
+
+    retrieveUser: 'retrieveUser',
+
+    createTask: 'createTask',
+    deleteTask: 'deleteTask'
 };
 
 export default Actions;
