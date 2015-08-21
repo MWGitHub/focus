@@ -12,15 +12,15 @@ var handler = {
         var list_id = request.payload['list_id'];
         var title = Hoek.escapeHtml(request.payload['title']);
         var position = request.payload['position'];
-        User.forge({username: request.auth.credentials.username}).fetch()
+        User.forge({id: request.auth.credentials.id}).fetch()
             .then(function(user) {
                 if (!user) {
-                    reply(Boom.notFound());
+                    reply(Boom.notFound('User not found'));
                 } else {
                     var uid = user.get('id');
                     List.forge({id: list_id}).fetch().then(function(list) {
                         if (!list) {
-                            reply(Boom.notFound());
+                            reply(Boom.notFound('List not found'));
                         } else {
                             if (list.get('user_id') !== uid) {
                                 reply(Boom.unauthorized('Owner does not match user'));
@@ -45,33 +45,40 @@ var handler = {
     updatePosition: function(request, reply) {
         "use strict";
 
+        var listId = request.payload['list_id'];
         var id = request.payload['id'];
         var position = request.payload['position'];
-        User.forge({username: request.auth.credentials.username}).fetch()
+        var uid = null;
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
-                if (!user) {
-                    reply(Boom.notFound());
+                uid = user.get('id');
+                return List.forge({id: listId}).fetch({require: true});
+            })
+            .then(function(list) {
+                if (list.get('user_id') !== uid) {
+                    throw new Error('User does not match owner');
                 } else {
-                    var uid = user.get('id');
-                    Task.forge({id: id}).fetch()
-                        .then(function(task) {
-                            if (!task) {
-                                reply(Boom.notFound());
-                            } else {
-                                if (task.get('user_id') !== uid) {
-                                    reply(Boom.unauthorized('Owner does not match user'));
-                                } else {
-                                    if (task.get('position') === position) {
-                                        reply(API.makeStatusMessage('task-update-position', true, 'Position unchanged'));
-                                    } else {
-                                        task.set('position', position).save().then(function () {
-                                            reply(API.makeStatusMessage('task-update-position', true, 'Position updated'));
-                                        })
-                                    }
-                                }
-                            }
-                        });
+                    return Task.forge({id: id}).fetch({require: true});
                 }
+            })
+            .then(function (task) {
+                if (task.get('user_id') !== uid) {
+                    throw new Error('User does not match owner');
+                } else {
+                    if (task.get('position') === position && task.get('list_id') === listId) {
+                        reply(API.makeStatusMessage('task-update-position', true, 'Position unchanged'));
+                    } else {
+                        task.set({
+                            position: position,
+                            list_id: listId
+                        }).save().then(function () {
+                            reply(API.makeStatusMessage('task-update-position', true, 'Position updated'));
+                        })
+                    }
+                }
+            })
+            .catch(function(err) {
+                reply(Boom.notFound());
             });
     },
 
@@ -80,7 +87,7 @@ var handler = {
 
         var id = request.payload['id'];
         var title = Hoek.escapeHtml(request.payload['title']);
-        User.forge({username: request.auth.credentials.username}).fetch()
+        User.forge({id: request.auth.credentials.id}).fetch()
             .then(function(user) {
                 if (!user) {
                     reply(Boom.notFound());
@@ -112,7 +119,7 @@ var handler = {
         "use strict";
 
         var id = request.payload['id'];
-        User.forge({username: request.auth.credentials.username}).fetch()
+        User.forge({id: request.auth.credentials.id}).fetch()
             .then(function(user) {
                 if (!user) {
                     reply(Boom.notFound());

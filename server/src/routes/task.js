@@ -8,7 +8,7 @@ var routes = [
         path: API.route + '/task/create',
         handler: TaskAPI.create,
         config: {
-            auth: 'simple',
+            auth: 'jwt',
             validate: {
                 payload: {
                     list_id: Joi.number().integer().required(),
@@ -24,10 +24,11 @@ var routes = [
         path: API.route + '/task/update/position',
         handler: TaskAPI.updatePosition,
         config: {
-            auth: 'simple',
+            auth: 'jwt',
             validate: {
                 payload: {
                     id: Joi.number().integer().required(),
+                    list_id: Joi.number().integer().required(),
                     position: Joi.number().integer().min(0).max(Number.MAX_VALUE).required()
                 }
             },
@@ -39,7 +40,7 @@ var routes = [
         path: API.route + '/task/update/title',
         handler: TaskAPI.updateTitle,
         config: {
-            auth: 'simple',
+            auth: 'jwt',
             validate: {
                 payload: {
                     id: Joi.number().integer().required(),
@@ -54,7 +55,7 @@ var routes = [
         path: API.route + '/task/delete',
         handler: TaskAPI.deleteSelf,
         config: {
-            auth: 'simple',
+            auth: 'jwt',
             validate: {
                 payload: {
                     id: Joi.number().integer().required()

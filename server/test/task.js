@@ -72,12 +72,16 @@ lab.experiment('test task', function() {
     var userIds = [];
 
     // List ID to work on for the first user.
-    var list1User1;
+    var idList1User1;
+    var idList2User1;
+
     // List ID for the second user.
-    var list1User2;
+    var idList1User2;
 
     var taskUser1Id;
     var taskUser2Id;
+
+    var jwt = [];
 
     lab.before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
@@ -87,13 +91,15 @@ lab.experiment('test task', function() {
         }).then(function(users) {
             for (var i = 0; i < users.length; i++) {
                 userIds.push(users[i].id);
+                jwt.push(Auth.generateToken(users[i].id));
             }
 
             List.where({user_id: userIds[0]}).fetchAll().then(function(collection) {
-                list1User1 = collection.models[0].id;
+                idList1User1 = collection.models[0].id;
+                idList2User1 = collection.models[1].id;
             }).then(function() {
                 return List.where({user_id: userIds[1]}).fetchAll().then(function(collection) {
-                    list1User2 = collection.models[0].id;
+                    idList1User2 = collection.models[0].id;
                 });
             }).then(function() {
                 done();
@@ -115,16 +121,17 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 title: testTaskTitle,
-                list_id: list1User1,
+                list_id: idList1User1,
                 position: 500
             }
         }, function(response) {
             // Save the ID for later use
-            Task.forge({title: testTaskTitle, list_id: list1User1}).fetch().then(function(task) {
+            Task.forge({title: testTaskTitle, list_id: idList1User1}).fetch().then(function(task) {
                 taskUser1Id = task.get('id');
 
                 assert.equal(response.statusCode, 200);
@@ -138,11 +145,12 @@ lab.experiment('test task', function() {
             method: 'GET',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 title: testTaskTitle,
-                list_id: list1User1,
+                list_id: idList1User1,
                 position: 500
             }
         }, function(response) {
@@ -156,11 +164,12 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 title: 'testtask1au98_a3w5/<html>/</html>awoeirju3543534534534534534534szdfawer',
-                list_id: list1User1,
+                list_id: idList1User1,
                 position: 500
             }
         }, function(response) {
@@ -174,10 +183,11 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
-                list_id: list1User1,
+                list_id: idList1User1,
                 position: 500
             }
         }, function(response) {
@@ -191,7 +201,8 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 title: testTaskTitle,
@@ -208,11 +219,12 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 title: testTaskTitle,
-                list_id: list1User1
+                list_id: idList1User1
             }
         }, function(response) {
             assert.equal(response.statusCode, 400);
@@ -232,11 +244,12 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/create',
             headers: {
-                authorization: generateAuthHeader(testUsers[1], password)
+                //authorization: generateAuthHeader(testUsers[1], password)
+                authorization: jwt[1]
             },
             payload: {
                 title: 'testtask1',
-                list_id: list1User1,
+                list_id: idList1User1,
                 position: 500
             }
         }, function(response) {
@@ -250,9 +263,11 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/update/position',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
+                list_id: idList1User1,
                 id: taskUser1Id,
                 position: 1
             }
@@ -264,19 +279,63 @@ lab.experiment('test task', function() {
         });
     });
 
+    lab.test('move to other list', function(done) {
+        server.inject({
+            method: 'POST',
+            url: '/api/task/update/position',
+            headers: {
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
+            },
+            payload: {
+                list_id: idList2User1,
+                id: taskUser1Id,
+                position: 1
+            }
+        }, function(response) {
+            Task.forge({id: taskUser1Id}).fetch().then(function(task) {
+                assert.equal(task.get('list_id'), idList2User1);
+                done();
+            });
+        });
+    });
+
+    lab.test('move to other user list should fail', function(done) {
+        server.inject({
+            method: 'POST',
+            url: '/api/task/update/position',
+            headers: {
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
+            },
+            payload: {
+                list_id: idList1User2,
+                id: taskUser1Id,
+                position: 1
+            }
+        }, function(response) {
+            Task.forge({id: taskUser1Id}).fetch().then(function(task) {
+                assert.equal(response.statusCode, 404);
+                done();
+            });
+        });
+    });
+
     lab.test('update position wrong user', function(done) {
         server.inject({
             method: 'POST',
             url: '/api/task/update/position',
             headers: {
-                authorization: generateAuthHeader(testUsers[1], password)
+                //authorization: generateAuthHeader(testUsers[1], password)
+                authorization: jwt[1]
             },
             payload: {
+                list_id: idList1User2,
                 id: taskUser1Id,
                 position: 1
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, 404);
             done();
         });
     });
@@ -286,7 +345,8 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/update/title',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 id: taskUser1Id,
@@ -305,7 +365,8 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/update/title',
             headers: {
-                authorization: generateAuthHeader(testUsers[1], password)
+                //authorization: generateAuthHeader(testUsers[1], password)
+                authorization: jwt[1]
             },
             payload: {
                 id: taskUser1Id,
@@ -322,7 +383,8 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/delete',
             headers: {
-                authorization: generateAuthHeader(testUsers[1], password)
+                //authorization: generateAuthHeader(testUsers[1], password)
+                authorization: jwt[1]
             },
             payload: {
                 id: taskUser1Id
@@ -338,7 +400,8 @@ lab.experiment('test task', function() {
             method: 'POST',
             url: '/api/task/delete',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
             },
             payload: {
                 id: taskUser1Id
