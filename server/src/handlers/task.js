@@ -12,34 +12,54 @@ var handler = {
         var list_id = request.payload['list_id'];
         var title = Hoek.escapeHtml(request.payload['title']);
         var position = request.payload['position'];
-        User.forge({id: request.auth.credentials.id}).fetch()
+        var before = request.payload['before'];
+        var after = request.payload['after'];
+        var beforeTask, afterTask;
+        var list;
+        var uid;
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
-                if (!user) {
-                    reply(Boom.notFound('User not found'));
-                } else {
-                    var uid = user.get('id');
-                    List.forge({id: list_id}).fetch().then(function(list) {
-                        if (!list) {
-                            reply(Boom.notFound('List not found'));
-                        } else {
-                            if (list.get('user_id') !== uid) {
-                                reply(Boom.unauthorized('Owner does not match user'));
-                            } else {
-                                Task.forge({
-                                    list_id: list.get('id'),
-                                    user_id: uid,
-                                    title: title,
-                                    duration: 0,
-                                    age: 0,
-                                    position: position
-                                }).save().then(function() {
-                                    reply(API.makeStatusMessage('task-create', true, 'Task created'));
-                                });
-                            }
-                        }
-                    });
-                }
+                uid = user.get('id');
             })
+            .then(function() {
+                return List.forge({id: list_id, user_id: uid}).fetch({require: true})
+            })
+            .then(function(vlist) {
+                list = vlist;
+            })
+            .then(function() {
+                return Task.forge({id: before, user_id: uid, list_id: list_id}).fetch();
+            })
+            .then(function(t) {
+                beforeTask = t;
+            })
+            .then(function() {
+                return Task.forge({id: after, user_id: uid, list_id: list_id}).fetch()
+            })
+            .then(function(t) {
+                afterTask = t;
+            })
+            .then(function() {
+                Task.forge({
+                    list_id: list.get('id'),
+                    user_id: uid,
+                    title: title,
+                    duration: 0,
+                    age: 0,
+                    before: beforeTask ? before : '',
+                    after: afterTask ? after : ''
+                }).save();
+            })
+            // On successful save update the other tasks before and after
+            .then(function(task) {
+
+            })
+            .then(function(task) {
+                reply(API.makeStatusMessage('task-create', true, 'Task created'));
+            })
+            .catch(function(err) {
+                reply(Boom.unauthorized());
+            });
     },
 
     updatePosition: function(request, reply) {
