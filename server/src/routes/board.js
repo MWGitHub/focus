@@ -3,6 +3,14 @@ var Joi = require('joi');
 var API = require('../lib/api');
 
 var routes = [
+    {
+        method: 'GET',
+        path: API.route + '/board/{id}',
+        handler: BoardAPI.retrieve,
+        config: {
+            auth: 'jwt'
+        }
+    }
     /*
     {
         method: 'POST',

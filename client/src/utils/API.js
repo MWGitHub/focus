@@ -64,21 +64,16 @@ var API = {
             return;
         }
 
-        var clone = JSON.parse(JSON.stringify(data));
-        clone.token = AuthStore.getJWT();
-        console.log(clone);
+
         request({
-            url: this.routes.taskCreate,
+            url: url + '?token=' + AuthStore.getJWT(),
+            //url: url,
             method: 'POST',
             contentType: contentType,
             crossOrigin: true,
-            data: clone,
-            success: function(resp) {
-                if (success) success(resp);
-            },
-            error: function(err) {
-                if (error) error(err);
-            }
+            data: data,
+            success: success,
+            error: error
         })
     }
 };

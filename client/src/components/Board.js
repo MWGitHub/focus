@@ -10,13 +10,15 @@ class Task extends React.Component {
 
     deleteTask(e) {
         e.preventDefault();
+
+        BoardActions.deleteTask(this.props.task.id);
     }
 
     render() {
         var task = this.props.task;
         return <div className="task">
             <h3>{task.attributes.title}</h3>
-            <button onclick={this.deleteTask.bind(this)}>Delete</button>
+            <button onClick={this.deleteTask.bind(this)}>Delete</button>
         </div>
     }
 }
@@ -38,7 +40,7 @@ class List extends React.Component {
             return;
         }
 
-        BoardActions.createTask(title, this.props.id, this._updateTaskError.bind(this));
+        BoardActions.createTask(this.props.list.id, title, 0, this._updateTaskError.bind(this));
     }
 
     render() {
@@ -48,7 +50,7 @@ class List extends React.Component {
             <h2>{list.attributes.title}</h2>
             <form onSubmit={this.createTask.bind(this)}>
                 <label htmlFor="task-title">Task Title</label>
-                <input id="task-title" type="text" ref="title" placeholder="e.g. Clean Room" required />
+                <input id="task-title" type="text" ref="title" placeholder="e.g. Open Text Editor" required />
                 <input type="submit" value="Create" />
             </form>
 

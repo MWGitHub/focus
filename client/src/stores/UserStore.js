@@ -24,6 +24,22 @@ class UserStore extends BaseStore {
                     this.emitChange();
                 }
                 break;
+            case Actions.createTask:
+                if (action.state === Actions.State.complete) {
+                    this.emitChange();
+                } else if (action.state === Actions.State.failed) {
+                    data = null;
+                    this.emitChange();
+                }
+                break;
+            case Actions.deleteTask:
+                if (action.state === Actions.State.complete) {
+                    this.emitChange();
+                } else if (action.state === Actions.State.failed) {
+                    data = null;
+                    this.emitChange();
+                }
+                break;
         }
     }
 

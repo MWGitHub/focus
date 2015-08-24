@@ -33,20 +33,49 @@ var BoardActions = {
             state: Actions.State.loading
         });
         API.doAuthActionTo(API.routes.taskCreate, {
-                list: list,
-                title: title
+                list_id: list,
+                title: title,
+                position: position
             },
             (resp) => {
                 Dispatcher.dispatch({
                     actionType: Actions.createTask,
                     state: Actions.State.complete,
-                    data: resp
+                    list: list,
+                    title: title
                 });
+                this.retrieveData();
             },
             (error) => {
                 console.log(error);
                 Dispatcher.dispatch({
                     actionType: Actions.createTask,
+                    state: Actions.State.failed
+                });
+            }
+        )
+    },
+
+    deleteTask: function(id) {
+        Dispatcher.dispatch({
+            actionType: Actions.deleteTask,
+            state: Actions.State.loading
+        });
+        API.doAuthActionTo(API.routes.taskDelete, {
+                id: id
+            },
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.deleteTask,
+                    state: Actions.State.complete,
+                    id: id
+                });
+                this.retrieveData();
+            },
+            (error) => {
+                console.log(error);
+                Dispatcher.dispatch({
+                    actionType: Actions.deleteTask,
                     state: Actions.State.failed
                 });
             }

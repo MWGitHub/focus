@@ -35,11 +35,15 @@ var handler = {
 
         var data = {};
         var board;
-        User.forge({username: request.auth.credentials.username}).fetch()
-            .then(function(user) {
-                if (!user) {
-                    reply(Boom.badImplementation('An error has occurred'));
-                } else {
+        var boardID = request.query['id'];
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
+            .then(function (user) {
+                // Retrieve the board
+                return Board.forge({id: boardID}).fetch({require: true});
+            })
+            .then(function (board) {
+            })
+    }
 
                     /*
                     var getTasks = function (boardID, tasks) {
@@ -80,9 +84,6 @@ var handler = {
                             });
                         });
                     */
-                }
-            });
-    }
 };
 
 module.exports = handler;

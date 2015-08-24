@@ -47,16 +47,15 @@ var Task = Bookshelf.Model.extend({
         user_id: {type: 'integer', notNullable: true, references: 'user.id'},
         // Title of the task
         title: {type: 'string', length: 150, notNullable: true},
-        // Duration the task has been worked on in seconds
-        duration: {type: 'integer', notNullable: true},
         // Time the task was started at for calculating duration
         started_at: {type: 'datetime'},
         // Completed date
         completed_at: {type: 'datetime'},
         // Age of the task, increments each time the task is not completed in today
         age: {type: 'integer', notNullable: true},
-        // Position of the task
-        position: {type: 'integer', notNullable: true}
+        // Tasks that are before and after this task.
+        before: {type: 'integer', references: 'task.id'},
+        after: {type: 'integer', references: 'task.id'}
     }
 });
 
