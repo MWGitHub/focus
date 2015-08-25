@@ -2,6 +2,7 @@ var assert = require('chai').assert;
 var Lab = require('lab');
 var User = require('../src/models/user');
 var Auth = require('../src/lib/auth');
+var moment = require('moment-timezone');
 
 var lab = exports.lab = Lab.script();
 var server = require('../index');
@@ -93,6 +94,37 @@ lab.experiment('test registration', function() {
         });
     });
 
+    lab.test('registers a user with invalid time zone', function(done) {
+        server.inject({
+            method: 'POST',
+            url: '/api/user/register',
+            payload: {
+                username: testUsers[1],
+                password: 'testpw0',
+                timezone: 'nope'
+            }
+        }, function(response) {
+            assert.equal(response.statusCode, 400);
+            done();
+        });
+    });
+
+    lab.test('registers a user with a time zone', function(done) {
+
+        server.inject({
+            method: 'POST',
+            url: '/api/user/register',
+            payload: {
+                username: testUsers[1],
+                password: 'testpw0',
+                timezone: moment.tz.names()[0]
+            }
+        }, function(response) {
+            assert.equal(response.statusCode, 200);
+            done();
+        });
+    });
+
     lab.test('returns an error when registering the same user', function(done) {
         server.inject({
             method: 'POST',
@@ -112,7 +144,7 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: '/api/user/register',
             payload: {
-                username: testUsers[0]
+                username: testUsers[1]
             }
         }, function (response) {
             assert.equal(response.statusCode, 400, 'Error when missing the password');

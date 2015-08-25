@@ -88,7 +88,10 @@ module.exports.populateUser = function(username) {
         });
 };
 
-module.exports.destroyUser = function(username) {
-    "use strict";
+/**
+ * Checks and updates the tasks of the given user if needed.
+ * @param {String} username the username to update the tasks for.
+ */
+module.exports.updateUserTasks = function(username) {
 
 };

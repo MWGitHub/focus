@@ -25,6 +25,13 @@ class Task extends React.Component {
         super(props);
     }
 
+    componentDidMount() {
+        var listElement = React.findDOMNode(this.props.list);
+        listElement.addEventListener('slip:reorder', function(e) {
+            console.log(e);
+        });
+    }
+
     deleteTask(e) {
         e.preventDefault();
 
@@ -133,12 +140,17 @@ class List extends React.Component {
         super(props);
     }
 
+    componentDidMount() {
+        var element = React.findDOMNode(this);
+        Slip(element);
+    }
+
     render() {
         var list = this.props.list;
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
         return (
-            <div className="list">
+            <div id={"list-" + list.id} className="list">
                 <h2>{list.attributes.title}</h2>
 
                 {this.props.disable.create ? null : <TaskCreateBox list={list} tasks={tasks} /> }

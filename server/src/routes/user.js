@@ -1,6 +1,7 @@
 var UserAPI = require('../handlers/user');
 var Joi = require('joi');
 var API = require('../lib/api');
+var moment = require('moment-timezone');
 
 var routes = [
     {
@@ -11,7 +12,8 @@ var routes = [
             validate: {
                 payload: {
                     username: Joi.string().min(3).max(20).token().required(),
-                    password: Joi.string().min(6).max(100).required()
+                    password: Joi.string().min(6).max(100).required(),
+                    timezone: Joi.string().valid(moment.tz.names())
                 }
             },
             cors: true

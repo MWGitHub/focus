@@ -69,7 +69,10 @@ var User = Bookshelf.Model.extend({
     schema: {
         id: {type: 'increments', notNullable: true, primary: true},
         username: {type: 'string', length: 30, notNullable: true, unique: true},
-        password: {type: 'string', length: 60, notNullable: true}
+        password: {type: 'string', length: 60, notNullable: true},
+        timezone: {type: 'string', length: 150, notNullable: true},
+        // format 'YYYY-MM-DD HH:mm:ss.SSSZZ'
+        lastupdate: {type: 'datetime'}
     }
 });
 

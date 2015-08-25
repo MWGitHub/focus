@@ -17,8 +17,9 @@ class UserStore extends BaseStore {
         switch (action.actionType) {
             case Actions.retrieveUser:
                 if (action.state === Actions.State.complete) {
-                    data = action.data;
+                    data = action.data.data;
                     // Sort the tasks
+                    console.log(data);
                     for (var i in data.attributes.boards[0].attributes.lists) {
                         data.attributes.boards[0].attributes.lists[i].attributes.tasks.sort(function(a, b) {
                             if (a.attributes.position > b.attributes.position) {

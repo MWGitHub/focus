@@ -3,6 +3,7 @@ var Auth = require('../lib/auth');
 var Boom = require('boom');
 var Bcrypt = require('bcrypt');
 var API = require('../lib/api');
+var moment = require('moment-timezone');
 
 var userHandler = {
     /**
@@ -114,15 +115,32 @@ var userHandler = {
     retrieve: function(request, reply) {
         "use strict";
 
-        User.forge({id: request.auth.credentials.id}).fetch()
-            .then(function(user) {
-                if (!user) {
-                    reply(Boom.notFound());
-                } else {
-                    API.makeData(user.retrieveAsData().then(function(data) {
-                        reply(data);
-                    }));
+        var user;
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
+            // Update the user if needed
+            .then(function(v) {
+                user = v;
+                var lastUpdate = user.get('lastupdate');
+                if (!lastUpdate) {
+                    return true;
                 }
+                return false;
+            })
+            .then(function(hasUpdated) {
+                if (hasUpdated) {
+                    return user.set('lastupdate', moment().format('YYYY-MM-DD HH:mm:ss.SSSZZ')).save();
+                }
+            })
+            // Retrieve the user data
+            .then(function() {
+                return user.retrieveAsData();
+            })
+            .then(function(data) {
+                reply(API.makeData(data));
+            })
+            .catch(function(err) {
+                console.log(err);
+                reply(Boom.notFound());
             });
     }
 };
