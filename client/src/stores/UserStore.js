@@ -18,6 +18,17 @@ class UserStore extends BaseStore {
             case Actions.retrieveUser:
                 if (action.state === Actions.State.complete) {
                     data = action.data;
+                    // Sort the tasks
+                    for (var i in data.attributes.boards[0].attributes.lists) {
+                        data.attributes.boards[0].attributes.lists[i].attributes.tasks.sort(function(a, b) {
+                            if (a.attributes.position > b.attributes.position) {
+                                return 1;
+                            } else if (a.attributes.position < b.attributes.position) {
+                                return -1;
+                            }
+                            return 0;
+                        });
+                    }
                     this.emitChange();
                 } else if (action.state === Actions.State.failed) {
                     data = null;
@@ -33,6 +44,22 @@ class UserStore extends BaseStore {
                 }
                 break;
             case Actions.deleteTask:
+                if (action.state === Actions.State.complete) {
+                    this.emitChange();
+                } else if (action.state === Actions.State.failed) {
+                    data = null;
+                    this.emitChange();
+                }
+                break;
+            case Actions.moveTask:
+                if (action.state === Actions.State.complete) {
+                    this.emitChange();
+                } else if (action.state === Actions.State.failed) {
+                    data = null;
+                    this.emitChange();
+                }
+                break;
+            case Actions.renameTask:
                 if (action.state === Actions.State.complete) {
                     this.emitChange();
                 } else if (action.state === Actions.State.failed) {

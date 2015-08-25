@@ -80,6 +80,36 @@ var BoardActions = {
                 });
             }
         )
+    },
+
+    moveTask: function(id, list, position) {
+        Dispatcher.dispatch({
+            actionType: Actions.moveTask,
+            state: Actions.State.loading
+        });
+        API.doAuthActionTo(API.routes.taskUpdatePosition, {
+                id: id,
+                list_id: list,
+                position: position
+            },
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.moveTask,
+                    state: Actions.State.complete,
+                    list: list,
+                    id: id,
+                    position: position
+                });
+                this.retrieveData();
+            },
+            (error) => {
+                console.log(error);
+                Dispatcher.dispatch({
+                    actionType: Actions.moveTask,
+                    state: Actions.State.failed
+                });
+            }
+        )
     }
 };
 

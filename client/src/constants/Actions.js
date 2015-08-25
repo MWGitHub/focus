@@ -12,7 +12,9 @@ var Actions = {
     retrieveUser: 'retrieveUser',
 
     createTask: 'createTask',
-    deleteTask: 'deleteTask'
+    deleteTask: 'deleteTask',
+    moveTask: 'moveTask',
+    renameTask: 'renameTask'
 };
 
 export default Actions;

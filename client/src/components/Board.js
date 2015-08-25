@@ -3,6 +3,23 @@ import UserStore from '../stores/UserStore';
 import Authenticator from './Authenticator';
 import BoardActions from '../actions/BoardActions';
 
+function getListByTitle(lists, title) {
+    for (var i = 0; i < lists.length; i++) {
+        if (lists[i].attributes.title == title) return lists[i];
+    }
+    return null;
+}
+
+var ListTitles = {
+    tasks: 'Tasks',
+    tomorrow: 'Tomorrow',
+    today: 'Today',
+    done: 'Done'
+};
+
+/**
+ * Renders a task.
+ */
 class Task extends React.Component {
     constructor(props) {
         super(props);
@@ -14,16 +31,60 @@ class Task extends React.Component {
         BoardActions.deleteTask(this.props.task.id);
     }
 
+    move(e) {
+
+    }
+
+    complete(e) {
+
+    }
+
+    moveTaskLeft(e) {
+        e.preventDefault();
+
+        // Should only be allowed to move right from tasks
+        if (this.props.list.attributes.title !== ListTitles.tomorrow) return;
+
+        // Get the new list and position
+        var nextList = getListByTitle(this.props.lists, ListTitles.tasks);
+        var listId = nextList.id;
+        var tasks = nextList.attributes.tasks;
+        var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
+
+        BoardActions.moveTask(this.props.task.id, listId, position);
+    }
+
+    moveTaskRight(e) {
+        e.preventDefault();
+
+        // Should only be allowed to move right from tasks
+        if (this.props.list.attributes.title !== ListTitles.tasks) return;
+
+        // Get the new list and position
+        var nextList = getListByTitle(this.props.lists, ListTitles.tomorrow);
+        var listId = nextList.id;
+        var tasks = nextList.attributes.tasks;
+        var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
+
+        BoardActions.moveTask(this.props.task.id, listId, position);
+    }
+
     render() {
         var task = this.props.task;
         return <div className="task">
             <h3>{task.attributes.title}</h3>
-            <button onClick={this.deleteTask.bind(this)}>Delete</button>
+            { this.props.disable.delete ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
+            { this.props.disable.left ? null : <button onClick={this.moveTaskLeft.bind(this)}>&lt;-</button> }
+            { this.props.disable.right ? null : <button onClick={this.moveTaskRight.bind(this)}>-&gt;</button> }
+            { this.props.disable.complete ? null : <button onClick={this.complete.bind(this)}>Complete</button> }
         </div>
     }
 }
 
-class List extends React.Component {
+/**
+ * Renders the task creating box and handles task creation.
+ */
+class TaskCreateBox extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -32,83 +93,93 @@ class List extends React.Component {
 
     }
 
-    createTask(tasks) {
+    createTask(list, tasks) {
         return function(event) {
             event.preventDefault();
-            console.log(event);
 
             var title = React.findDOMNode(this.refs.title).value;
             if (!title) {
                 return;
             }
+            // Clear the input
+            var titleField = React.findDOMNode(this.refs.title);
+            titleField.value = '';
 
             // Set position to mid value if there are no tasks otherwise set it to the next lowest.
-            var position = tasks.length == 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
+            var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
 
-            BoardActions.createTask(this.props.list.id, title, position, this._updateTaskError.bind(this));
+            BoardActions.createTask(list.id, title, position, this._updateTaskError.bind(this));
         }
+    }
+
+    render() {
+        var list = this.props.list;
+        var tasks = this.props.tasks;
+        return (
+            <form onSubmit={this.createTask(list, tasks).bind(this)}>
+                <label htmlFor="task-title">Task Title</label>
+                <input id="task-title" type="text" ref="title" placeholder="e.g. Open Text Editor" required />
+                <input type="submit" value="Create" />
+            </form>
+        )
+    }
+}
+
+/**
+ * Renders a list.
+ */
+class List extends React.Component {
+    constructor(props) {
+        super(props);
     }
 
     render() {
         var list = this.props.list;
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
-        tasks.sort(function(a, b) {
-            if (a.attributes.position > b.attributes.position) {
-                return 1
-            } else if (a.attributes.position < b.attributes.position) {
-                return -1;
-            }
-            return 0;
-        });
-        console.log(tasks);
+        return (
+            <div className="list">
+                <h2>{list.attributes.title}</h2>
 
-        return <div className="list">
-            <h2>{list.attributes.title}</h2>
-            <form onSubmit={this.createTask(tasks).bind(this)}>
-                <label htmlFor="task-title">Task Title</label>
-                <input id="task-title" type="text" ref="title" placeholder="e.g. Open Text Editor" required />
-                <input type="submit" value="Create" />
-            </form>
-
-            {list.attributes.tasks.map((task) => {
-                return <Task task={task} key={task.id} />
-            })}
-        </div>;
+                {this.props.disable.create ? null : <TaskCreateBox list={list} tasks={tasks} /> }
+                {list.attributes.tasks.map((task) => {
+                    return <Task lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
+                })}
+            </div>
+        )
     }
 }
 
+/**
+ * Renders the board and sets the settings for the lists.
+ */
 class BoardView extends React.Component {
     constructor(props) {
         super(props);
-    }
-
-    getListByTitle(lists, title) {
-        for (var i = 0; i < lists.length; i++) {
-            if (lists[i].attributes.title == title) return lists[i];
-        }
-        return null;
     }
 
     render() {
         var board = this.props.board;
         var lists = board.attributes.lists;
 
-        var tasks = this.getListByTitle(lists, 'Tasks');
-        var tomorrow = this.getListByTitle(lists, 'Tomorrow');
-        var today = this.getListByTitle(lists, 'Today');
-        var done = this.getListByTitle(lists, 'Done');
+        var tasks = getListByTitle(lists, ListTitles.tasks);
+        var tomorrow = getListByTitle(lists, ListTitles.tomorrow);
+        var today = getListByTitle(lists, ListTitles.today);
+        var done = getListByTitle(lists, ListTitles.done);
         return (
             <div className="board">
-                <List list={tasks} key={tasks.id} />
-                <List list={tomorrow} key={tomorrow.id} />
-                <List list={today} key={today.id} />
-                <List list={done} key={done.id} locked={true} />
+                <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
+                <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
+                <List lists={lists} list={today} key={today.id} disable={{create: true, del: true, left: true}} />
+                <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, right: true, complete: true}} />
             </div>
         )
     }
 }
 
+/**
+ * Provides data for the board and all the lists and tasks.
+ */
 class Board extends React.Component {
     constructor(props) {
         super(props);
