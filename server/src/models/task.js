@@ -54,9 +54,8 @@ var Task = Bookshelf.Model.extend({
         completed_at: {type: 'datetime'},
         // Age of the task, increments each time the task is not completed in today
         age: {type: 'integer', notNullable: true},
-        // Tasks that are before and after this task.
-        before: {type: 'integer', references: 'task.id'},
-        after: {type: 'integer', references: 'task.id'}
+        // Position of the task
+        position: {type: 'decimal', notNullable: true}
     }
 });
 

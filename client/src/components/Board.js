@@ -69,7 +69,7 @@ class BoardView extends React.Component {
     render() {
         var board = this.props.board;
         var lists = board.attributes.lists;
-
+        console.log(lists);
         return (
             <div className="board">
                 {lists.map((list) => {

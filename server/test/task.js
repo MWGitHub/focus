@@ -78,8 +78,8 @@ lab.experiment('test task', function() {
     // List ID for the second user.
     var idList1User2;
 
-    var taskUser1Ids = [];
-    var taskUser2Ids = [];
+    var taskUser1Id;
+    var taskUser2Id;
 
     var jwt = [];
 
@@ -126,12 +126,13 @@ lab.experiment('test task', function() {
             },
             payload: {
                 title: testTaskTitle,
-                list_id: idList1User1
+                list_id: idList1User1,
+                position: 500
             }
         }, function(response) {
             // Save the ID for later use
             Task.forge({title: testTaskTitle, list_id: idList1User1}).fetch().then(function(task) {
-                taskUser1Ids.push(task.get('id'));
+                taskUser1Id = task.get('id');
 
                 assert.equal(response.statusCode, 200);
                 done();
@@ -149,7 +150,8 @@ lab.experiment('test task', function() {
             },
             payload: {
                 title: testTaskTitle,
-                list_id: idList1User1
+                list_id: idList1User1,
+                position: 500
             }
         }, function(response) {
             assert.equal(response.statusCode, 404);
@@ -167,7 +169,8 @@ lab.experiment('test task', function() {
             },
             payload: {
                 title: 'testtask1au98_a3w5/<html>/</html>awoeirju3543534534534534534534szdfawer',
-                list_id: idList1User1
+                list_id: idList1User1,
+                position: 500
             }
         }, function(response) {
             assert.equal(response.statusCode, 400);
@@ -184,7 +187,8 @@ lab.experiment('test task', function() {
                 authorization: jwt[0]
             },
             payload: {
-                list_id: idList1User1
+                list_id: idList1User1,
+                position: 500
             }
         }, function(response) {
             assert.equal(response.statusCode, 400);
@@ -201,7 +205,8 @@ lab.experiment('test task', function() {
                 authorization: jwt[0]
             },
             payload: {
-                title: testTaskTitle
+                title: testTaskTitle,
+                position: 500
             }
         }, function(response) {
             assert.equal(response.statusCode, 400);
@@ -209,7 +214,7 @@ lab.experiment('test task', function() {
         });
     });
 
-    lab.test('create task with before given', function(done) {
+    lab.test('create position not given', function(done) {
         server.inject({
             method: 'POST',
             url: '/api/task/create',
