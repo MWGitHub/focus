@@ -13,7 +13,7 @@ var routes = [
                 payload: {
                     list_id: Joi.number().integer().required(),
                     title: Joi.string().min(1).max(30).required(),
-                    position: Joi.number().min(Number.MIN_VALUE).max(Number.MAX_VALUE).required()
+                    position: Joi.number().min(0).max(Number.MAX_SAFE_INTEGER).required()
                 }
             },
             cors: true
@@ -29,7 +29,7 @@ var routes = [
                 payload: {
                     id: Joi.number().integer().required(),
                     list_id: Joi.number().integer().required(),
-                    position: Joi.number().min(Number.MIN_VALUE).max(Number.MAX_VALUE).required()
+                    position: Joi.number().min(0).max(Number.MAX_SAFE_INTEGER).required()
                 }
             },
             cors: true

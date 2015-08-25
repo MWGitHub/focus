@@ -67,7 +67,6 @@ var API = {
 
         request({
             url: url + '?token=' + AuthStore.getJWT(),
-            //url: url,
             method: 'POST',
             contentType: contentType,
             crossOrigin: true,

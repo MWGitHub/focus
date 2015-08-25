@@ -32,23 +32,40 @@ class List extends React.Component {
 
     }
 
-    createTask(e) {
-        e.preventDefault();
+    createTask(tasks) {
+        return function(event) {
+            event.preventDefault();
+            console.log(event);
 
-        var title = React.findDOMNode(this.refs.title).value;
-        if (!title) {
-            return;
+            var title = React.findDOMNode(this.refs.title).value;
+            if (!title) {
+                return;
+            }
+
+            // Set position to mid value if there are no tasks otherwise set it to the next lowest.
+            var position = tasks.length == 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
+
+            BoardActions.createTask(this.props.list.id, title, position, this._updateTaskError.bind(this));
         }
-
-        BoardActions.createTask(this.props.list.id, title, 0, this._updateTaskError.bind(this));
     }
 
     render() {
         var list = this.props.list;
+        // Sort the tasks by position
+        var tasks = list.attributes.tasks;
+        tasks.sort(function(a, b) {
+            if (a.attributes.position > b.attributes.position) {
+                return 1
+            } else if (a.attributes.position < b.attributes.position) {
+                return -1;
+            }
+            return 0;
+        });
+        console.log(tasks);
 
         return <div className="list">
             <h2>{list.attributes.title}</h2>
-            <form onSubmit={this.createTask.bind(this)}>
+            <form onSubmit={this.createTask(tasks).bind(this)}>
                 <label htmlFor="task-title">Task Title</label>
                 <input id="task-title" type="text" ref="title" placeholder="e.g. Open Text Editor" required />
                 <input type="submit" value="Create" />
@@ -66,15 +83,27 @@ class BoardView extends React.Component {
         super(props);
     }
 
+    getListByTitle(lists, title) {
+        for (var i = 0; i < lists.length; i++) {
+            if (lists[i].attributes.title == title) return lists[i];
+        }
+        return null;
+    }
+
     render() {
         var board = this.props.board;
         var lists = board.attributes.lists;
-        console.log(lists);
+
+        var tasks = this.getListByTitle(lists, 'Tasks');
+        var tomorrow = this.getListByTitle(lists, 'Tomorrow');
+        var today = this.getListByTitle(lists, 'Today');
+        var done = this.getListByTitle(lists, 'Done');
         return (
             <div className="board">
-                {lists.map((list) => {
-                    return <List list={list} key={list.id} />
-                })}
+                <List list={tasks} key={tasks.id} />
+                <List list={tomorrow} key={tomorrow.id} />
+                <List list={today} key={today.id} />
+                <List list={done} key={done.id} locked={true} />
             </div>
         )
     }
