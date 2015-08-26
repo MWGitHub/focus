@@ -45,7 +45,18 @@ class Task extends React.Component {
     }
 
     complete(e) {
+        e.preventDefault();
 
+        // Should only be allowed on today's tasks
+        if (this.props.list.attributes.title !== ListTitles.today) return;
+
+        // Get the new list and position
+        var nextList = getListByTitle(this.props.lists, ListTitles.done);
+        var listId = nextList.id;
+        var tasks = nextList.attributes.tasks;
+        var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position - 1;
+
+        BoardActions.moveTask(this.props.task.id, listId, position);
     }
 
     moveTaskLeft(e) {
@@ -66,7 +77,7 @@ class Task extends React.Component {
     moveTaskRight(e) {
         e.preventDefault();
 
-        // Should only be allowed to move right from tasks
+        // Should only be allowed to move right from tasks or today
         if (this.props.list.attributes.title !== ListTitles.tasks) return;
 
         // Get the new list and position
@@ -80,10 +91,13 @@ class Task extends React.Component {
 
     render() {
         var task = this.props.task;
+        // Do not allow Today tasks to be deleted unless over a week old
+        var shouldHideDelete = this.props.disable.del ||
+            (this.props.list.attributes.title === ListTitles.today && this.props.task.attributes.age <= 7);
         return <div className="task">
             <h3>{task.attributes.title}</h3>
             <p>Age: {task.attributes.age}</p>
-            { this.props.disable.del ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
+            { shouldHideDelete ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
             { this.props.disable.left ? null : <button onClick={this.moveTaskLeft.bind(this)}>&lt;-</button> }
             { this.props.disable.right ? null : <button onClick={this.moveTaskRight.bind(this)}>-&gt;</button> }
             { this.props.disable.complete ? null : <button onClick={this.complete.bind(this)}>Complete</button> }
@@ -198,7 +212,7 @@ class BoardView extends React.Component {
                     <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
                     <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
                     <List lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
-                    <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, right: true, complete: true}} />
+                    <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true}} />
                 </div>
             </div>
         )
