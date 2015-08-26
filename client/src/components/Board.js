@@ -80,7 +80,8 @@ class Task extends React.Component {
         var task = this.props.task;
         return <div className="task">
             <h3>{task.attributes.title}</h3>
-            { this.props.disable.delete ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
+            <p>Age: {task.attributes.age}</p>
+            { this.props.disable.del ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
             { this.props.disable.left ? null : <button onClick={this.moveTaskLeft.bind(this)}>&lt;-</button> }
             { this.props.disable.right ? null : <button onClick={this.moveTaskRight.bind(this)}>-&gt;</button> }
             { this.props.disable.complete ? null : <button onClick={this.complete.bind(this)}>Complete</button> }
@@ -182,7 +183,7 @@ class BoardView extends React.Component {
             <div className="board">
                 <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
                 <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
-                <List lists={lists} list={today} key={today.id} disable={{create: true, del: true, left: true}} />
+                <List lists={lists} list={today} key={today.id} disable={{create: true, del: true, left: true, right: true}} />
                 <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, right: true, complete: true}} />
             </div>
         )

@@ -70,6 +70,7 @@ var User = Bookshelf.Model.extend({
         id: {type: 'increments', notNullable: true, primary: true},
         username: {type: 'string', length: 30, notNullable: true, unique: true},
         password: {type: 'string', length: 60, notNullable: true},
+        // Time zone is used to determine when midnight is for the user
         timezone: {type: 'string', length: 150, notNullable: true},
         // format 'YYYY-MM-DD HH:mm:ss.SSSZZ'
         lastupdate: {type: 'datetime'}

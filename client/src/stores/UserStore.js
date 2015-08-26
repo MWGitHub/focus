@@ -19,8 +19,7 @@ class UserStore extends BaseStore {
                 if (action.state === Actions.State.complete) {
                     data = action.data.data;
                     // Sort the tasks
-                    console.log(data);
-                    for (var i in data.attributes.boards[0].attributes.lists) {
+                    for (var i = 0; i < data.attributes.boards[0].attributes.lists.length; i++) {
                         data.attributes.boards[0].attributes.lists[i].attributes.tasks.sort(function(a, b) {
                             if (a.attributes.position > b.attributes.position) {
                                 return 1;

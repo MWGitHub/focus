@@ -41,7 +41,7 @@ function createAllTestUsers() {
             return new Promise(function(resolve, reject) {
                 Auth.hash(password, function(error, hash) {
                     User.forge({username: testUsers[i], password: hash}).save().then(function(user) {
-                        API.populateUser(user.get('username')).then(function() {
+                        API.populateUser(user).then(function() {
                             resolve(user);
                         });
                     });

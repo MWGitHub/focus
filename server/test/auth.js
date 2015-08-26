@@ -3,6 +3,7 @@ var Lab = require('lab');
 var User = require('../src/models/user');
 var Auth = require('../src/lib/auth');
 var moment = require('moment-timezone');
+var API = require('../src/lib/api');
 
 var lab = exports.lab = Lab.script();
 var server = require('../index');
@@ -38,8 +39,9 @@ function createAllTestUsers() {
             return new Promise(function(resolve, reject) {
                 Auth.hash(password, function(error, hash) {
                     User.forge({username: testUsers[i], password: hash}).save().then(function(user) {
-                        //console.log('Created user ' + testUsers[i]);
-                        resolve(user);
+                        API.populateUser(user).then(function() {
+                            resolve(user);
+                        });
                     });
                 });
             });
@@ -289,10 +291,11 @@ lab.experiment('test authentication', function() {
             method: 'GET',
             url: '/api/user/logout',
             headers: {
-                authorization: generateAuthHeader(testUsers[0], password)
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, 200);
             done();
         });
     });

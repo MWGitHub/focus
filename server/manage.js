@@ -12,6 +12,17 @@ var knex = require('./src/lib/bookshelf').knex;
 
 program.version('1.0.0');
 
+/**
+ * Checks if a user has been retrieved, exits if not.
+ * @param {String} username
+ * @param user
+ */
+function checkUserRetrieved(username, user) {
+    if (user) return;
+    console.error('User %s does not exist.', username);
+    process.exit(1);
+}
+
 program
     .command('create-basic-user <username> <password>')
     .description('Creates a basic use with no prepopulated data.')
@@ -21,8 +32,7 @@ program
 
         User.forge({username: username}).fetch().then(function(user) {
             if (user) {
-                console.error('User %s already exists, new user not created.', username);
-                process.exit(1);
+
             } else {
                 Auth.hash(password, function(error, hash) {
                     User.forge({username: username, password: hash}).save().then(function() {
@@ -52,7 +62,7 @@ program
                     User.forge({username: username, password: hash}).save().then(function(user) {
                         "use strict";
 
-                        API.populateUser(username).then(function() {
+                        API.populateUser(user).then(function() {
                             console.log('Finished populating boards and lists for ' + username);
                             process.exit(0);
                         });
@@ -69,16 +79,26 @@ program
         "use strict";
 
         User.forge({username: username}).fetch().then(function(user) {
-            if (!user) {
-                console.error('User %s does not exist, exiting.', username);
-                process.exit(1);
-            } else {
-                user.destroyDeep().then(function() {
-                    console.log('User has been deleted.');
-                    process.exit(0);
-                });
-            }
+            checkUserRetrieved(username, user);
+            user.destroyDeep().then(function() {
+                console.log('User has been deleted.');
+                process.exit(0);
+            });
         });
+    });
+
+program
+    .command('update-user-tasks <username>')
+    .description("Updates a user's tasks.")
+    .option('-f, --force', 'Ignore time and force the update')
+    .action(function(username, options) {
+        User.forge({username: username}).fetch().then(function(user) {
+            checkUserRetrieved(username, user);
+            API.updateUserTasks(user, options.force).then(function() {
+                console.log('Finished updating tasks for %s.', username);
+                process.exit(0);
+            });
+        })
     });
 
 program

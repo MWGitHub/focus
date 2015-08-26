@@ -39,7 +39,7 @@ var routes = [
         handler: UserAPI.logout,
         config: {
             auth: {
-                strategy: 'simple',
+                strategy: 'jwt',
                 mode: 'optional'
             },
             cors: true

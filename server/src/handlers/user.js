@@ -28,8 +28,8 @@ var userHandler = {
                             User.forge({
                                 username: username,
                                 password: hash
-                            }).save().then(function() {
-                                API.populateUser(username);
+                            }).save().then(function(user) {
+                                API.populateUser(user);
                             }).then(function() {
                                 reply(API.makeStatusMessage('user-register', true, 'User created'));
                             });
@@ -81,7 +81,11 @@ var userHandler = {
         "use strict";
 
         if (request.auth.isAuthenticated) {
-            reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
+            if (request.auth.strategy === 'simple') {
+                reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
+            } else {
+                reply(API.makeStatusMessage('user-logout', true, 'Logged out'));
+            }
         } else {
             reply(API.makeStatusMessage('user-logout', true, 'Not logged in'));
         }
@@ -100,7 +104,7 @@ var userHandler = {
                 if (!user) {
                     reply(Boom.notFound());
                 } else {
-                    user.destroy().then(function() {
+                    user.destroyDeep().then(function() {
                         reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
                     });
                 }
@@ -120,16 +124,7 @@ var userHandler = {
             // Update the user if needed
             .then(function(v) {
                 user = v;
-                var lastUpdate = user.get('lastupdate');
-                if (!lastUpdate) {
-                    return true;
-                }
-                return false;
-            })
-            .then(function(hasUpdated) {
-                if (hasUpdated) {
-                    return user.set('lastupdate', moment().format('YYYY-MM-DD HH:mm:ss.SSSZZ')).save();
-                }
+                return API.updateUserTasks(user);
             })
             // Retrieve the user data
             .then(function() {
