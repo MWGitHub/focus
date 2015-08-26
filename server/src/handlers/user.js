@@ -134,7 +134,26 @@ var userHandler = {
                 reply(API.makeData(data));
             })
             .catch(function(err) {
-                console.log(err);
+                reply(Boom.notFound());
+            });
+    },
+
+    /**
+     * Updates the user.
+     * @param request
+     * @param reply
+     */
+    update: function(request, reply) {
+        var force = request.payload['force'];
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
+            // Update the user if needed
+            .then(function(user) {
+                return API.updateUserTasks(user, force);
+            })
+            .then(function() {
+                reply(API.makeStatusMessage('user-update', true, 'User updated'));
+            })
+            .catch(function(err) {
                 reply(Boom.notFound());
             });
     }

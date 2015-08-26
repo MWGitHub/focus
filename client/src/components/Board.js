@@ -26,10 +26,12 @@ class Task extends React.Component {
     }
 
     componentDidMount() {
+        /*
         var listElement = React.findDOMNode(this.props.list);
         listElement.addEventListener('slip:reorder', function(e) {
             console.log(e);
         });
+        */
     }
 
     deleteTask(e) {
@@ -171,6 +173,16 @@ class BoardView extends React.Component {
         super(props);
     }
 
+    _forceUpdateError(err) {
+
+    }
+
+    forceUpdate(event) {
+        event.preventDefault();
+
+        BoardActions.forceUserUpdate();
+    }
+
     render() {
         var board = this.props.board;
         var lists = board.attributes.lists;
@@ -180,11 +192,14 @@ class BoardView extends React.Component {
         var today = getListByTitle(lists, ListTitles.today);
         var done = getListByTitle(lists, ListTitles.done);
         return (
-            <div className="board">
-                <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
-                <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
-                <List lists={lists} list={today} key={today.id} disable={{create: true, del: true, left: true, right: true}} />
-                <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, right: true, complete: true}} />
+            <div>
+                <input type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
+                <div className="board">
+                    <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
+                    <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
+                    <List lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
+                    <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, right: true, complete: true}} />
+                </div>
             </div>
         )
     }

@@ -18,9 +18,31 @@ var BoardActions = {
                 });
             },
             (error) => {
-                console.log(error);
                 Dispatcher.dispatch({
                     actionType: Actions.retrieveUser,
+                    state: Actions.State.failed
+                });
+            }
+        )
+    },
+
+    forceUserUpdate: function() {
+        Dispatcher.dispatch({
+            actionType: Actions.updateUser,
+            state: Actions.State.loading
+        });
+        API.doAuthActionTo(API.routes.updateUser, {force: true},
+            (data) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.updateUser,
+                    state: Actions.State.complete,
+                    data: data
+                });
+                this.retrieveData();
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.updateUser,
                     state: Actions.State.failed
                 });
             }
@@ -47,7 +69,6 @@ var BoardActions = {
                 this.retrieveData();
             },
             (error) => {
-                console.log(error);
                 Dispatcher.dispatch({
                     actionType: Actions.createTask,
                     state: Actions.State.failed
@@ -73,7 +94,6 @@ var BoardActions = {
                 this.retrieveData();
             },
             (error) => {
-                console.log(error);
                 Dispatcher.dispatch({
                     actionType: Actions.deleteTask,
                     state: Actions.State.failed
@@ -103,7 +123,6 @@ var BoardActions = {
                 this.retrieveData();
             },
             (error) => {
-                console.log(error);
                 Dispatcher.dispatch({
                     actionType: Actions.moveTask,
                     state: Actions.State.failed

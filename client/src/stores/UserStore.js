@@ -14,6 +14,7 @@ class UserStore extends BaseStore {
     }
 
     _userActions(action) {
+        var handled = true;
         switch (action.actionType) {
             case Actions.retrieveUser:
                 if (action.state === Actions.State.complete) {
@@ -35,38 +36,12 @@ class UserStore extends BaseStore {
                     this.emitChange();
                 }
                 break;
-            case Actions.createTask:
-                if (action.state === Actions.State.complete) {
-                    this.emitChange();
-                } else if (action.state === Actions.State.failed) {
-                    data = null;
-                    this.emitChange();
-                }
+            default:
+                handled = false;
                 break;
-            case Actions.deleteTask:
-                if (action.state === Actions.State.complete) {
-                    this.emitChange();
-                } else if (action.state === Actions.State.failed) {
-                    data = null;
-                    this.emitChange();
-                }
-                break;
-            case Actions.moveTask:
-                if (action.state === Actions.State.complete) {
-                    this.emitChange();
-                } else if (action.state === Actions.State.failed) {
-                    data = null;
-                    this.emitChange();
-                }
-                break;
-            case Actions.renameTask:
-                if (action.state === Actions.State.complete) {
-                    this.emitChange();
-                } else if (action.state === Actions.State.failed) {
-                    data = null;
-                    this.emitChange();
-                }
-                break;
+        }
+        if (!handled && action.state !== Actions.State.loading) {
+            this.emitChange();
         }
     }
 

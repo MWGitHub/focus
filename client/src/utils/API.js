@@ -16,6 +16,7 @@ var API = {
         user: baseURL + '/user',
         register: baseURL + '/user/register',
         login: baseURL + '/user/login',
+        updateUser: baseURL + '/user/update',
         taskCreate: baseURL + '/task/create',
         taskUpdateTitle: baseURL + '/task/update/title',
         taskUpdatePosition: baseURL + '/task/update/position',

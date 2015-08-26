@@ -93,7 +93,7 @@ module.exports.populateUser = function(user) {
 /**
  * Checks and updates the tasks of the given user if needed.
  * @param {User} user the username to update the tasks for.
- * @param {Boolean} force true to force the update.
+ * @param {Boolean?} force true to force the update.
  */
 module.exports.updateUserTasks = function(user, force) {
     var self = this;

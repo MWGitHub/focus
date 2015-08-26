@@ -10,6 +10,7 @@ var Actions = {
     logout: 'logout',
 
     retrieveUser: 'retrieveUser',
+    updateUser: 'updateUser',
 
     createTask: 'createTask',
     deleteTask: 'deleteTask',

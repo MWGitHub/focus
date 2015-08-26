@@ -62,6 +62,20 @@ var routes = [
             auth: 'jwt',
             cors: true
         }
+    },
+    {
+        method: 'POST',
+        path: API.route + '/user/update',
+        handler: UserAPI.update,
+        config: {
+            validate: {
+                payload: {
+                    force: Joi.boolean()
+                }
+            },
+            auth: 'jwt',
+            cors: true
+        }
     }
 ];
 
