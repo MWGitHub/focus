@@ -116,13 +116,6 @@ module.exports.updateUserTasks = function(user, force) {
 
             // Check if the last update is before midnight, if before update all tasks
             shouldUpdate = difference > 0;
-
-            /*
-            console.log('Midnight: ' + midnight.format());
-            console.log('Now: ' + now.format());
-            console.log('Update: ' + updateTime.format());
-            console.log('Difference: ' + (midnight - updateTime));
-            */
         } catch(e) {
             // Set the time zone back to the default
             moment.tz.setDefault(this.defaultTimeZone);
@@ -134,18 +127,8 @@ module.exports.updateUserTasks = function(user, force) {
     if (shouldUpdate) {
         var uid = user.get('id');
         var todayList;
-        return List.forge({user_id: uid, title: 'Done'}).fetch({require: true})
-            // Remove all the tasks in the done list
-            .then(function (list) {
-                return Task.where({list_id: list.get('id')}).fetchAll();
-            })
-            .then(function(tasks) {
-                return tasks.invokeThen('destroy').then();
-            })
+        return List.forge({user_id: uid, title: 'Today'}).fetch({require: true})
             // Update incomplete tasks by one age
-            .then(function() {
-                return List.forge({user_id: uid, title: 'Today'}).fetch({require: true});
-            })
             .then(function (list) {
                 todayList = list;
                 return Task.where({list_id: list.get('id')}).fetchAll();
