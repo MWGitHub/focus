@@ -3,12 +3,7 @@ var AuthBasic = require('hapi-auth-basic');
 var AuthJWT = require('hapi-auth-jwt2');
 var JWT = require('jsonwebtoken');
 var User = require('../models/user');
-
-/**
- * Key used for signing the JWT token.
- * @type {string}
- */
-var key = 'T4pMHgsaH0FNiBHqtNKjP2DhLWorM9KGq68j6xxouPTmmAImMR9DpxaUHiwrTuH';
+var Config = require('../../config.json');
 
 /**
  * Sign data with JWT.
@@ -16,7 +11,7 @@ var key = 'T4pMHgsaH0FNiBHqtNKjP2DhLWorM9KGq68j6xxouPTmmAImMR9DpxaUHiwrTuH';
  * @returns {String} the signed data.
  */
 function sign(data) {
-    return JWT.sign(data, key);
+    return JWT.sign(data, Config.authkey);
 }
 
 function validateBasic(request, username, password, callback) {
@@ -61,7 +56,7 @@ var auth = {
         server.register(AuthJWT, function(err) {
             server.auth.strategy('jwt', 'jwt', {
                 validateFunc: validateJWT,
-                key: key,
+                key: Config.authkey,
                 verifyOptions: {
                     algorithms: ['HS256']
                 },

@@ -1,9 +1,9 @@
 ._*
 *.iml
 server/node_modules
-server/kndexfile.js
+server/knexfile.js
+server/config.json
 server/knex
-server/lab
 .idea
 server/favicon.ico
 client/bower_components
