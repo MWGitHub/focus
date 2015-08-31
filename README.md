@@ -5,28 +5,28 @@ tasks are set, deleted, and updated.
 
 ## Installation
 
-Install postgresql and set up the database that will be used for the application.
-Edit knexfile-sample.js with your database credentials.
+Install postgresql and set up the database that will be used for the application.  
+Edit knexfile-sample.js with your database credentials.  
 Rename the file to knexfile.js
 
-Edit the config-sample.json file and replace the key with your own key.
+Edit the config-sample.json file and replace the key with your own key.  
 Rename the config file to config.json
 
-Run in the server folder: 
-`npm install`
+Run in the server folder:  
+`npm install`  
 `./knex migrate:latest`
 
 ### If not using a web server
-Run in the client folder:
+Run in the client folder:  
 `npm install`
 
 ## Usage
 
-Start the server by going to the server folder and running:
+Start the server by going to the server folder and running:  
 `node .`
 
 ### If not using a web server
-Start the client server by going to the client folder and running:
+Start the client server by going to the client folder and running:  
 `node .`
 
 ## Contributing
