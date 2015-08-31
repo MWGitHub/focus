@@ -4,6 +4,7 @@ server/node_modules
 server/knexfile.js
 server/config.json
 server/knex
+server/playground.js
 .idea
 server/favicon.ico
 client/bower_components
