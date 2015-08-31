@@ -11,7 +11,8 @@ import AuthStore from './stores/AuthStore';
 
 var Route = Router.Route;
 var routes = (
-    <Route handler={Index} path="/">
+    <Route handler={Index.Index} path="/">
+        <Router.DefaultRoute handler={Index.Home} />
         <Route name={Routes.register} path={Routes.register} handler={Register}/>
         <Route name={Routes.login} path={Routes.login + ':next?'} handler={Login}/>
         <Route name={Routes.logout} path={Routes.logout} handler={Logout}/>

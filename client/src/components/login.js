@@ -34,7 +34,6 @@ class LoginForm extends React.Component {
     }
 
     render() {
-        "use strict";
         return (
             <div>
                 <form className="login-form" onSubmit={this.handleSubmit.bind(this)}>
@@ -48,7 +47,7 @@ class LoginForm extends React.Component {
                 </form>
                 { this.state.showGenericError ? <p>wrong password</p> : null }
             </div>
-        )
+        );
     }
 }
 

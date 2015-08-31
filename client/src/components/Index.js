@@ -1,9 +1,31 @@
 import API from '../utils/API';
 import React from 'react';
 import Router from 'react-router';
+import AuthStore from '../stores/AuthStore';
+import Routes from '../constants/Routes';
 
 import Header from './Header';
 import Footer from './Footer';
+
+class Home extends React.Component {
+    static willTransitionTo(transition) {
+        if (AuthStore.isLoggedIn()) {
+            transition.redirect(Routes.board, {});
+        }
+    }
+
+    constructor() {
+        super()
+    }
+
+    render() {
+        return (
+            <div>
+                Info here
+            </div>
+        )
+    }
+}
 
 class Index extends React.Component {
     constructor() {
@@ -14,13 +36,16 @@ class Index extends React.Component {
         return (
             <div id="page">
                 <Header />
-                <div className="Main">
+                <section id="main">
                     <Router.RouteHandler/>
-                </div>
+                </section>
                 <Footer />
             </div>
         )
     }
 }
 
-export default Index;
+export default {
+    Index: Index,
+    Home: Home
+};

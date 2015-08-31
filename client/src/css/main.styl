@@ -1,6 +1,20 @@
+/*
+ * Variables
+ */
 contrast-background = #111
 contrast-color = #FEFEFE
 
+/*
+ * Mixins
+ */
+border-radius(n)
+  -webkit-border-radius n
+  -moz-border-radius n
+  border-radius n
+
+/*
+ * General styles
+ */
 *
   box-sizing border-box
 
@@ -10,7 +24,10 @@ body
   color #222
   font-size 100%
 
-// Property styles
+
+/*
+ * Property styles
+ */
 .no-margin
   margin 0
 
@@ -34,8 +51,21 @@ body
 .visibility-shown
   display default
 
+.no-select
+  -webkit-touch-callout none
+  -webkit-user-select none
+  -khtml-user-select none
+  -moz-user-select none
+  -ms-user-select none
+  user-select: none
 
-// Page layout styles
+.rounded
+  border-radius(0.25rem)
+
+
+/*
+ * Page layout styles
+ */
 #content
   width 100%
 
@@ -46,24 +76,56 @@ body
   h2
     float left
 
-.nav-menu a
-  color contrast-color
-
-.nav-menu ul
-  float left
-  margin 0
-  li
+// Navigation styles
+.nav-menu
+  float right
+  a
+    color contrast-color
+  ul
     float left
     margin 0
-    list-style none
+    li
+      float left
+      margin 0
+      list-style none
 
-div.board
-  width 100%
+.click-menu:focus
+  pointer-events none
 
-div.list
-  width 25%
-  float left
+.click-menu:focus .click-menu-content
+  opacity 1
+  visibility visible
+  pointer-events auto
+
+.click-menu-content
+  position absolute
+  z-index 1
+  opacity 0
+  visibility hidden
+  transition visibility 0.5s
 
 #footer
   width 100%
   clear both
+
+// Board style
+div.board
+  width 100%
+
+div.list
+  width 24.25%
+  float left
+  background-color #43a9e1
+  padding 0.5rem 0.5rem 0 0.5rem
+  margin-left 0.6%
+  h2
+    margin-bottom 0.5rem
+
+div.task
+  @extend .no-select
+  @extend .rounded
+  width 100%
+  background-color #d9f8fa
+  padding 0.5rem
+  margin-bottom 0.5rem
+  cursor pointer

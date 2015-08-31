@@ -3,31 +3,61 @@ import Router from 'react-router';
 import Routes from '../constants/Routes';
 import AuthStore from '../stores/AuthStore';
 
-class Nav extends React.Component {
-    render() {
-        "use strict";
+class AuthNav extends React.Component {
+    constructor(props) {
+        super(props);
+    }
 
-        if (this.props.authenticated) {
-            return (
-                <div className="nav-menu container">
-                    <ul>
-                        <li><Router.Link to="/">Home</Router.Link></li>
-                        <li><Router.Link to={Routes.board}>Board</Router.Link></li>
-                        <li><Router.Link to={Routes.logout}>Log Out</Router.Link></li>
-                    </ul>
-                </div>
-            )
-        } else {
-            return (
-                <div className="nav-menu container">
-                    <ul>
-                        <li><Router.Link to="/">Home</Router.Link></li>
-                        <li><Router.Link to={Routes.register}>Register</Router.Link></li>
-                        <li><Router.Link to={Routes.login}>Log In</Router.Link></li>
-                    </ul>
-                </div>
-            )
-        }
+    render() {
+        return (
+            <nav className="nav-menu" ref="menu">
+                <p>menu</p>
+                <ul className="nav-menu-content" ref="navMenuContent">
+                    <li><Router.Link to={Routes.board}>Board</Router.Link></li>
+                    <li><Router.Link to={Routes.logout}>Log Out</Router.Link></li>
+                </ul>
+            </nav>
+        )
+    }
+}
+
+class GuestNav extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <nav className="nav-menu" ref="menu">
+                <p>menu</p>
+                <ul className="nav-menu-content" ref="navMenuContent">
+                    <li><Router.Link to={Routes.login}>Log In</Router.Link></li>
+                    <li><Router.Link to={Routes.register}>Register</Router.Link></li>
+                </ul>
+            </nav>
+        )
+    }
+}
+
+class Nav extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    componentDidMount() {
+        //var nav = React.findDOMNode(this.ref.menu);
+        //var content = React.findDOMNode(this.ref.navMenuContent);
+
+        /*
+        nav.addEventListener('click', function(e) {
+            console.log(content.style);
+        });
+        console.log(nav);
+        */
+    }
+
+    render() {
+        return this.props.authenticated ? <AuthNav /> : <GuestNav />;
     }
 }
 
@@ -58,7 +88,7 @@ class Header extends React.Component {
         "use strict";
         return (
             <header id="header">
-                <h2 className="no-margin">Focus</h2>
+                <h2 className="no-margin"><Router.Link to="/">Focus</Router.Link></h2>
                 <Nav authenticated={this.state.isLoggedIn} />
             </header>
         );

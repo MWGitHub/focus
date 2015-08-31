@@ -94,14 +94,16 @@ class Task extends React.Component {
         // Do not allow Today tasks to be deleted unless over a week old
         var shouldHideDelete = this.props.disable.del ||
             (this.props.list.attributes.title === ListTitles.today && this.props.task.attributes.age <= 7);
-        return <div className="task">
-            <h3>{task.attributes.title}</h3>
-            <p>Age: {task.attributes.age}</p>
-            { shouldHideDelete ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
-            { this.props.disable.left ? null : <button onClick={this.moveTaskLeft.bind(this)}>&lt;-</button> }
-            { this.props.disable.right ? null : <button onClick={this.moveTaskRight.bind(this)}>-&gt;</button> }
-            { this.props.disable.complete ? null : <button onClick={this.complete.bind(this)}>Complete</button> }
-        </div>
+        return (
+            <div className="task">
+                <h3 className="no-margin">{task.attributes.title}</h3>
+                <p>Age: {task.attributes.age}</p>
+                { shouldHideDelete ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
+                { this.props.disable.left ? null : <button onClick={this.moveTaskLeft.bind(this)}>&lt;-</button> }
+                { this.props.disable.right ? null : <button onClick={this.moveTaskRight.bind(this)}>-&gt;</button> }
+                { this.props.disable.complete ? null : <button onClick={this.complete.bind(this)}>Complete</button> }
+            </div>
+        )
     }
 }
 
@@ -140,11 +142,13 @@ class TaskCreateBox extends React.Component {
         var list = this.props.list;
         var tasks = this.props.tasks;
         return (
-            <form onSubmit={this.createTask(list, tasks).bind(this)}>
-                <label htmlFor="task-title">Task Title</label>
-                <input id="task-title" type="text" ref="title" placeholder="e.g. Open Text Editor" required />
-                <input type="submit" value="Create" />
-            </form>
+            <div className="task">
+                <form onSubmit={this.createTask(list, tasks).bind(this)}>
+                    <label htmlFor="task-title">Task Title</label>
+                    <input id="task-title" type="text" ref="title" placeholder="Create New Task" required />
+                    <input type="submit" value="Create" />
+                </form>
+            </div>
         )
     }
 }
@@ -158,8 +162,10 @@ class List extends React.Component {
     }
 
     componentDidMount() {
-        var element = React.findDOMNode(this);
-        Slip(element);
+        if (!this.props.disable.sort) {
+            var element = React.findDOMNode(this);
+            var slip = new Slip(element);
+        }
     }
 
     render() {
@@ -167,8 +173,8 @@ class List extends React.Component {
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
         return (
-            <div id={"list-" + list.id} className="list">
-                <h2>{list.attributes.title}</h2>
+            <div id={"list-" + list.id} className="list rounded">
+                <h2 className="no-margin">{list.attributes.title}</h2>
 
                 {this.props.disable.create ? null : <TaskCreateBox list={list} tasks={tasks} /> }
                 {list.attributes.tasks.map((task) => {
@@ -212,7 +218,7 @@ class BoardView extends React.Component {
                     <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
                     <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
                     <List lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
-                    <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true}} />
+                    <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
                 </div>
             </div>
         )
