@@ -28,11 +28,10 @@ class GuestNav extends React.Component {
 
     render() {
         return (
-            <nav className="nav-menu" ref="menu">
-                <p>menu</p>
-                <ul className="nav-menu-content" ref="navMenuContent">
-                    <li><Router.Link to={Routes.login}>Log In</Router.Link></li>
-                    <li><Router.Link to={Routes.register}>Register</Router.Link></li>
+            <nav className="nav-menu container" ref="menu">
+                <ul>
+                    <li className="link-button"><Router.Link to={Routes.register}>Sign Up</Router.Link></li>
+                    <li className="link-button"><Router.Link to={Routes.login}>Sign In</Router.Link></li>
                 </ul>
             </nav>
         )
@@ -87,9 +86,13 @@ class Header extends React.Component {
     render() {
         "use strict";
         return (
-            <header id="header">
-                <h2 className="no-margin"><Router.Link to="/">Focus</Router.Link></h2>
-                <Nav authenticated={this.state.isLoggedIn} />
+            <header id="header" className="container">
+                <div className="header-left">
+                    <h2 className="no-margin"><Router.Link to="/">Focus</Router.Link></h2>
+                </div>
+                <div className="header-right">
+                    <Nav authenticated={this.state.isLoggedIn} />
+                </div>
             </header>
         );
     }

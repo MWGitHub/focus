@@ -14,7 +14,7 @@ Rename the config file to config.json
 
 Run in the server folder:  
 `npm install`  
-`./knex migrate:latest`
+`./node_modules/.bin/knex migrate:latest`
 
 ### If not using a web server
 Run in the client folder:  
