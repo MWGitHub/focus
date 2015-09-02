@@ -13,8 +13,8 @@ class AuthNav extends React.Component {
             <nav className="nav-menu" ref="menu">
                 <p>menu</p>
                 <ul className="nav-menu-content" ref="navMenuContent">
-                    <li><Router.Link to={Routes.board}>Board</Router.Link></li>
-                    <li><Router.Link to={Routes.logout}>Log Out</Router.Link></li>
+                    <li><Router.Link to={Routes.board} className="button">Board</Router.Link></li>
+                    <li><Router.Link to={Routes.logout} className="button">Log Out</Router.Link></li>
                 </ul>
             </nav>
         )
@@ -30,8 +30,8 @@ class GuestNav extends React.Component {
         return (
             <nav className="nav-menu container" ref="menu">
                 <ul>
-                    <li className="link-button"><Router.Link to={Routes.register}>Sign Up</Router.Link></li>
-                    <li className="link-button"><Router.Link to={Routes.login}>Sign In</Router.Link></li>
+                    <li className="link-button"><Router.Link to={Routes.register} className="secondary-button">Register</Router.Link></li>
+                    <li className="link-button"><Router.Link to={Routes.login} className="button">Sign In</Router.Link></li>
                 </ul>
             </nav>
         )

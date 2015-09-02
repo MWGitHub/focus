@@ -5,8 +5,7 @@
 /*
  * Variables
  */
-$contrast-background: #111;
-$contrast-color: #FEFEFE;
+
 
 /*
  * Mixins
@@ -39,10 +38,8 @@ body {
   margin: 0;
 }
 
-.container:after {
-  content: "";
-  display: table;
-  clear: both;
+.container {
+  @include clearfix;
 }
 
 .block {
@@ -87,12 +84,14 @@ body {
 }
 
 #header {
-  background-color: $contrast-background;
-  color: $contrast-color;
-  padding: 1em;
-  a {
-    color: $contrast-color;
-    text-decoration: none;
+  background-color: $contrast-background-color;
+  color: $contrast-font-color;
+  padding: 0.3rem;
+  h2 {
+    font-size: $nav-font-size;
+    a {
+      color: $contrast-font-color;
+    }
   }
   .header-left {
     float: left;
@@ -100,14 +99,12 @@ body {
   }
   .header-right {
     float: right;
+    margin-right: 0.1rem;
   }
 }
 
 // Navigation styles
 .nav-menu {
-  a {
-    color: $contrast-color;
-  }
   ul {
     float: left;
     margin: 0;
@@ -115,7 +112,7 @@ body {
   }
   li {
     float: left;
-    margin: 0 0 0 1rem;
+    margin: 0 0 0 0.5rem;
     list-style: none;
   }
 }

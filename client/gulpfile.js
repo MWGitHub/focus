@@ -15,7 +15,8 @@ var minify = require('gulp-minify-css');
 
 
 var mainJS = './src/main.js';
-var mainCSS = './src/css/main.scss';
+var cssDir = './src/css/**/*.scss';
+//var mainCSS = './src/css/main.scss';
 
 function bundleProduction(bundler) {
     var time = new Date().getTime();
@@ -67,7 +68,7 @@ function build(isProduction) {
 }
 
 gulp.task('sass-production', function() {
-    gulp.src(mainCSS)
+    gulp.src(cssDir)
         .pipe(sass().on('error', sass.logError))
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(rename('main.min.css'))
@@ -76,14 +77,16 @@ gulp.task('sass-production', function() {
 });
 
 gulp.task('sass', function() {
-    gulp.src(mainCSS)
+    gulp.src(cssDir)
+        .pipe(sourcemaps.init())
         .pipe(sass().on('error', sass.logError))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest('./media/css'))
         .pipe(notify({message: 'Done compiling css!'}));
 });
 
 gulp.task('sass:watch', function() {
-    gulp.watch(mainCSS, ['sass']);
+    gulp.watch(cssDir, ['sass']);
 });
 
 gulp.task('build-production', ['sass-production'], function() {

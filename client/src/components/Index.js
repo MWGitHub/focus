@@ -27,6 +27,23 @@ class Home extends React.Component {
     }
 }
 
+class IndexMinimal extends React.Component {
+    constructor() {
+        super();
+    }
+
+    render() {
+        return (
+            <div id="page">
+                <Header />
+                <section id="main">
+                    <Router.RouteHandler/>
+                </section>
+            </div>
+        )
+    }
+}
+
 class Index extends React.Component {
     constructor() {
         super();
@@ -45,7 +62,21 @@ class Index extends React.Component {
     }
 }
 
+class Base extends React.Component {
+    constructor() {
+        super();
+    }
+
+    render() {
+        return (
+            <Router.RouteHandler />
+        )
+    }
+}
+
 export default {
+    Base: Base,
     Index: Index,
+    IndexMinimal: IndexMinimal,
     Home: Home
 };
