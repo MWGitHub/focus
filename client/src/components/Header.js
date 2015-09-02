@@ -15,7 +15,6 @@ class AuthNav extends React.Component {
     _toggleMenu(e) {
         e.preventDefault();
 
-        console.log(this.refs.menu.getDOMNode());
         this.setState({
             isMenuVisible: !this.state.isMenuVisible
         });
@@ -23,13 +22,17 @@ class AuthNav extends React.Component {
 
     render() {
         var visibilityFlag = this.state.isMenuVisible ? 'visible' : 'hidden';
+        var menu = (
+            <ul className={"nav-menu-content " + visibilityFlag}>
+                <li><Router.Link to={Routes.board}>Board</Router.Link></li>
+                <li><Router.Link to={Routes.logout}>Log Out</Router.Link></li>
+            </ul>
+        );
+
         return (
             <nav className="nav-menu">
                 <a className="button" onClick={this._toggleMenu.bind(this)}>{this.props.username}</a>
-                <ul className={"nav-menu-content " + visibilityFlag}>
-                    <li><Router.Link to={Routes.board}>Board</Router.Link></li>
-                    <li><Router.Link to={Routes.logout}>Log Out</Router.Link></li>
-                </ul>
+                {menu}
             </nav>
         )
     }
