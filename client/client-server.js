@@ -22,7 +22,7 @@ app.all('*', function(req, res, next) {
 
 app.use('/media', express.static('media'));
 
-var server = app.listen(8000, function() {
+var server = app.listen(8000, '127.0.0.1', function() {
     "use strict";
 
     var host = server.address().address;
