@@ -38,7 +38,11 @@ a.secondary-button {
   @extend a.button;
   background-color: $secondary-action-color;
 
-  &:hover, &focus {
+  &:active {
+    background-color: $secondary-action-color;
+  }
+
+  &:hover, &:focus {
     background-color: shade($secondary-action-color, 20%);
     color: #fff;
   }
