@@ -5,7 +5,7 @@ var API = require('../lib/api');
 var routes = [
     {
         method: 'POST',
-        path: API.route + '/task/create',
+        path: API.route + '/task',
         handler: TaskAPI.create,
         config: {
             auth: 'jwt',

@@ -66,7 +66,7 @@ lab.experiment('test task', function() {
     lab.test('create', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -87,10 +87,10 @@ lab.experiment('test task', function() {
         });
     });
 
-    lab.test('create get error', function(done) {
+    lab.test('get should return not found', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -109,7 +109,7 @@ lab.experiment('test task', function() {
     lab.test('create title too long', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -128,7 +128,7 @@ lab.experiment('test task', function() {
     lab.test('create title not given', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -146,7 +146,7 @@ lab.experiment('test task', function() {
     lab.test('create list not given', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -164,7 +164,7 @@ lab.experiment('test task', function() {
     lab.test('create position not given', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -189,7 +189,7 @@ lab.experiment('test task', function() {
     lab.test('create for other user error', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/task/create',
+            url: helper.apiRoute + '/task',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
