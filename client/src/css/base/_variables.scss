@@ -4,7 +4,7 @@ $heading-font-family: $base-font-family;
 
 // Font Sizes
 $base-font-size: 1em;
-$nav-font-size: 1.9em;
+$nav-font-size: 1.8em;
 $title-font-size: 1.5em;
 
 // Line height
@@ -49,3 +49,8 @@ $form-box-shadow-focus: $form-box-shadow, 0 0 5px adjust-color($action-color, $l
 // Animations
 $base-duration: 150ms;
 $base-timing: ease;
+
+// Shadows
+$base-shadow-color: $near-black;
+$base-shadow-blur: 1em;
+$base-shadow-spread: 0;

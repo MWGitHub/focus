@@ -85,6 +85,7 @@ body {
   padding: 0.3em;
   h2 {
     font-size: $nav-font-size;
+    line-height: $base-line-height;
     a {
       color: $contrast-font-color;
     }
@@ -101,34 +102,58 @@ body {
 
 // Navigation styles
 .nav-menu {
+  position: relative;
   ul {
     float: left;
     margin: 0;
     padding: 0;
+    display: inline;
   }
   li {
     float: left;
     margin: 0 0 0 0.5em;
     list-style: none;
+    display: inline-block;
   }
 }
 
-.click-menu:focus {
-  pointer-events: none;
-}
-
-.click-menu:focus .click-menu-content {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-.click-menu-content {
+.nav-menu-content {
+  @extend .rounded;
   position: absolute;
   z-index: 1;
-  opacity: 0;
-  visibility: hidden;
-  transition: visibility 0.5s;
+  right: 0;
+  top: 2.5em;
+  background-color: $base_background-color;
+  padding: 0.5em;
+  transition: background-color $base-duration $base-timing;
+  width: 10em;
+  box-shadow: 0 0 $base-shadow-blur $base-shadow-spread $base-shadow-color;
+
+  ul {
+    position: relative;
+  }
+
+  li {
+    position: relative;
+    margin: 0;
+    float: none;
+    display: block;
+    font-weight: 600;
+
+    &:hover {
+      background-color: $action-color;
+      a {
+        color: $contrast-font-color;
+      }
+    }
+  }
+
+  a, a:visited {
+    width: 100%;
+    display: block;
+    padding: 0.5em 1em;
+    color: $action-color;
+  }
 }
 
 #footer {

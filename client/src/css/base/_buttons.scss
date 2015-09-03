@@ -41,7 +41,7 @@ a.secondary-button {
   @extend a.button;
   background-color: $secondary-action-color;
 
-  &:active {
+  &:active, &:visited {
     background-color: $secondary-action-color;
   }
 
