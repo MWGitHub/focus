@@ -82,31 +82,25 @@ var handler = {
 
         var id = request.payload['id'];
         var title = Hoek.escapeHtml(request.payload['title']);
-        User.forge({id: request.auth.credentials.id}).fetch()
+        var uid;
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
-                if (!user) {
-                    reply(Boom.notFound());
+                uid = user.get('id');
+                return Task.forge({id: id}).fetch({require: true})
+            })
+            .then(function(task) {
+                if (task.get('user_id') !== uid) {
+                    reply(Boom.unauthorized('Owner does not match user'));
+                } else if (task.get('title') === title) {
+                    reply(API.makeStatusMessage('task-update-title', true, 'Title unchanged'));
                 } else {
-                    var uid = user.get('id');
-                    Task.forge({id: id}).fetch()
-                        .then(function(task) {
-                            if (!task) {
-                                reply(Boom.notFound());
-                            } else {
-                                if (task.get('user_id') !== uid) {
-                                    reply(Boom.unauthorized('Owner does not match user'));
-                                } else {
-                                    if (task.get('title') === title) {
-                                        reply(API.makeStatusMessage('task-update-title', true, 'Title unchanged'));
-                                    } else {
-                                        task.set('title', title).save().then(function () {
-                                            reply(API.makeStatusMessage('task-update-title', true, 'Title updated'));
-                                        })
-                                    }
-                                }
-                            }
-                        });
+                    task.set('title', title).save().then(function () {
+                        reply(API.makeStatusMessage('task-update-title', true, 'Title updated'));
+                    })
                 }
+            })
+            .catch(function(e) {
+                reply(Boom.notFound());
             });
     },
 

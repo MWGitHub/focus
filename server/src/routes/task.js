@@ -19,6 +19,7 @@ var routes = [
             cors: true
         }
     },
+    // TODO: Refactor to use PUT
     {
         method: 'POST',
         path: API.route + '/task/update/position',
