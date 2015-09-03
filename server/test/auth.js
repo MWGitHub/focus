@@ -4,6 +4,7 @@ var User = require('../src/models/user');
 var Auth = require('../src/lib/auth');
 var moment = require('moment-timezone');
 var API = require('../src/lib/api');
+var helper = require('./helper');
 
 var lab = exports.lab = Lab.script();
 var server = require('../index');
@@ -85,7 +86,7 @@ lab.experiment('test registration', function() {
     lab.test('registers a user', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: testUsers[0],
                 password: 'testpw0'
@@ -99,7 +100,7 @@ lab.experiment('test registration', function() {
     lab.test('registers a user with invalid time zone', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: testUsers[1],
                 password: 'testpw0',
@@ -115,7 +116,7 @@ lab.experiment('test registration', function() {
 
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: testUsers[1],
                 password: 'testpw0',
@@ -130,7 +131,7 @@ lab.experiment('test registration', function() {
     lab.test('returns an error when registering the same user', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: testUsers[0],
                 password: password
@@ -144,7 +145,7 @@ lab.experiment('test registration', function() {
     lab.test('returns an error when missing password', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: testUsers[1]
             }
@@ -157,7 +158,7 @@ lab.experiment('test registration', function() {
     lab.test('returns an error when missing the username', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 password: password
             }
@@ -170,7 +171,7 @@ lab.experiment('test registration', function() {
     lab.test('returns an error when username is too short', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: 'gu',
                 password: password
@@ -184,7 +185,7 @@ lab.experiment('test registration', function() {
     lab.test('returns an error when username is too long', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: '123456789012345678901',
                 password: password
@@ -198,7 +199,7 @@ lab.experiment('test registration', function() {
     lab.test('returns an error when password is too short', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/register',
+            url: helper.apiRoute + '/user/register',
             payload: {
                 username: testUsers[1],
                 password: 'test'
@@ -236,7 +237,7 @@ lab.experiment('test authentication', function() {
     lab.test('fails log in', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/login',
+            url: helper.apiRoute + '/user/login',
             payload: {
                 username: testUsers[0],
                 password: 'wrong54'
@@ -250,7 +251,7 @@ lab.experiment('test authentication', function() {
     lab.test('logged in', function(done) {
         server.inject({
             method: 'POST',
-            url: '/api/user/login',
+            url: helper.apiRoute + '/user/login',
             payload: {
                 username: testUsers[0],
                 password: password
@@ -265,7 +266,7 @@ lab.experiment('test authentication', function() {
     lab.test('access authorized page without being logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: '/api/user'
+            url: helper.apiRoute + '/user'
         }, function(response) {
             assert.equal(response.statusCode, 401);
             done();
@@ -275,7 +276,7 @@ lab.experiment('test authentication', function() {
     lab.test('access authorized page while logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: '/api/user',
+            url: helper.apiRoute + '/user',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt
@@ -289,7 +290,7 @@ lab.experiment('test authentication', function() {
     lab.test('logout when logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: '/api/user/logout',
+            url: helper.apiRoute + '/user/logout',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt
@@ -303,7 +304,7 @@ lab.experiment('test authentication', function() {
     lab.test('logout when not logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: '/api/user/logout'
+            url: helper.apiRoute + '/user/logout'
         }, function(response) {
             assert.equal(response.statusCode, 200);
             done();
@@ -312,8 +313,8 @@ lab.experiment('test authentication', function() {
 
     lab.test('delete self', function(done) {
         server.inject({
-            method: 'GET',
-            url: '/api/user/delete',
+            method: 'DELETE',
+            url: helper.apiRoute + '/user',
             headers: {
                 authorization: jwt
             }

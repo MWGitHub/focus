@@ -46,8 +46,8 @@ var routes = [
         }
     },
     {
-        method: 'GET',
-        path: API.route + '/user/delete',
+        method: 'DELETE',
+        path: API.route + '/user',
         handler: UserAPI.deleteSelf,
         config: {
             auth: 'jwt',

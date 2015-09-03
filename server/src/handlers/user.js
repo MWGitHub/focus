@@ -99,15 +99,15 @@ var userHandler = {
     deleteSelf: function(request, reply) {
         "use strict";
 
-        User.forge({id: request.auth.credentials.id}).fetch()
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
-                if (!user) {
-                    reply(Boom.notFound());
-                } else {
-                    user.destroyDeep().then(function() {
-                        reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
-                    });
-                }
+                return user.destroyDeep();
+            })
+            .then(function() {
+                reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
+            })
+            .catch(function(e) {
+                reply(Boom.notFound());
             });
     },
 

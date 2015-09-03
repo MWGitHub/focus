@@ -9,7 +9,7 @@ var moment = require('moment-timezone');
  * Route to append for the API.
  * @type {string}
  */
-module.exports.route = '/api';
+module.exports.route = '/api/1';
 
 /**
  * Default time zone.
