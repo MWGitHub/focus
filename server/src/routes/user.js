@@ -61,11 +61,19 @@ var routes = [
     },
     {
         method: 'GET',
-        path: API.route + '/user',
+        path: API.route + '/users/{id}',
         handler: UserAPI.retrieve,
         config: {
-            auth: 'jwt',
-            cors: true
+            auth: {
+                strategy: 'jwt',
+                mode: 'try'
+            },
+            cors: true,
+            validate: {
+                params: {
+                    id: Joi.number().integer().required()
+                }
+            }
         }
     },
     {

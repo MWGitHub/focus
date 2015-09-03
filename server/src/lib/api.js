@@ -4,6 +4,7 @@ var Board = require('../models/board');
 var List = require('../models/list');
 var Task = require('../models/task');
 var moment = require('moment-timezone');
+var config = require('../../config.json');
 
 /**
  * Route to append for the API.
@@ -15,7 +16,7 @@ module.exports.route = '/api/v1';
  * Default time zone.
  * @type {string}
  */
-module.exports.defaultTimeZone = 'America/New_York';
+module.exports.defaultTimeZone = config.defaultTimeZone;
 
 /**
  * Creates a JSON status message.
@@ -101,9 +102,12 @@ module.exports.updateUserTasks = function(user, force) {
     var shouldUpdate = false;
     var tz = user.get('timezone');
     moment.tz.setDefault(tz);
+    // Number of times to update
+    var times = 0;
     // Update if never updated before
     if (!lastUpdate || force) {
         shouldUpdate = true;
+        times = 1;
     } else {
         // Check if midnight for the user has passed and if the user has updated
         // Set the default time zone to the user time zone while doing the operation

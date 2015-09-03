@@ -16,28 +16,39 @@ var userHandler = {
 
         var username = request.payload['username'].toLowerCase();
         var password = request.payload['password'];
+        var timezone = request.payload['timezone'] || API.defaultTimeZone;
 
         // Check to make sure the username does not already exist
+        var replied;
         User.forge({username: username}).fetch()
             .then(function(user) {
-                if (!user) {
-                    Auth.hash(password, function(err, hash) {
-                        if (err) {
-                            reply(Boom.badImplementation());
-                        } else {
-                            User.forge({
-                                username: username,
-                                password: hash
-                            }).save().then(function(user) {
-                                API.populateUser(user);
-                            }).then(function() {
-                                reply(API.makeStatusMessage('user-register', true, 'User created'));
-                            });
-                        }
-                    });
-                } else {
-                    reply(Boom.unauthorized('Username already taken'));
-                }
+                if (user) throw new Error();
+            })
+            .catch(function(e) {
+                replied = reply(Boom.unauthorized('Username already exists'));
+                throw(e);
+            })
+            .then(function() {
+                return Auth.hash(password);
+            })
+            .then(function(hash) {
+                return User.forge({
+                    username: username,
+                    password: hash,
+                    timezone: timezone
+                }).save()
+            })
+            .then(function(user) {
+                return API.populateUser(user).then(function() {
+                    reply(API.makeData({
+                        id: user.get('id'),
+                        username: user.get('username'),
+                        timezone: user.get('timezone')
+                    }));
+                });
+            })
+            .catch(function(e) {
+                if (!replied) reply(Boom.badRequest());
             });
     },
 
@@ -126,8 +137,16 @@ var userHandler = {
     retrieve: function(request, reply) {
         "use strict";
 
+        var id = request.params.id;
+        // Do not allow non owning user to retrieve user data
+        // TODO: Add partial retrieval of user page when not owner
+        if (!request.auth.isAuthenticated || id !== request.auth.credentials.id) {
+            reply(Boom.unauthorized());
+            return;
+        }
+
         var user;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
+        User.forge({id: id}).fetch({require: true})
             // Update the user if needed
             .then(function(v) {
                 user = v;

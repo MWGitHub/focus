@@ -70,22 +70,25 @@ var auth = {
     /**
      * Hashes the passed in data.
      * @param data the data to hash.
-     * @param {function(Error, String)} callback the callback with the created hash.
+     * @returns {Promise} the promise
      */
-    hash: function(data, callback) {
+    hash: function(data) {
         "use strict";
-        Bcrypt.genSalt(10, function(err, salt) {
-            if (err) {
-                callback(err, null)
-            } else {
-                Bcrypt.hash(data, salt, function (err, hash) {
-                    if (err) {
-                        callback(err, null);
-                    } else {
-                        callback(null, hash);
-                    }
-                });
-            }
+
+        return new Promise(function(resolve, reject) {
+            Bcrypt.genSalt(10, function(err, salt) {
+                if (err) {
+                    reject(err);
+                } else {
+                    Bcrypt.hash(data, salt, function (err, hash) {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(hash);
+                        }
+                    });
+                }
+            });
         });
     },
 

@@ -9,52 +9,6 @@ var helper = require('./helper');
 var lab = exports.lab = Lab.script();
 var server = require('../index');
 
-var testUsers = ['test_user1', 'test_user2', 'test_user3', 'test_user4'];
-var password = 'testpw0';
-
-//TODO: Add fixtures
-/**
- * Remove all test users.
- * @returns {Promise} the promise when all users have been removed.
- */
-function removeAllTestUsers() {
-    "use strict";
-
-    var promises = [];
-    for (var i = 0; i < testUsers.length; i++) {
-        promises.push(User.forge({username: testUsers[i]}).fetch()
-            .then(function(user) {
-                if (user) {
-                    return user.destroyDeep();
-                }
-            }));
-    }
-    return Promise.all(promises);
-}
-
-function createAllTestUsers() {
-    "use strict";
-
-    var users = [];
-    var promises = [];
-    for (var i = 0; i < testUsers.length; i++) {
-        var wrapper = function(i) {
-            return new Promise(function(resolve, reject) {
-                Auth.hash(password, function(error, hash) {
-                    User.forge({username: testUsers[i], password: hash}).save().then(function(user) {
-                        users.push(user);
-                        API.populateUser(user).then(function() {
-                            resolve(user);
-                        });
-                    });
-                });
-            });
-        };
-        promises.push(wrapper(i));
-    }
-    return Promise.all(promises).then(function() {return users});
-}
-
 /**
  * Generate the authorization header string.
  * @param {String} username the username to use.
@@ -73,7 +27,7 @@ lab.experiment('test registration', function() {
     lab.before(function(done) {
         console.log('\nBefore: Removing any previous test users');
         // Remove all test users if exists
-        removeAllTestUsers().then(function() {
+        helper.removeAllTestUsers().then(function() {
             done();
         });
     });
@@ -81,7 +35,7 @@ lab.experiment('test registration', function() {
     lab.after(function(done) {
         console.log('\nAfter: Removing all test users');
 
-        removeAllTestUsers().then(function() {
+        helper.removeAllTestUsers().then(function() {
             done();
         });
     });
@@ -91,11 +45,12 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                username: testUsers[0],
+                username: helper.testUsers[0],
                 password: 'testpw0'
             }
         }, function(response) {
             assert.equal(response.statusCode, 200);
+            assert.equal(response.result.data.username, helper.testUsers[0]);
             done();
         });
     });
@@ -105,7 +60,7 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                username: testUsers[1],
+                username: helper.testUsers[1],
                 password: 'testpw0',
                 timezone: 'nope'
             }
@@ -121,12 +76,13 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                username: testUsers[1],
+                username: helper.testUsers[1],
                 password: 'testpw0',
                 timezone: moment.tz.names()[0]
             }
         }, function(response) {
             assert.equal(response.statusCode, 200);
+            assert.equal(response.result.data.timezone, moment.tz.names()[0]);
             done();
         });
     });
@@ -136,8 +92,8 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                username: testUsers[0],
-                password: password
+                username: helper.testUsers[0],
+                password: helper.password
             }
         }, function(response) {
             assert.equal(response.statusCode, 401);
@@ -150,7 +106,7 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                username: testUsers[1]
+                username: helper.testUsers[1]
             }
         }, function (response) {
             assert.equal(response.statusCode, 400, 'Error when missing the password');
@@ -163,7 +119,7 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                password: password
+                password: helper.password
             }
         }, function(response) {
             assert.equal(response.statusCode, 400, 'Error when missing the username');
@@ -177,7 +133,7 @@ lab.experiment('test registration', function() {
             url: helper.apiRoute + '/users',
             payload: {
                 username: 'gu',
-                password: password
+                password: helper.password
             }
         }, function(response) {
             assert.equal(response.statusCode, 400, 'Error when username is too short');
@@ -191,7 +147,7 @@ lab.experiment('test registration', function() {
             url: helper.apiRoute + '/users',
             payload: {
                 username: '123456789012345678901',
-                password: password
+                password: helper.password
             }
         }, function(response) {
             assert.equal(response.statusCode, 400, 'Error when username is too long');
@@ -204,7 +160,7 @@ lab.experiment('test registration', function() {
             method: 'POST',
             url: helper.apiRoute + '/users',
             payload: {
-                username: testUsers[1],
+                username: helper.testUsers[1],
                 password: 'test'
             }
         }, function(response) {
@@ -222,8 +178,8 @@ lab.experiment('test authentication', function() {
     lab.before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        removeAllTestUsers().then(function() {
-            return createAllTestUsers();
+        helper.removeAllTestUsers().then(function() {
+            return helper.createAllTestUsers();
         }).then(function(users) {
             userInstances = users;
             done();
@@ -233,7 +189,7 @@ lab.experiment('test authentication', function() {
     lab.after(function(done) {
         console.log('\nAfter: Removing all test users');
 
-        removeAllTestUsers().then(function() {
+        helper.removeAllTestUsers().then(function() {
             done();
         });
     });
@@ -243,7 +199,7 @@ lab.experiment('test authentication', function() {
             method: 'POST',
             url: helper.apiRoute + '/users/login',
             payload: {
-                username: testUsers[0],
+                username: helper.testUsers[0],
                 password: 'wrong54'
             }
         }, function(response) {
@@ -258,7 +214,7 @@ lab.experiment('test authentication', function() {
             url: helper.apiRoute + '/users/login',
             payload: {
                 username: userInstances[0].get('username'),
-                password: password
+                password: helper.password
             }
         }, function(response) {
             jwt = response.result.meta.message;
@@ -270,7 +226,7 @@ lab.experiment('test authentication', function() {
     lab.test('access authorized page without being logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/user'
+            url: helper.apiRoute + '/users/' + userInstances[0].get('id')
         }, function(response) {
             assert.equal(response.statusCode, 401);
             done();
@@ -280,7 +236,7 @@ lab.experiment('test authentication', function() {
     lab.test('access authorized page while logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/user',
+            url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt

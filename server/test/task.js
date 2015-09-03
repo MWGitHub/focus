@@ -10,64 +10,7 @@ var helper = require('./helper');
 var lab = exports.lab = Lab.script();
 var server = require('../index');
 
-var testUsers = ['test_user1', 'test_user2'];
-var testUsersInstance = [];
-var password = 'testpw0';
 var testTaskTitle = 'testtask1';
-
-/**
- * Remove all test users.
- * @returns {Promise} the promise when all users have been removed.
- */
-function removeAllTestUsers() {
-    "use strict";
-
-    var promises = [];
-    for (var i = 0; i < testUsers.length; i++) {
-        promises.push(User.forge({username: testUsers[i]}).fetch()
-            .then(function(user) {
-                if (user) {
-                    return user.destroyDeep();
-                }
-            }));
-    }
-    return Promise.all(promises);
-}
-
-function createAllTestUsers() {
-    "use strict";
-
-    testUsersInstance = [];
-    var promises = [];
-    for (var i = 0; i < testUsers.length; i++) {
-        var wrapper = function(i) {
-            return new Promise(function(resolve, reject) {
-                Auth.hash(password, function(error, hash) {
-                    User.forge({username: testUsers[i], password: hash}).save().then(function(user) {
-                        testUsersInstance.push(user);
-                        API.populateUser(user).then(function() {
-                            resolve(user);
-                        });
-                    });
-                });
-            });
-        };
-        promises.push(wrapper(i));
-    }
-    return Promise.all(promises);
-}
-
-/**
- * Generate the authorization header string.
- * @param {String} username the username to use.
- * @param {String} password the password of the user.
- * @returns {string} the generated header.
- */
-function generateAuthHeader(username, password) {
-    "use strict";
-
-    return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
-}
 
 lab.experiment('test task', function() {
     "use strict";
@@ -90,8 +33,8 @@ lab.experiment('test task', function() {
     lab.before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        removeAllTestUsers().then(function() {
-            return createAllTestUsers();
+        helper.removeAllTestUsers().then(function() {
+            return helper.createAllTestUsers();
         }).then(function(users) {
             for (var i = 0; i < users.length; i++) {
                 userIds.push(users[i].id);
@@ -114,7 +57,7 @@ lab.experiment('test task', function() {
     lab.after(function(done) {
         console.log('\nAfter: Removing all test users');
 
-        removeAllTestUsers().then(function() {
+        helper.removeAllTestUsers().then(function() {
             //server.stop(done);
             done();
         });

@@ -1,3 +1,4 @@
 {
-  "authkey": "your token here"
+  "authkey": "your token here",
+  "defaultTimeZone": "America/New York"
 }

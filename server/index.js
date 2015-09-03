@@ -13,9 +13,12 @@ var bookshelf = require('./src/lib/bookshelf');
 var args = process.argv.slice(2);
 var host = '0.0.0.0';
 var port = 8080;
+// TODO: Use argument parser instead
+/*
 if (args[0]) {
     port = parseInt(args[0]);
 }
+*/
 
 // Create a server with a host and port
 var options = {
@@ -27,6 +30,7 @@ var options = {
     }
 };
 
+console.log(port);
 var server = new Hapi.Server(options);
 server.connection({
     host: host,
