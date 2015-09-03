@@ -1,3 +1,3 @@
 module.exports = {
-    apiRoute: '/api/1'
+    apiRoute: '/api/v1'
 };

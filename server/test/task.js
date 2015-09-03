@@ -11,6 +11,7 @@ var lab = exports.lab = Lab.script();
 var server = require('../index');
 
 var testUsers = ['test_user1', 'test_user2'];
+var testUsersInstance = [];
 var password = 'testpw0';
 var testTaskTitle = 'testtask1';
 
@@ -36,12 +37,14 @@ function removeAllTestUsers() {
 function createAllTestUsers() {
     "use strict";
 
+    testUsersInstance = [];
     var promises = [];
     for (var i = 0; i < testUsers.length; i++) {
         var wrapper = function(i) {
             return new Promise(function(resolve, reject) {
                 Auth.hash(password, function(error, hash) {
                     User.forge({username: testUsers[i], password: hash}).save().then(function(user) {
+                        testUsersInstance.push(user);
                         API.populateUser(user).then(function() {
                             resolve(user);
                         });

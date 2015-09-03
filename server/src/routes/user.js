@@ -6,7 +6,7 @@ var moment = require('moment-timezone');
 var routes = [
     {
         method: 'POST',
-        path: API.route + '/user/register',
+        path: API.route + '/users',
         handler: UserAPI.register,
         config: {
             validate: {
@@ -21,7 +21,7 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/user/login',
+        path: API.route + '/users/login',
         handler: UserAPI.login,
         config: {
             validate: {
@@ -40,18 +40,23 @@ var routes = [
         config: {
             auth: {
                 strategy: 'jwt',
-                mode: 'optional'
+                mode: 'try'
             },
             cors: true
         }
     },
     {
         method: 'DELETE',
-        path: API.route + '/user',
-        handler: UserAPI.deleteSelf,
+        path: API.route + '/users/{id}',
+        handler: UserAPI.remove,
         config: {
             auth: 'jwt',
-            cors: true
+            cors: true,
+            validate: {
+                params: {
+                    id: Joi.number().integer().required()
+                }
+            }
         }
     },
     {

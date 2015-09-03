@@ -92,14 +92,21 @@ var userHandler = {
     },
 
     /**
-     * Delete the user.
+     * Removes the given user.
      * @param request
      * @param reply
      */
-    deleteSelf: function(request, reply) {
+    remove: function(request, reply) {
         "use strict";
 
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
+        var id = request.params.id;
+        // Cannot delete when not owner
+        // TODO: Support admin deletion
+        if (request.auth.credentials.id !== id) {
+            reply(Boom.unauthorized());
+            return;
+        }
+        User.forge({id: id}).fetch({require: true})
             .then(function(user) {
                 return user.destroyDeep();
             })
