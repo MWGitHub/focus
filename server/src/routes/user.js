@@ -19,6 +19,7 @@ var routes = [
             cors: true
         }
     },
+    // TODO: Perhaps change the route to /auth/login and logout
     {
         method: 'POST',
         path: API.route + '/users/login',
@@ -35,7 +36,7 @@ var routes = [
     },
     {
         method: 'GET',
-        path: API.route + '/user/logout',
+        path: API.route + '/users/logout',
         handler: UserAPI.logout,
         config: {
             auth: {
@@ -78,7 +79,7 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/user/update',
+        path: API.route + '/users/update',
         handler: UserAPI.update,
         config: {
             validate: {

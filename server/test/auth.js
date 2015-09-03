@@ -250,7 +250,7 @@ lab.experiment('test authentication', function() {
     lab.test('logout when logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/user/logout',
+            url: helper.apiRoute + '/users/logout',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt
@@ -264,7 +264,7 @@ lab.experiment('test authentication', function() {
     lab.test('logout when not logged in', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/user/logout'
+            url: helper.apiRoute + '/users/logout'
         }, function(response) {
             assert.equal(response.result.meta.message, 'Not logged in');
             done();
