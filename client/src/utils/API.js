@@ -21,10 +21,10 @@ var API = {
      */
     routes: {
         url: baseURL,
-        user: baseURL + '/user',
-        register: baseURL + '/user/register',
-        login: baseURL + '/user/login',
-        updateUser: baseURL + '/user/update',
+        user: baseURL + '/users',
+        register: baseURL + '/users',
+        login: baseURL + '/users/login',
+        updateUser: baseURL + '/users/update',
         taskCreate: baseURL + '/task/create',
         taskUpdateTitle: baseURL + '/task/update/title',
         taskUpdatePosition: baseURL + '/task/update/position',

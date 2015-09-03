@@ -5,7 +5,7 @@ var API = require('../lib/api');
 var routes = [
     {
         method: 'POST',
-        path: API.route + '/task',
+        path: API.route + '/tasks',
         handler: TaskAPI.create,
         config: {
             auth: 'jwt',
@@ -22,7 +22,7 @@ var routes = [
     // TODO: Refactor to use PUT
     {
         method: 'POST',
-        path: API.route + '/task/update/position',
+        path: API.route + '/tasks/update/position',
         handler: TaskAPI.updatePosition,
         config: {
             auth: 'jwt',
@@ -38,7 +38,7 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/task/update/title',
+        path: API.route + '/tasks/update/title',
         handler: TaskAPI.updateTitle,
         config: {
             auth: 'jwt',
@@ -53,7 +53,7 @@ var routes = [
     },
     {
         method: 'DELETE',
-        path: API.route + '/task/{id}',
+        path: API.route + '/tasks/{id}',
         handler: TaskAPI.deleteSelf,
         config: {
             auth: 'jwt',
