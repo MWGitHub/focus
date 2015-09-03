@@ -327,14 +327,11 @@ lab.experiment('test task', function() {
 
     lab.test('delete as other user error', function(done) {
         server.inject({
-            method: 'POST',
-            url: helper.apiRoute + '/task/delete',
+            method: 'DELETE',
+            url: helper.apiRoute + '/task/' + taskUser1Id,
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
-            },
-            payload: {
-                id: taskUser1Id
             }
         }, function(response) {
             assert.equal(response.statusCode, 401);
@@ -344,14 +341,11 @@ lab.experiment('test task', function() {
 
     lab.test('delete', function(done) {
         server.inject({
-            method: 'POST',
-            url: helper.apiRoute + '/task/delete',
+            method: 'DELETE',
+            url: helper.apiRoute + '/task/' + taskUser1Id,
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
-            },
-            payload: {
-                id: taskUser1Id
             }
         }, function(response) {
             Task.forge({id: taskUser1Id}).fetch().then(function(task) {

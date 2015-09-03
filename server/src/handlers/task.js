@@ -113,28 +113,24 @@ var handler = {
     deleteSelf: function(request, reply) {
         "use strict";
 
-        var id = request.payload['id'];
-        User.forge({id: request.auth.credentials.id}).fetch()
+        var id = request.params['id'];
+        var uid;
+        User.forge({id: request.auth.credentials.id}).fetch({required: true})
             .then(function(user) {
-                if (!user) {
-                    reply(Boom.notFound());
+                uid = user.get('id');
+                return Task.forge({id: id}).fetch({required: true})
+            })
+            .then(function(task) {
+                if (task.get('user_id') !== uid) {
+                    reply(Boom.unauthorized('Owner does not match user'));
                 } else {
-                    var uid = user.get('id');
-                    Task.forge({id: id}).fetch()
-                        .then(function(task) {
-                            if (!task) {
-                                reply(Boom.notFound());
-                            } else {
-                                if (task.get('user_id') !== uid) {
-                                    reply(Boom.unauthorized('Owner does not match user'));
-                                } else {
-                                    task.destroy().then(function () {
-                                        reply(API.makeStatusMessage('task-delete', true, 'Task deleted'));
-                                    })
-                                }
-                            }
-                        });
+                    return task.destroy().then(function () {
+                        reply(API.makeStatusMessage('task-delete', true, 'Task deleted'));
+                    })
                 }
+            })
+            .catch(function(e) {
+                reply(Boom.notFound());
             });
     }
 };

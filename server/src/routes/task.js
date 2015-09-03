@@ -51,13 +51,13 @@ var routes = [
         }
     },
     {
-        method: 'POST',
-        path: API.route + '/task/delete',
+        method: 'DELETE',
+        path: API.route + '/task/{id}',
         handler: TaskAPI.deleteSelf,
         config: {
             auth: 'jwt',
             validate: {
-                payload: {
+                params: {
                     id: Joi.number().integer().required()
                 }
             },
