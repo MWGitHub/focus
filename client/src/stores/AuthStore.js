@@ -114,6 +114,14 @@ class AuthStore extends BaseStore {
     isLoggedIn() {
         return !!this._jwt;
     }
+
+    deauthorize() {
+        this._jwt = null;
+        this._id = null;
+        LocalForage.removeItem(StorageKeys.JWT, (err, result) => {
+            this.emitChange();
+        });
+    }
 }
 
 export default new AuthStore();

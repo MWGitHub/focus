@@ -6,6 +6,7 @@
 import React from 'react';
 import AuthStore from '../stores/AuthStore';
 import Routes from '../constants/Routes';
+import RouterUtil from '../utils/RouterUtil';
 
 /**
  * Wraps the given component in order to prevent overwriting functions.
@@ -31,10 +32,14 @@ function Authenticator(Component) {
         }
 
         _onChange() {
-            this.setState({
-                isLoggedIn: AuthStore.isLoggedIn(),
-                jwt: AuthStore.getJWT()
-            });
+            if (!AuthStore.isLoggedIn()) {
+                RouterUtil.transitionTo('/');
+            } else {
+                this.setState({
+                    isLoggedIn: AuthStore.isLoggedIn(),
+                    jwt: AuthStore.getJWT()
+                });
+            }
         }
 
         componentDidMount() {

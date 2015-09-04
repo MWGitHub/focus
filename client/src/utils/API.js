@@ -25,7 +25,7 @@ var API = {
         register: baseURL + '/users',
         login: baseURL + '/users/login',
         updateUser: baseURL + '/users/update',
-        taskCreate: baseURL + '/tasks/create',
+        taskCreate: baseURL + '/tasks',
         taskUpdateTitle: baseURL + '/tasks/update/title',
         taskUpdatePosition: baseURL + '/tasks/update/position',
         taskDelete: baseURL + '/tasks'
@@ -55,6 +55,7 @@ var API = {
                 if (success) success(resp);
             },
             error: function(err) {
+                AuthStore.deauthorize();
                 if (error) error(err);
             }
         });
@@ -80,8 +81,13 @@ var API = {
             contentType: contentType,
             crossOrigin: true,
             data: data,
-            success: success,
-            error: error
+            success: function(resp) {
+                if (success) success(resp);
+            },
+            error: function(err) {
+                AuthStore.deauthorize();
+                if (error) error(err);
+            }
         })
     }
 };
