@@ -12,3 +12,4 @@ client/build
 client/media
 client/node_modules
 client/working
+npm-debug.log
