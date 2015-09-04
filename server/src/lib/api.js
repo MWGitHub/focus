@@ -99,14 +99,12 @@ module.exports.populateUser = function(user) {
 module.exports.updateUserTasks = function(user, force) {
     var self = this;
     var lastUpdate = user.get('lastupdate');
-    var shouldUpdate = false;
     var tz = user.get('timezone');
     moment.tz.setDefault(tz);
     // Number of times to update
     var times = 0;
     // Update if never updated before
     if (!lastUpdate || force) {
-        shouldUpdate = true;
         times = 1;
     } else {
         // Check if midnight for the user has passed and if the user has updated
@@ -118,17 +116,20 @@ module.exports.updateUserTasks = function(user, force) {
             var updateTime = moment(lastUpdate);
             var difference = midnight - updateTime;
 
-            // Check if the last update is before midnight, if before update all tasks
-            shouldUpdate = difference > 0;
+            // Check if the last update is before midnight, if before update all tasks X number of times over 24h
+            var hours = difference / 60 / 60 / 1000;
+            // Any remainder counts as another midnight passed
+            times = Math.ceil(hours / 24);
         } catch(e) {
             // Set the time zone back to the default
             moment.tz.setDefault(this.defaultTimeZone);
-            shouldUpdate = false;
+            times = 0;
             throw e;
         }
     }
 
-    if (shouldUpdate) {
+    console.log(times);
+    if (times > 0) {
         var uid = user.get('id');
         var todayList;
         return List.forge({user_id: uid, title: 'Today'}).fetch({require: true})
@@ -139,7 +140,7 @@ module.exports.updateUserTasks = function(user, force) {
             })
             .then(function(tasks) {
                 return tasks.mapThen(function(model) {
-                    return model.set('age', model.get('age') + 1).save().then();
+                    return model.set('age', model.get('age') + times).save().then();
                 });
             })
             // Move all of tomorrow's task to today
@@ -151,7 +152,10 @@ module.exports.updateUserTasks = function(user, force) {
             })
             .then(function(tasks) {
                 return tasks.mapThen(function(model) {
-                    return model.set('list_id', todayList.get('id')).save().then();
+                    return model.set({
+                        list_id: todayList.get('id'),
+                        age: times - 1
+                    }).save().then();
                 });
             })
             // Reset the time zone default
