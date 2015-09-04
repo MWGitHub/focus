@@ -91,6 +91,7 @@ module.exports.populateUser = function(user) {
     });
 };
 
+// TODO: Make unit test for this
 /**
  * Checks and updates the tasks of the given user if needed.
  * @param {User} user the username to update the tasks for.
@@ -128,7 +129,6 @@ module.exports.updateUserTasks = function(user, force) {
         }
     }
 
-    console.log(times);
     if (times > 0) {
         var uid = user.get('id');
         var todayList;

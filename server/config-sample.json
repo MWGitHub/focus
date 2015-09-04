@@ -1,4 +1,5 @@
 {
   "authkey": "your token here",
-  "defaultTimeZone": "America/New York"
+  "defaultTimeZone": "America/New York",
+  "redisDB": 0
 }

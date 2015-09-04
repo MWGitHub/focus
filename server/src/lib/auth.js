@@ -4,8 +4,13 @@ var AuthJWT = require('hapi-auth-jwt2');
 var JWT = require('jsonwebtoken');
 var User = require('../models/user');
 var Config = require('../../config.json');
+var RedisClient = require('./redis-client');
+var uuid = require('node-uuid');
 
-// TODO: Use memory database to store JWT sessions in order to invalid on log out
+var tokenTable = 'token:';
+// Token expires in 30 days
+var expiration = 60 * 60 * 24 * 30;
+
 /**
  * Sign data with JWT.
  * @param {*} data the data to sign.
@@ -33,7 +38,15 @@ function validateBasic(request, username, password, callback) {
 function validateJWT(decoded, request, callback) {
     "use strict";
 
-    var uid = decoded.id;
+    RedisClient.client.get(tokenTable + decoded.tid, function(err, reply) {
+        if (err) console.log(err);
+        if (reply) {
+            return callback(err, true);
+        } else {
+            return callback(err, false);
+        }
+    });
+    /*
     User.forge({id: uid}).fetch()
         .then(function(user) {
             if (!user) {
@@ -42,6 +55,7 @@ function validateJWT(decoded, request, callback) {
                 callback(null, true);
             }
         });
+     */
 }
 
 var auth = {
@@ -94,13 +108,46 @@ var auth = {
     },
 
     /**
+     * Decodes a token.
+     * @param {String} token the token to decode.
+     * @returns {{info, data}} the token info and data.
+     */
+    decodeToken: function(token) {
+        var segments = token.split('.');
+        return {
+            info: JSON.parse(new Buffer(segments[0], 'base64').toString()),
+            data: JSON.parse(new Buffer(segments[1], 'base64').toString())
+        };
+    },
+
+    login: function(token, duration) {
+        var ttl = duration || expiration;
+        var parsed = this.decodeToken(token);
+        return new Promise(function(resolve, reject) {
+            RedisClient.client.set(tokenTable + parsed.data.tid, parsed.data.id, function(err, res) {
+                RedisClient.client.expire(tokenTable + parsed.data.tid, ttl);
+                err ? reject(err) : resolve(res);
+            });
+        });
+    },
+
+    logout: function(tid) {
+        return new Promise(function(resolve, reject) {
+            RedisClient.client.del(tokenTable + tid, function(err, res) {
+                err ? reject(err) : resolve(res);
+            });
+        });
+    },
+
+    /**
      * Generates a token for the user.
      * @param {Number} userID the ID of the user.
      * @returns {String} the generated token.
      */
     generateToken: function(userID) {
         return sign({
-            id: userID
+            id: userID,
+            tid: uuid.v4()
         });
     }
 };

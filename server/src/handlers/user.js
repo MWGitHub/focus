@@ -64,25 +64,29 @@ var userHandler = {
         var password = request.payload['password'];
 
         // Check to make sure the username exists
-        User.forge({username: username}).fetch()
+        User.forge({username: username}).fetch({require: true})
             .then(function(user) {
-                if (!user) {
-                    reply(Boom.unauthorized());
-                } else {
-                    Bcrypt.compare(password, user.get('password'), function(err, isValid) {
-                        if (err) {
-                            reply(Boom.badImplementation());
-                        } else if (isValid) {
-                            //reply(user.get('username') + ' has been found.');
+                Bcrypt.compare(password, user.get('password'), function(err, isValid) {
+                    if (err) {
+                        reply(Boom.badImplementation());
+                    } else if (isValid) {
+                        var token = Auth.generateToken(user.get('id'));
+                        Auth.login(token).then(function() {
                             reply(API.makeData({
                                 id: user.get('id'),
-                                token: Auth.generateToken(user.get('id'))
+                                token: token
                             }));
-                        } else {
+                        })
+                        .catch(function(err) {
                             reply(Boom.unauthorized());
-                        }
-                    });
-                }
+                        });
+                    } else {
+                        reply(Boom.unauthorized());
+                    }
+                });
+            })
+            .catch(function(e) {
+                reply(Boom.unauthorized());
             });
     },
 
@@ -98,7 +102,13 @@ var userHandler = {
             if (request.auth.strategy === 'simple') {
                 reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
             } else {
-                reply(API.makeStatusMessage('user-logout', true, 'Logged out'));
+                Auth.logout(request.auth.credentials.tid)
+                    .then(function() {
+                        reply(API.makeStatusMessage('user-logout', true, 'Logged out'));
+                    })
+                    .catch(function(err) {
+                        reply(Boom.badRequest());
+                    });
             }
         } else {
             reply(API.makeStatusMessage('user-logout', true, 'Not logged in'));
@@ -125,7 +135,11 @@ var userHandler = {
                 return user.destroyDeep();
             })
             .then(function() {
-                reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
+                if (request.auth.strategy === 'simple') {
+                    reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
+                } else {
+                    reply(API.makeStatusMessage('user-delete', true, 'User deleted'));
+                }
             })
             .catch(function(e) {
                 reply(Boom.notFound());

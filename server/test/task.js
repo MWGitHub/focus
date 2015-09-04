@@ -36,20 +36,25 @@ lab.experiment('test task', function() {
         helper.removeAllTestUsers().then(function() {
             return helper.createAllTestUsers();
         }).then(function(users) {
+            var logins = [];
             for (var i = 0; i < users.length; i++) {
                 userIds.push(users[i].id);
-                jwt.push(Auth.generateToken(users[i].id));
+                var token = Auth.generateToken(users[i].id);
+                jwt.push(token);
+                logins.push(Auth.login(token));
             }
 
-            List.where({user_id: userIds[0]}).fetchAll().then(function(collection) {
-                idList1User1 = collection.models[0].id;
-                idList2User1 = collection.models[1].id;
-            }).then(function() {
-                return List.where({user_id: userIds[1]}).fetchAll().then(function(collection) {
-                    idList1User2 = collection.models[0].id;
+            Promise.all(logins).then(function() {
+                List.where({user_id: userIds[0]}).fetchAll().then(function(collection) {
+                    idList1User1 = collection.models[0].id;
+                    idList2User1 = collection.models[1].id;
+                }).then(function() {
+                    return List.where({user_id: userIds[1]}).fetchAll().then(function(collection) {
+                        idList1User2 = collection.models[0].id;
+                    });
+                }).then(function() {
+                    done();
                 });
-            }).then(function() {
-                done();
             });
         });
     });

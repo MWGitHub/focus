@@ -273,6 +273,37 @@ lab.experiment('test authentication', function() {
         });
     });
 
+    lab.test('access authorized page while using logged out credentials should fail', function(done) {
+        server.inject({
+            method: 'GET',
+            url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
+            headers: {
+                authorization: jwt
+            }
+        }, function(response) {
+            assert.equal(response.statusCode, 401);
+            done();
+        });
+    });
+
+    lab.test('access authorized page while logged in with expired token', function(done) {
+        var token = Auth.generateToken(userInstances[0].get('id'));
+        Auth.login(token, 1).then(function() {
+            setTimeout(function() {
+                server.inject({
+                    method: 'GET',
+                    url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
+                    headers: {
+                        authorization: token
+                    }
+                }, function(response) {
+                    assert.equal(response.statusCode, 401);
+                    done();
+                });
+            }, 1100);
+        });
+    });
+
     lab.test('delete user without permission should fail', function(done) {
         server.inject({
             method: 'DELETE',
@@ -286,6 +317,22 @@ lab.experiment('test authentication', function() {
         });
     });
 
+    lab.test('logged in again', function(done) {
+        server.inject({
+            method: 'POST',
+            url: helper.apiRoute + '/users/login',
+            payload: {
+                username: userInstances[0].get('username'),
+                password: helper.password
+            }
+        }, function(response) {
+            jwt = response.result.data.token;
+            assert.equal(response.result.data.id, userInstances[0].get('id'));
+            assert.equal(response.statusCode, 200);
+            done();
+        });
+    });
+
     lab.test('delete self', function(done) {
         server.inject({
             method: 'DELETE',
@@ -294,6 +341,7 @@ lab.experiment('test authentication', function() {
                 authorization: jwt
             }
         }, function(response) {
+            assert.equal(response.statusCode, 200);
             User.forge({username: userInstances[0]}).fetch().then(function(user) {
                 assert.notOk(user);
                 done();

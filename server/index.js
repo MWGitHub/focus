@@ -5,6 +5,7 @@ var User = require('./src/lib/user');
 var Board = require('./src/lib/board');
 var Task = require('./src/lib/task');
 var Boom = require('boom');
+var RedisClient = require('./src/lib/redis-client');
 
 // Connect to the database
 var bookshelf = require('./src/lib/bookshelf');
@@ -30,7 +31,6 @@ var options = {
     }
 };
 
-console.log(port);
 var server = new Hapi.Server(options);
 server.connection({
     host: host,
@@ -79,9 +79,11 @@ server.register([
     });
 
     // Start the server
-    server.start(function() {
-        "use strict";
-        server.log('info', 'Starting running at: ' + server.info.uri);
+    RedisClient.connect().then(function() {
+        server.start(function() {
+            "use strict";
+            server.log('info', 'Starting running at: ' + server.info.uri);
+        });
     });
 });
 
