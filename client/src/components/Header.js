@@ -9,10 +9,26 @@ class AuthNav extends React.Component {
         super(props);
         this.state = {
             isMenuVisible: false
+        };
+    }
+
+    _clickOutsideButton(e) {
+        if (e.target.id !== 'user-button') {
+            this.setState({
+                isMenuVisible: false
+            });
         }
     }
 
-    // TODO: Hide menu when click outside
+    componentDidMount() {
+        this._clickOutsideButtonListener = this._clickOutsideButton.bind(this);
+        document.addEventListener('click', this._clickOutsideButtonListener);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('click', this._clickOutsideButtonListener);
+    }
+
     _toggleMenu(e) {
         e.preventDefault();
 
@@ -31,7 +47,7 @@ class AuthNav extends React.Component {
 
         return (
             <nav className="nav-menu">
-                <a className="button" onClick={this._toggleMenu.bind(this)}>{this.props.username}</a>
+                <a id="user-button" className="button" onClick={this._toggleMenu.bind(this)}>{this.props.username}</a>
                 {this.state.isMenuVisible ? menu : null}
             </nav>
         )

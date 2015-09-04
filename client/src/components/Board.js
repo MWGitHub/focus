@@ -242,7 +242,6 @@ class Board extends React.Component {
         this.listener = this.onChange.bind(this);
         UserStore.addChangeListener(this.listener);
 
-        console.log(AuthStore.getID());
         BoardActions.retrieveData(this.state.uid);
     }
 
