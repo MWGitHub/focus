@@ -217,7 +217,8 @@ lab.experiment('test authentication', function() {
                 password: helper.password
             }
         }, function(response) {
-            jwt = response.result.meta.message;
+            jwt = response.result.data.token;
+            assert.equal(response.result.data.id, userInstances[0].get('id'));
             assert.equal(response.statusCode, 200);
             done();
         });
@@ -243,6 +244,7 @@ lab.experiment('test authentication', function() {
             }
         }, function(response) {
             assert.equal(response.statusCode, 200);
+            assert.equal(response.result.data.attributes.username, userInstances[0].get('username'));
             done();
         });
     });

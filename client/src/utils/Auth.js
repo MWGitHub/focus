@@ -23,12 +23,20 @@ var Auth = {
                 password: password
             },
             success: function(resp) {
-                if (success) success(resp.meta.message);
+                if (success) success(resp.data);
             },
             error: function(err) {
                 if (error) error(err);
             }
         });
+    },
+
+    decodeJWT: function(token) {
+        var segments = token.split('.');
+        return {
+            info: JSON.parse(window.atob(segments[0])),
+            data: JSON.parse(window.atob(segments[1]))
+        };
     }
 };
 

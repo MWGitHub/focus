@@ -22,11 +22,11 @@ var LoginActions = {
         });
 
         Auth.login(username, password,
-            (jwt) => {
+            (data) => {
                 Dispatcher.dispatch({
                     actionType: Actions.login,
                     state: Actions.State.complete,
-                    jwt: jwt
+                    jwt: data.token
                 });
             },
             (err) => {

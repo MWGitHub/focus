@@ -1,5 +1,6 @@
 /**
  * Stores all the user data.
+ * TODO: Separate data into more stores for easier updating and retrieval
  */
 import BaseStore from './BaseStore';
 import Actions from '../constants/Actions';

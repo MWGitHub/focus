@@ -12,6 +12,7 @@ class AuthNav extends React.Component {
         }
     }
 
+    // TODO: Hide menu when click outside
     _toggleMenu(e) {
         e.preventDefault();
 

@@ -4,12 +4,12 @@ import request from 'reqwest';
 import Actions from '../constants/Actions';
 
 var BoardActions = {
-    retrieveData: function() {
+    retrieveData: function(uid) {
         Dispatcher.dispatch({
             actionType: Actions.retrieveUser,
             state: Actions.State.loading
         });
-        API.retrieveAuthDataFrom(API.routes.user,
+        API.retrieveAuthDataFrom(API.routes.user + '/' + uid,
             (data) => {
                 Dispatcher.dispatch({
                     actionType: Actions.retrieveUser,
@@ -26,19 +26,19 @@ var BoardActions = {
         )
     },
 
-    forceUserUpdate: function() {
+    forceUserUpdate: function(uid) {
         Dispatcher.dispatch({
             actionType: Actions.updateUser,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.updateUser, {force: true},
+        API.doAuthActionTo(API.routes.updateUser, API.methods.post, {force: true},
             (data) => {
                 Dispatcher.dispatch({
                     actionType: Actions.updateUser,
                     state: Actions.State.complete,
                     data: data
                 });
-                this.retrieveData();
+                this.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -49,12 +49,12 @@ var BoardActions = {
         )
     },
 
-    createTask: function(list, title, position) {
+    createTask: function(uid, list, title, position) {
         Dispatcher.dispatch({
             actionType: Actions.createTask,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.taskCreate, {
+        API.doAuthActionTo(API.routes.taskCreate, API.methods.post, {
                 list_id: list,
                 title: title,
                 position: position
@@ -66,7 +66,7 @@ var BoardActions = {
                     list: list,
                     title: title
                 });
-                this.retrieveData();
+                this.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -77,12 +77,12 @@ var BoardActions = {
         )
     },
 
-    deleteTask: function(id) {
+    deleteTask: function(uid, id) {
         Dispatcher.dispatch({
             actionType: Actions.deleteTask,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.taskDelete, {
+        API.doAuthActionTo(API.routes.taskDelete, API.methods.del, {
                 id: id
             },
             (resp) => {
@@ -91,7 +91,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     id: id
                 });
-                this.retrieveData();
+                this.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -102,12 +102,12 @@ var BoardActions = {
         )
     },
 
-    moveTask: function(id, list, position) {
+    moveTask: function(uid, id, list, position) {
         Dispatcher.dispatch({
             actionType: Actions.moveTask,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.taskUpdatePosition, {
+        API.doAuthActionTo(API.routes.taskUpdatePosition, API.methods.post, {
                 id: id,
                 list_id: list,
                 position: position
@@ -120,7 +120,7 @@ var BoardActions = {
                     id: id,
                     position: position
                 });
-                this.retrieveData();
+                this.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({

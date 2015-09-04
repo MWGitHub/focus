@@ -74,7 +74,10 @@ var userHandler = {
                             reply(Boom.badImplementation());
                         } else if (isValid) {
                             //reply(user.get('username') + ' has been found.');
-                            reply(API.makeStatusMessage('user-login', true, Auth.generateToken(user.get('id'))));
+                            reply(API.makeData({
+                                id: user.get('id'),
+                                token: Auth.generateToken(user.get('id'))
+                            }));
                         } else {
                             reply(Boom.unauthorized());
                         }

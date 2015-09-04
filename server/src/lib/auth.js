@@ -5,6 +5,7 @@ var JWT = require('jsonwebtoken');
 var User = require('../models/user');
 var Config = require('../../config.json');
 
+// TODO: Use memory database to store JWT sessions in order to invalid on log out
 /**
  * Sign data with JWT.
  * @param {*} data the data to sign.

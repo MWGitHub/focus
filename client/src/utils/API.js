@@ -4,7 +4,7 @@
 import request from 'reqwest';
 import AuthStore from '../stores/AuthStore';
 
-var baseURL = 'http://mwtest.xyz:8080/api/1';
+var baseURL = 'http://mwtest.xyz:8080/api/v1';
 var contentType = 'application/x-www-form-urlencoded';
 
 var API = {
@@ -25,10 +25,10 @@ var API = {
         register: baseURL + '/users',
         login: baseURL + '/users/login',
         updateUser: baseURL + '/users/update',
-        taskCreate: baseURL + '/task/create',
-        taskUpdateTitle: baseURL + '/task/update/title',
-        taskUpdatePosition: baseURL + '/task/update/position',
-        taskDelete: baseURL + '/task'
+        taskCreate: baseURL + '/tasks/create',
+        taskUpdateTitle: baseURL + '/tasks/update/title',
+        taskUpdatePosition: baseURL + '/tasks/update/position',
+        taskDelete: baseURL + '/tasks'
     },
 
     /**
@@ -73,7 +73,6 @@ var API = {
             if (error) error(new Error('Not logged in'));
             return;
         }
-
 
         request({
             url: url + '?token=' + AuthStore.getJWT(),

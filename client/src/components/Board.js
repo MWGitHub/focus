@@ -2,6 +2,7 @@ import React from 'react';
 import UserStore from '../stores/UserStore';
 import Authenticator from './Authenticator';
 import BoardActions from '../actions/BoardActions';
+import AuthStore from '../stores/AuthStore.js';
 
 function getListByTitle(lists, title) {
     for (var i = 0; i < lists.length; i++) {
@@ -37,7 +38,7 @@ class Task extends React.Component {
     deleteTask(e) {
         e.preventDefault();
 
-        BoardActions.deleteTask(this.props.task.id);
+        BoardActions.deleteTask(this.props.uid, this.props.task.id);
     }
 
     move(e) {
@@ -56,7 +57,7 @@ class Task extends React.Component {
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position - 1;
 
-        BoardActions.moveTask(this.props.task.id, listId, position);
+        BoardActions.moveTask(this.props.uid, this.props.task.id, listId, position);
     }
 
     moveTaskLeft(e) {
@@ -71,7 +72,7 @@ class Task extends React.Component {
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
 
-        BoardActions.moveTask(this.props.task.id, listId, position);
+        BoardActions.moveTask(this.props.uid, this.props.task.id, listId, position);
     }
 
     moveTaskRight(e) {
@@ -86,7 +87,7 @@ class Task extends React.Component {
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
 
-        BoardActions.moveTask(this.props.task.id, listId, position);
+        BoardActions.moveTask(this.props.uid, this.props.task.id, listId, position);
     }
 
     render() {
@@ -134,7 +135,7 @@ class TaskCreateBox extends React.Component {
             // Set position to mid value if there are no tasks otherwise set it to the next lowest.
             var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
 
-            BoardActions.createTask(list.id, title, position, this._updateTaskError.bind(this));
+            BoardActions.createTask(this.props.uid, list.id, title, position, this._updateTaskError.bind(this));
         }
     }
 
@@ -176,9 +177,9 @@ class List extends React.Component {
             <div id={"list-" + list.id} className="list rounded">
                 <h2 className="no-margin">{list.attributes.title}</h2>
 
-                {this.props.disable.create ? null : <TaskCreateBox list={list} tasks={tasks} /> }
+                {this.props.disable.create ? null : <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} /> }
                 {list.attributes.tasks.map((task) => {
-                    return <Task lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
+                    return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
                 })}
             </div>
         )
@@ -200,7 +201,7 @@ class BoardView extends React.Component {
     forceUpdate(event) {
         event.preventDefault();
 
-        BoardActions.forceUserUpdate();
+        BoardActions.forceUserUpdate(this.props.uid);
     }
 
     render() {
@@ -215,10 +216,10 @@ class BoardView extends React.Component {
             <div>
                 <input type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
                 <div className="board">
-                    <List lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
-                    <List lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
-                    <List lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
-                    <List lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
+                    <List uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
+                    <List uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
+                    <List uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
+                    <List uid={this.props.uid} lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
                 </div>
             </div>
         )
@@ -232,7 +233,8 @@ class Board extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: null
+            data: UserStore.getData(),
+            uid: AuthStore.getID()
         };
     }
 
@@ -240,12 +242,14 @@ class Board extends React.Component {
         this.listener = this.onChange.bind(this);
         UserStore.addChangeListener(this.listener);
 
-        BoardActions.retrieveData();
+        console.log(AuthStore.getID());
+        BoardActions.retrieveData(this.state.uid);
     }
 
     onChange() {
         this.setState({
-            data: UserStore.getData()
+            data: UserStore.getData(),
+            uid: AuthStore.getID()
         });
     }
 
@@ -256,7 +260,7 @@ class Board extends React.Component {
     render() {
         if (!this.state.data) return null;
         return (
-            <BoardView board={this.state.data.attributes.boards[0]} />
+            <BoardView uid={this.state.uid} board={this.state.data.attributes.boards[0]} />
         )
     }
 }

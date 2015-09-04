@@ -26,11 +26,11 @@ var RegisterActions = {
             },
             success: function(resp) {
                 // Log in after registering.
-                Auth.login(username, password, function(token) {
+                Auth.login(username, password, function(data) {
                     Dispatcher.dispatch({
                         actionType: Actions.register,
                         state: Actions.State.complete,
-                        jwt: token
+                        jwt: data.token
                     });
                 }, function(err) {
                     Dispatcher.dispatch({

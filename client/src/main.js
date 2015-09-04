@@ -32,15 +32,13 @@ RouterUtil.setRouter(router);
 
 // Load the auth if it exists
 AuthStore.loadAuth(
-    () => {
+    function success() {
         router.run((Root) => {
-            "use strict";
             React.render(<Root/>, document.getElementById('content'));
         });
     },
-    () => {
+    function error() {
         router.run((Root) => {
-            "use strict";
             React.render(<Root/>, document.getElementById('content'));
         });
     });
