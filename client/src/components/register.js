@@ -123,6 +123,7 @@ class RegisterForm extends React.Component {
         "use strict";
         return (
             <div>
+                { this.state.showGenericError ? <p className="error">An error has occurred, registration failed.</p> : null }
                 <form className="form" onSubmit={this.handleSubmit.bind(this)}>
                     <div className={'form-item' + (usernameMessage ? ' error' : '')}>
                         <label htmlFor="register-username">Username{ usernameMessage }</label>
@@ -138,10 +139,8 @@ class RegisterForm extends React.Component {
                         <label htmlFor="register-password-check">Password again{ passwordCheckMessage }</label>
                         <input id="register-password-check" type="password" ref="passwordcheck" required />
                     </div>
-
                     <input type="submit" value="Submit" />
                 </form>
-                { this.state.showGenericError ? <p>An error has occurred, registration failed.</p> : null }
             </div>
         )
     }
@@ -182,7 +181,7 @@ class RegisterBox extends React.Component {
         "use strict";
 
         return (
-            <div className="register-box">
+            <div className="form-page">
                 <h2>Create an Account</h2>
                 <RegisterForm />
             </div>

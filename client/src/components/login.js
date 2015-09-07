@@ -13,7 +13,6 @@ class LoginForm extends React.Component {
     }
 
     _loginError(err) {
-        console.log(err);
         this.setState({
             showGenericError: true
         });
@@ -42,9 +41,11 @@ class LoginForm extends React.Component {
                     <label htmlFor="login-password">Password</label>
                     <input id="login-password" type="password" ref="password" required />
 
-                    <input type="submit" value="Submit" />
+                    <div className="form-item">
+                        <input type="submit" value="Submit" />
+                        { this.state.showGenericError ? <p className="error">username or password incorrect</p> : null }
+                    </div>
                 </form>
-                { this.state.showGenericError ? <p>wrong password</p> : null }
             </div>
         );
     }
@@ -91,7 +92,8 @@ class LoginBox extends React.Component {
     render() {
         "use strict";
         return (
-            <div className="login-box">
+            <div className="form-page">
+                <h2>Sign in to Your Account</h2>
                 <LoginForm />
             </div>
         )

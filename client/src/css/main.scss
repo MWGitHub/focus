@@ -160,8 +160,8 @@ body {
   clear: both;
 }
 
-// Register
-div.register-box {
+// Forms
+div.form-page {
   @include outer-container(35em);
   @include pad(1em);
 
@@ -176,6 +176,12 @@ div.register-box {
       clear: none;
       float: right;
     }
+  }
+
+  .form-item p.error {
+    float: right;
+    display: inline-block;
+    color: $error-font-color;
   }
 }
 
