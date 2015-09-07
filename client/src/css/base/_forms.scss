@@ -60,6 +60,21 @@ select[multiple=multiple] {
   }
 }
 
+form .error {
+  input[type="text"], input[type="password"] {
+    background-color: $error-background;
+    border: $error-border;
+  }
+
+  label span.error {
+    display: block;
+    clear: both;
+    font-size: 0.8em;
+    line-height: 1.8;
+    color: $error-font-color;
+  }
+}
+
 textarea {
   resize: vertical;
 }

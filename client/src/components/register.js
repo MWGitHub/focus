@@ -111,10 +111,14 @@ class RegisterForm extends React.Component {
         }
     }
 
+    wrapErrorMessage(m) {
+        return <span className="error">{m}</span>;
+    }
+
     render() {
-        var usernameMessage = this.state.usernameMessage ? ' - ' + this.state.usernameMessage : null;
-        var passwordMessage = this.state.passwordMessage ? ' - ' + this.state.passwordMessage : null;
-        var passwordCheckMessage = this.state.passwordCheckMessage ? ' - ' + this.state.passwordCheckMessage : null;
+        var usernameMessage = this.state.usernameMessage ? this.wrapErrorMessage(this.state.usernameMessage) : null;
+        var passwordMessage = this.state.passwordMessage ? this.wrapErrorMessage(this.state.passwordMessage) : null;
+        var passwordCheckMessage = this.state.passwordCheckMessage ? this.wrapErrorMessage(this.state.passwordCheckMessage) : null;
 
         "use strict";
         return (
