@@ -92,7 +92,6 @@ body {
   }
   .header-left {
     float: left;
-    width: 15em;
   }
   .header-right {
     float: right;
@@ -160,6 +159,18 @@ body {
   width: 100%;
   clear: both;
 }
+
+// Register
+div.register-box {
+  @include outer-container(35em);
+  @include pad(1em);
+
+  h2 {
+    font-size: 1.5em;
+    text-align: center;
+  }
+}
+
 
 // Board style
 div.board {

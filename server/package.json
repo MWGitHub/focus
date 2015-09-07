@@ -4,7 +4,7 @@
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/lab"
+    "test": "node_modules/.bin/lab -c"
   },
   "author": "MW",
   "dependencies": {

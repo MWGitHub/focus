@@ -1,6 +1,7 @@
 var assert = require('chai').assert;
 var Lab = require('lab');
 var User = require('../src/models/user');
+var UserHandler = require('../src/handlers/user');
 var Auth = require('../src/lib/auth');
 var moment = require('moment-timezone');
 var API = require('../src/lib/api');
@@ -87,7 +88,7 @@ lab.experiment('test registration', function() {
         });
     });
 
-    lab.test('returns an error when registering the same user', function(done) {
+    lab.test('returns an error when registering an existing user', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -96,7 +97,7 @@ lab.experiment('test registration', function() {
                 password: helper.password
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, UserHandler.StatusCodes.NameTaken);
             done();
         });
     });

@@ -16,6 +16,12 @@ var API = {
         patch: 'PATCH'
     },
 
+    status: {
+        register: {
+            usernameTaken: 440
+        }
+    },
+
     /**
      * Routes to interact with the API server.
      */
