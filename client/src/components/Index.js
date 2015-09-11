@@ -52,10 +52,12 @@ class Index extends React.Component {
     render() {
         return (
             <div id="page">
-                <Header />
-                <section id="main">
-                    <Router.RouteHandler/>
-                </section>
+                <div className="top">
+                    <Header />
+                    <section id="main">
+                        <Router.RouteHandler/>
+                    </section>
+                </div>
                 <Footer />
             </div>
         )

@@ -28,7 +28,7 @@ label {
 
 #{$all-text-inputs},
 select[multiple=multiple] {
-  background-color: $base-background-color;
+  background-color: $field-background-color;
   border: $base-border;
   border-radius: $base-border-radius;
   box-shadow: $form-box-shadow;

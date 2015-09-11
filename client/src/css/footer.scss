@@ -1,0 +1,94 @@
+@import "bourbon/bourbon";
+@import "neat/neat";
+@import "base/base";
+@import "base/grid-settings";
+
+// Uncomment this for a sticky footer.
+//
+.top {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -3em;
+}
+
+html, body, #content, #page {
+  height: 100%;
+}
+
+.top:after {
+  content: "";
+  display: block;
+}
+
+.footer, .top:after {
+  height: 17em;
+
+  @include media($large-screen) {
+    height: 3em;
+  }
+}
+
+.footer {
+  $base-spacing: 0.6em !default;
+  $medium-screen: em(640) !default;
+  $large-screen: em(860) !default;
+  $footer-background: desaturate(darken($action-color, 20%), 30%);
+  $footer-color: white;
+  $footer-link-color: transparentize($footer-color, 0.6);
+  $footer-disclaimer-color: transparentize($footer-color, 0.6);
+
+  text-align: center;
+  background: $footer-background;
+  padding: $base-spacing / 2;
+  width: 100%;
+  display: inline-block;
+
+  ul {
+    line-height: 1.5em;
+    margin: 0 0 1em 0;
+    padding: 0;
+
+    @include media($large-screen) {
+      line-height: 1.8em;
+      margin-left: 1em;
+      margin-bottom: 0;
+    }
+  }
+
+  ul li {
+    list-style: none;
+    padding-left: 0.5em;
+
+
+    @include media($large-screen) {
+      display: inline;
+    }
+
+    &:before {
+      margin-right: 0.5em;
+      content: '|';
+      color: shade($footer-link-color, 20%);
+      font-size: 0.8em;
+      vertical-align: top;
+    }
+
+    &:first-child {
+      padding-left: 0;
+      &:before {
+        content: '';
+        margin-right: 0;
+      }
+    }
+  }
+
+  ul li a {
+    color: $footer-link-color;
+    text-decoration: none;
+
+    &:focus,
+    &:hover {
+      color: transparentize($footer-color, 0);
+    }
+  }
+}

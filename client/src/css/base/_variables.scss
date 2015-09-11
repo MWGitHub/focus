@@ -12,18 +12,23 @@ $base-line-height: 1.2;
 $heading-line-height: 1.1;
 
 // Other Sizes
-$base-border-radius: 3px;
+$base-border-radius: em(3);
 $base-spacing: $base-line-height * 1em;
 $small-spacing: $base-spacing / 2;
 $base-z-index: 0;
 
 // Colors
-$blue: #477dca;
+$blue: #4988ca;
+$blue-grey: #c1cce8;
+$bluer-grey: #d9f8fa;
 $green: #64b05b;
+$green-grey: #d6f8d8;
+$yellow-grey: #fff9e6;
 $near-black: #111;
 $dark-gray: #333;
 $medium-gray: #999;
 $light-gray: #ddd;
+$white-grey: #EEE;
 $near-white: #fefefe;
 $red: #ff3a41;
 
@@ -40,11 +45,17 @@ $base-border: 1px solid $base-border-color;
 $error-border: 1px solid $red;
 
 // Background Colors
-$base-background-color: #fff;
+$base-background-color: $white-grey;
 $secondary-background-color: tint($base-border-color, 75%);
+$field-background-color: $near-white;
 $contrast-background-color: $near-black;
 $secondary-contrast-background-color: tint($contrast-background-color, 75%);
 $error-background: tint($red, 95%);
+$list-background-color: $blue-grey;
+$list-task-color: $bluer-grey;
+$list-tomorrow-color: $green-grey;
+$list-today-color: $yellow-grey;
+$list-done-color: $white-grey;
 
 // Forms
 $form-box-shadow: inset 0 1px 3px rgba(#000, 0.06);

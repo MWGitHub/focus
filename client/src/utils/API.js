@@ -61,7 +61,6 @@ var API = {
                 if (success) success(resp);
             },
             error: function(err) {
-                AuthStore.deauthorize();
                 if (error) error(err);
             }
         });
@@ -91,7 +90,6 @@ var API = {
                 if (success) success(resp);
             },
             error: function(err) {
-                AuthStore.deauthorize();
                 if (error) error(err);
             }
         })

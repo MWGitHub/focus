@@ -162,9 +162,19 @@ class List extends React.Component {
         super(props);
     }
 
+    _forceUpdateError(err) {
+
+    }
+
+    forceUpdate(event) {
+        event.preventDefault();
+
+        BoardActions.forceUserUpdate(this.props.uid);
+    }
+
     componentDidMount() {
         if (!this.props.disable.sort) {
-            var element = React.findDOMNode(this);
+            var element = React.findDOMNode(this.refs.list);
             var slip = new Slip(element);
         }
     }
@@ -173,14 +183,22 @@ class List extends React.Component {
         var list = this.props.list;
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
-        return (
-            <div id={"list-" + list.id} className="list rounded">
-                <h2 className="no-margin">{list.attributes.title}</h2>
+        var updateButton = (
+            <input type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
+        );
 
-                {this.props.disable.create ? null : <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} /> }
-                {list.attributes.tasks.map((task) => {
-                    return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
-                })}
+        return (
+            <div id={"list-" + list.id} className="list">
+                <div className="list-top">
+                    <h2 className="no-margin">{list.attributes.title}</h2>
+                    { this.props.name === 'today' ? updateButton : null }
+                </div>
+                <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
+                    {this.props.disable.create ? null : <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} /> }
+                    {list.attributes.tasks.map((task) => {
+                        return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
+                    })}
+                </div>
             </div>
         )
     }
@@ -194,16 +212,6 @@ class BoardView extends React.Component {
         super(props);
     }
 
-    _forceUpdateError(err) {
-
-    }
-
-    forceUpdate(event) {
-        event.preventDefault();
-
-        BoardActions.forceUserUpdate(this.props.uid);
-    }
-
     render() {
         var board = this.props.board;
         var lists = board.attributes.lists;
@@ -214,12 +222,11 @@ class BoardView extends React.Component {
         var done = getListByTitle(lists, ListTitles.done);
         return (
             <div>
-                <input type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
                 <div className="board">
-                    <List uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
-                    <List uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
-                    <List uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
-                    <List uid={this.props.uid} lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
+                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
+                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
+                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
+                    <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
                 </div>
             </div>
         )
