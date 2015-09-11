@@ -82,9 +82,7 @@ var BoardActions = {
             actionType: Actions.deleteTask,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.taskDelete, API.methods.del, {
-                id: id
-            },
+        API.doAuthActionTo(API.parseRoute(API.routes.taskDelete, {id: id}), API.methods.post, null,
             (resp) => {
                 Dispatcher.dispatch({
                     actionType: Actions.deleteTask,

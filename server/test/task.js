@@ -332,8 +332,8 @@ lab.experiment('test task', function() {
 
     lab.test('delete as other user error', function(done) {
         server.inject({
-            method: 'DELETE',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            method: 'POST',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
@@ -346,8 +346,8 @@ lab.experiment('test task', function() {
 
     lab.test('delete', function(done) {
         server.inject({
-            method: 'DELETE',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            method: 'POST',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]

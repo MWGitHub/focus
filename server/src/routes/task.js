@@ -52,8 +52,8 @@ var routes = [
         }
     },
     {
-        method: 'DELETE',
-        path: API.route + '/tasks/{id}',
+        method: 'POST',
+        path: API.route + '/tasks/{id}/delete',
         handler: TaskAPI.deleteSelf,
         config: {
             auth: 'jwt',

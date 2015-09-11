@@ -34,7 +34,16 @@ var API = {
         taskCreate: baseURL + '/tasks',
         taskUpdateTitle: baseURL + '/tasks/update/title',
         taskUpdatePosition: baseURL + '/tasks/update/position',
-        taskDelete: baseURL + '/tasks'
+        taskDelete: baseURL + '/tasks/{id}/delete'
+    },
+
+    parseRoute: function(route, tokens) {
+        //var r = /({\w+})/g;
+        for (var key in tokens) {
+            if (!tokens.hasOwnProperty(key)) next;
+            route = route.replace('{' + key +'}', tokens[key]);
+        }
+        return route;
     },
 
     /**
@@ -80,19 +89,20 @@ var API = {
             return;
         }
 
-        request({
+        var opt = {
             url: url + '?token=' + AuthStore.getJWT(),
             method: method,
             contentType: contentType,
             crossOrigin: true,
-            data: data,
-            success: function(resp) {
+            success: function (resp) {
                 if (success) success(resp);
             },
-            error: function(err) {
+            error: function (err) {
                 if (error) error(err);
             }
-        })
+        };
+        if (data) opt.data = data;
+        request(opt);
     }
 };
 
