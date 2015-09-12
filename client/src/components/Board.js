@@ -2,7 +2,8 @@ import React from 'react';
 import UserStore from '../stores/UserStore';
 import Authenticator from './Authenticator';
 import BoardActions from '../actions/BoardActions';
-import AuthStore from '../stores/AuthStore.js';
+import AuthStore from '../stores/AuthStore';
+import Validate from '../utils/Validation';
 
 function getListByTitle(lists, title) {
     for (var i = 0; i < lists.length; i++) {
@@ -98,11 +99,11 @@ class Task extends React.Component {
         return (
             <div className="task">
                 <h3 className="no-margin">{task.attributes.title}</h3>
-                <p>Age: {task.attributes.age}</p>
-                { shouldHideDelete ? null : <button onClick={this.deleteTask.bind(this)}>Delete</button> }
-                { this.props.disable.left ? null : <button onClick={this.moveTaskLeft.bind(this)}>&lt;-</button> }
-                { this.props.disable.right ? null : <button onClick={this.moveTaskRight.bind(this)}>-&gt;</button> }
-                { this.props.disable.complete ? null : <button onClick={this.complete.bind(this)}>Complete</button> }
+                { this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
+                { shouldHideDelete ? null : <input className="left" type="button" onClick={this.deleteTask.bind(this)} value="Delete" /> }
+                { this.props.disable.left ? null : <input className="left" type="button" onClick={this.moveTaskLeft.bind(this)} value="&lt;-" /> }
+                { this.props.disable.right ? null : <input className="right" type="button" button onClick={this.moveTaskRight.bind(this)} value="-&gt;" /> }
+                { this.props.disable.complete ? null : <input className="left" type="button" button onClick={this.complete.bind(this)} value="Complete" /> }
             </div>
         )
     }
@@ -114,10 +115,32 @@ class Task extends React.Component {
 class TaskCreateBox extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            message: null
+        };
+        this.inputChange = this._onInputChange.bind(this);
+    }
+
+    componentDidMount() {
+        var taskTitle = React.findDOMNode(this.refs.title);
+        taskTitle.addEventListener('change', this.inputChange);
+    }
+
+    componentWillUnmount() {
+        var taskTitle = React.findDOMNode(this.refs.title);
+        taskTitle.removeEventListener('change', this.inputChange);
     }
 
     _updateTaskError(err) {
 
+    }
+
+    _onInputChange(e) {
+        var v = e.target.value;
+        var message = Validate.task(v);
+        this.setState({
+            message: message
+        });
     }
 
     createTask(list, tasks) {
@@ -125,7 +148,7 @@ class TaskCreateBox extends React.Component {
             event.preventDefault();
 
             var title = React.findDOMNode(this.refs.title).value;
-            if (!title) {
+            if (!title || Validate.task(title)) {
                 return;
             }
             // Clear the input
@@ -145,9 +168,13 @@ class TaskCreateBox extends React.Component {
         return (
             <div className="task">
                 <form onSubmit={this.createTask(list, tasks).bind(this)}>
-                    <label htmlFor="task-title">Task Title</label>
+                    <div className="top">
+                        <label htmlFor="task-title">New Task</label>
+                        { this.state.message ? <span className="error">{this.state.message}</span> : null }
+                    </div>
                     <input id="task-title" type="text" ref="title" placeholder="Create New Task" required />
-                    <input type="submit" value="Create" />
+                    <input className="left" type="button" value="Cancel" onClick={this.props.closeCallback} />
+                    <input className="right" type="submit" value="Create" />
                 </form>
             </div>
         )
@@ -160,6 +187,44 @@ class TaskCreateBox extends React.Component {
 class List extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            isCreateShown: false
+        };
+        this.onWindowSizeChange = this._onWindowSizeChange.bind(this);
+    }
+
+    componentDidMount() {
+        if (!this.props.disable.sort) {
+            var element = React.findDOMNode(this.refs.list);
+            var slip = new Slip(element);
+        }
+
+        this._calculateHeight();
+        window.addEventListener('resize', this.onWindowSizeChange);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.onWindowSizeChange);
+    }
+
+    _onWindowSizeChange() {
+        this._calculateHeight();
+    }
+
+    _calculateHeight() {
+        // Set the height of the lists
+        var windowHeight = window.innerHeight;
+        var lists = document.getElementsByClassName('list-bottom');
+        var top = document.getElementById('header').clientHeight;
+        top += document.getElementsByClassName('list-top')[0].clientHeight;
+        // With default font size at 16px
+        var padding = 0.5 * 16 * 2;
+        top += padding;
+        top += document.getElementsByClassName('list-cap')[0].clientHeight;
+        for (var i = 0; i < lists.length; i++) {
+            lists[i].style['max-height'] = (windowHeight - top).toString() + 'px';
+        }
     }
 
     _forceUpdateError(err) {
@@ -172,11 +237,18 @@ class List extends React.Component {
         BoardActions.forceUserUpdate(this.props.uid);
     }
 
-    componentDidMount() {
-        if (!this.props.disable.sort) {
-            var element = React.findDOMNode(this.refs.list);
-            var slip = new Slip(element);
-        }
+    createButtonClicked(event) {
+        event.preventDefault();
+
+        this.setState({
+            isCreateShown: !this.state.isCreateShown
+        });
+    }
+
+    createDialogClosed() {
+        this.setState({
+            isCreateShown: false
+        });
     }
 
     render() {
@@ -184,7 +256,13 @@ class List extends React.Component {
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
         var updateButton = (
-            <input type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
+            <input className="right" type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
+        );
+        var createButton = (
+            <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
+        );
+        var taskCreateBox = (
+            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} />
         );
 
         return (
@@ -192,13 +270,15 @@ class List extends React.Component {
                 <div className="list-top">
                     <h2 className="no-margin">{list.attributes.title}</h2>
                     { this.props.name === 'today' ? updateButton : null }
+                    { this.props.disable.create ? null : createButton }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
-                    {this.props.disable.create ? null : <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} /> }
+                    {this.state.isCreateShown ? taskCreateBox : null }
                     {list.attributes.tasks.map((task) => {
                         return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
                     })}
                 </div>
+                <div className={"list-cap"}></div>
             </div>
         )
     }
@@ -223,8 +303,8 @@ class BoardView extends React.Component {
         return (
             <div>
                 <div className="board">
-                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true}} />
-                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true}} />
+                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true, age: true}} />
+                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true, age: true}} />
                     <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
                     <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
                 </div>

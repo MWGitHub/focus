@@ -49,11 +49,11 @@ body {
   display: block;
 }
 
-.float-left {
+.left {
   float: left;
 }
 
-.float-right {
+.right {
   float: right;
 }
 
@@ -66,7 +66,7 @@ body {
 }
 
 .no-select {
-  @include no-select;
+  @extend %no-select;
 }
 
 .rounded {
@@ -196,12 +196,24 @@ div.board {
 }
 
 div.list {
+  @include clearfix;
   @include border-top-radius($base-border-radius);
   width: 24.25%;
   float: left;
   background-color: $blue-grey;
   padding: 0;
   margin-left: 0.6%;
+
+  input[type='button'], input[type='submit'] {
+    padding: 0.25em;
+  }
+
+  input[type="button"].create {
+    width: em(25px);
+    height: em(25px);
+    background: $action-color url("/media/images/create.png") no-repeat;
+    background-size: cover;
+  }
 }
 
 .list-top {
@@ -213,18 +225,20 @@ div.list {
     float: left;
     line-height: 1.3;
   }
-
-  input[type='button'] {
-    padding: 0.25em;
-    float: right;
-  }
 }
 
 .list-bottom {
+  @include clearfix;
+  background-color: $near-white;
+  padding: 0.3em 0.3em 0 0.3em;
+  overflow-y: auto;
+}
+
+.list-cap {
   @include border-bottom-radius($base-border-radius);
   @include clearfix;
   background-color: $near-white;
-  padding: 0.3em;
+  padding: 0.2em;
 }
 
 .list-tasks .task {
@@ -244,9 +258,10 @@ div.list {
 }
 
 div.task {
-  @include white-space-pre-wrap;
+  @extend %white-space-pre-wrap;
   @extend .no-select;
   @extend .rounded;
+  @include clearfix;
   width: 100%;
   padding: 0.5em;
   margin-top: 0.5em;
@@ -254,5 +269,20 @@ div.task {
 
   &:first-child {
     margin-top: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  label {
+    float: left;
+    font-size: 1em;
+  }
+
+  span.error {
+    float: right;
+    color: $error-font-color;
+    font-size: 0.7em;
   }
 }

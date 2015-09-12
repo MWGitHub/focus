@@ -10,8 +10,8 @@ Internal.required = function(v) {
 };
 
 Internal.stringMinMax = function(v, min, max) {
-    if (v.length < min) return 'must be at least ' + min + ' characters long';
-    if (v.length > max) return 'must not be longer than ' + max + ' characters long';
+    if (v.length < min) return 'must be at least ' + min + ' characters';
+    if (v.length > max) return 'must not be longer than ' + max + ' characters';
     return null;
 };
 
@@ -25,6 +25,10 @@ Validation.Rules = {
     Password: {
         min: 6,
         max: 100
+    },
+    Task: {
+        min: 1,
+        max: 30
     }
 };
 
@@ -61,6 +65,15 @@ Validation.password = function(v) {
     return null;
 };
 
+Validation.task = function(v) {
+    var message = Internal.required(v);
+    if (message) return message;
+
+    message = Internal.stringMinMax(v, Validation.Rules.Task.min, Validation.Rules.Task.max);
+    if (message) return message;
+
+    return null;
+};
 
 
 export default Validation;

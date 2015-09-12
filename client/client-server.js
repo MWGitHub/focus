@@ -13,7 +13,7 @@ app.all('*', function(req, res, next) {
 
     var url = req.url;
     var segments = url.split('/');
-    if (segments.length >= 2 && segments[1] === 'media') {
+    if (segments.length >= 2 && (segments[1] === 'media' || segments[1] === 'bower_components')) {
         next();
     } else {
         res.sendFile(path.join(__dirname + '/index.html'));
@@ -21,6 +21,7 @@ app.all('*', function(req, res, next) {
 });
 
 app.use('/media', express.static('media'));
+app.use('/bower_components', express.static('bower_components'));
 
 var server = app.listen(8000, '127.0.0.1', function() {
     "use strict";
