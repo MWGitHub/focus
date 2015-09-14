@@ -12,4 +12,7 @@ client/build
 client/media
 client/node_modules
 client/working
+client/config.json
 npm-debug.log
+.hgignore
+.hg

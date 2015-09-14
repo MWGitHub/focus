@@ -3,8 +3,9 @@
  */
 import request from 'reqwest';
 import AuthStore from '../stores/AuthStore';
+import Config from '../../config.json';
 
-var baseURL = 'http://mwtest.xyz:8080/api/v1';
+var baseURL = Config.baseURL;
 var contentType = 'application/x-www-form-urlencoded';
 
 var API = {
