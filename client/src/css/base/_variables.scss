@@ -50,6 +50,8 @@ $secondary-background-color: tint($base-border-color, 75%);
 $field-background-color: $near-white;
 $contrast-background-color: $near-black;
 $secondary-contrast-background-color: tint($contrast-background-color, 75%);
+$negative-background-color: tint($red, 30%);
+$positive-background-color: tint($green, 15%);
 $error-background: tint($red, 95%);
 $list-background-color: $blue-grey;
 $list-task-color: $bluer-grey;

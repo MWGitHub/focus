@@ -211,8 +211,6 @@ div.list {
   input[type="button"].create {
     width: em(25px);
     height: em(25px);
-    background: $action-color url("/media/images/create.png") no-repeat;
-    background-size: cover;
   }
 }
 
@@ -272,6 +270,7 @@ div.task {
   }
 
   h3 {
+    font-size: 1.1em;
     margin: 0 0 0.5em 0;
   }
 
@@ -288,5 +287,21 @@ div.task {
     float: right;
     color: $error-font-color;
     font-size: 0.7em;
+  }
+
+  input.negative {
+    background-color: $negative-background-color;
+
+    &:hover, &:focus {
+      background-color: shade($negative-background-color, 20%);
+    }
+  }
+
+  input.positive {
+    background-color: $positive-background-color;
+
+    &:hover, &:focus {
+      background-color: shade($positive-background-color, 20%);
+    }
   }
 }

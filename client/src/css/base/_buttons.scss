@@ -38,7 +38,8 @@
 }
 
 a.secondary-button {
-  @extend a.button;
+  @extend .button;
+
   background-color: $secondary-action-color;
 
   &:active, &:visited {

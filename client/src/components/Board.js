@@ -100,10 +100,10 @@ class Task extends React.Component {
             <div className="task">
                 <h3>{task.attributes.title}</h3>
                 { this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
-                { shouldHideDelete ? null : <input className="left" type="button" onClick={this.deleteTask.bind(this)} value="Delete" /> }
-                { this.props.disable.left ? null : <input className="left" type="button" onClick={this.moveTaskLeft.bind(this)} value="&lt;-" /> }
-                { this.props.disable.right ? null : <input className="right" type="button" button onClick={this.moveTaskRight.bind(this)} value="-&gt;" /> }
-                { this.props.disable.complete ? null : <input className="left" type="button" button onClick={this.complete.bind(this)} value="Complete" /> }
+                { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
+                { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
+                { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
+                { this.props.disable.complete ? null : <input className="right positive" type="button" button onClick={this.complete.bind(this)} value="complete" /> }
             </div>
         )
     }
@@ -173,8 +173,8 @@ class TaskCreateBox extends React.Component {
                         { this.state.message ? <span className="error">{this.state.message}</span> : null }
                     </div>
                     <input id="task-title" type="text" ref="title" placeholder="Create New Task" required />
-                    <input className="left" type="button" value="Cancel" onClick={this.props.closeCallback} />
-                    <input className="right" type="submit" value="Create" />
+                    <input className="left negative" type="button" value="cancel" onClick={this.props.closeCallback} />
+                    <input className="right positive" type="submit" value="create" />
                 </form>
             </div>
         )
@@ -256,7 +256,7 @@ class List extends React.Component {
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
         var updateButton = (
-            <input className="right" type="button" value="Force Update" onClick={this.forceUpdate.bind(this)} />
+            <input className="right" type="button" value="force update" onClick={this.forceUpdate.bind(this)} />
         );
         var createButton = (
             <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
