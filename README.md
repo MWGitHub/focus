@@ -5,7 +5,9 @@ tasks are set, deleted, and updated.
 
 ## Installation
 
-Install postgresql and set up the database that will be used for the application.  
+Install postgresql and set up the database that will be used for the application.
+Install redis for storing sessions.
+
 Edit knexfile-sample.js with your database credentials.  
 Rename the file to knexfile.js
 

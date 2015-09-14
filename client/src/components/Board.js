@@ -98,7 +98,7 @@ class Task extends React.Component {
             (this.props.list.attributes.title === ListTitles.today && this.props.task.attributes.age <= 7);
         return (
             <div className="task">
-                <h3 className="no-margin">{task.attributes.title}</h3>
+                <h3>{task.attributes.title}</h3>
                 { this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
                 { shouldHideDelete ? null : <input className="left" type="button" onClick={this.deleteTask.bind(this)} value="Delete" /> }
                 { this.props.disable.left ? null : <input className="left" type="button" onClick={this.moveTaskLeft.bind(this)} value="&lt;-" /> }
