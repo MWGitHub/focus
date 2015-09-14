@@ -6,14 +6,15 @@ var Board = require('./src/lib/board');
 var Task = require('./src/lib/task');
 var Boom = require('boom');
 var RedisClient = require('./src/lib/redis-client');
+var Config = require('./config.json');
 
 // Connect to the database
 var bookshelf = require('./src/lib/bookshelf');
 
 // Retrieve the port from the arguments if given
 var args = process.argv.slice(2);
-var host = '0.0.0.0';
-var port = 8080;
+var host = Config.host;
+var port = Config.port;
 // TODO: Use argument parser instead
 /*
 if (args[0]) {

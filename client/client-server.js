@@ -4,7 +4,7 @@
 
 var express = require('express');
 var path = require('path');
-
+var config = require('./config.json');
 
 var app = express();
 
@@ -23,7 +23,7 @@ app.all('*', function(req, res, next) {
 app.use('/media', express.static('media'));
 app.use('/bower_components', express.static('bower_components'));
 
-var server = app.listen(8000, '127.0.0.1', function() {
+var server = app.listen(config.port, config.host, function() {
     "use strict";
 
     var host = server.address().address;

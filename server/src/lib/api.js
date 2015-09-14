@@ -10,7 +10,7 @@ var config = require('../../config.json');
  * Route to append for the API.
  * @type {string}
  */
-module.exports.route = '/api/v1';
+module.exports.route = config.apiRoute;
 
 /**
  * Default time zone.
