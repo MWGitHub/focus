@@ -172,7 +172,7 @@ class TaskCreateBox extends React.Component {
                         <label htmlFor="task-title">New Task</label>
                         { this.state.message ? <span className="error">{this.state.message}</span> : null }
                     </div>
-                    <input id="task-title" type="text" ref="title" placeholder="Create New Task" required />
+                    <input className={this.state.message ? "error" : ""} id="task-title" type="text" ref="title" placeholder="Create New Task" required />
                     <input className="left negative" type="button" value="cancel" onClick={this.props.closeCallback} />
                     <input className="right positive" type="submit" value="create" />
                 </form>

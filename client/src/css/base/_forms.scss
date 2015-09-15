@@ -75,6 +75,11 @@ form .error {
   }
 }
 
+input.error[type="text"], input.error[type="password"] {
+  background-color: $error-background;
+  border: $error-border;
+}
+
 textarea {
   resize: vertical;
 }
