@@ -11,8 +11,9 @@ class SettingsView extends React.Component {
         this.state = {
             showGenericError: false,
             passwordMessage: null,
-            passwordCheckMessage: null
-        }
+            passwordCheckMessage: null,
+            hasUpdated: false
+        };
         this.onInputChange = this._onInputChange.bind(this);
     }
 
@@ -84,10 +85,19 @@ class SettingsView extends React.Component {
         }
     }
 
-    _registerError(err) {
+    _updateError(err) {
         this.setState({
-            showGenericError: true
+            showGenericError: true,
+            hasUpdated: false
         });
+    }
+
+    _updateSuccess() {
+        this.setState({
+            hasUpdated: true
+        });
+        React.findDOMNode(this.refs.password).value = '';
+        React.findDOMNode(this.refs.passwordcheck).value = '';
     }
 
     handleSubmit(e) {
@@ -96,7 +106,10 @@ class SettingsView extends React.Component {
 
         if (this._validateAll()) {
             var password = React.findDOMNode(this.refs.password).value;
-            UserActions.update(this.props.uid, password, null, this._registerError.bind(this));
+            //var timezone = React.findDOMNode(this.refs.timezone).value;
+            UserActions.update(this.props.uid, password, null,
+                this._updateSuccess.bind(this),
+                this._updateError.bind(this));
         }
     }
 
@@ -111,7 +124,9 @@ class SettingsView extends React.Component {
         "use strict";
         return (
             <div className="form-page">
-                { this.state.showGenericError ? <p className="error">An error has occurred, settings unchanged.</p> : null }
+                <h1>User Settings</h1>
+                { this.state.showGenericError ? <p className="bubble negative error">An error has occurred, settings unchanged.</p> : null }
+                { this.state.hasUpdated ? <p className="bubble positive">Your settings have been updated!</p> : null }
                 <form className="form" onSubmit={this.handleSubmit.bind(this)}>
                     <h3>Change Password</h3>
                     <div className={'form-item' + (passwordMessage ? ' error' : '')}>

@@ -34,21 +34,27 @@ var UserActions = {
             timezone: timezone
         });
 
-        API.doAuthActionTo(API.parseRoute(API.routes.updateUser, {id: uid}), API.methods.post,
-            {password: password, timezone: timezone},
-            () => {
+        var data = {};
+        if (password) {
+            data.password = password;
+        }
+        if (timezone) {
+            data.timezone = timezone;
+        }
+        API.doAuthActionTo(API.parseRoute(API.routes.updateUser, {id: uid}), API.methods.post, data,
+            (result) => {
                 Dispatcher.dispatch({
                     actionType: Actions.updateUser,
                     state: Actions.State.complete
                 });
-                if (success) success();
+                if (success) success(result);
             },
-            (e) => {
+            (err) => {
                 Dispatcher.dispatch({
                     actionType: Actions.updateUser,
                     state: Actions.State.failed
                 });
-                if (error) error(e);
+                if (error) error(err);
             });
     }
 };

@@ -73,6 +73,13 @@ body {
   @include border-radius($base-border-radius);
 }
 
+.negative {
+  background-color: $negative-background-color;
+}
+
+.positive {
+  background-color: $positive-background-color;
+}
 
 /*
  * Page layout styles
@@ -290,18 +297,21 @@ div.task {
   }
 
   input.negative {
-    background-color: $negative-background-color;
-
     &:hover, &:focus {
       background-color: shade($negative-background-color, 20%);
     }
   }
 
   input.positive {
-    background-color: $positive-background-color;
-
     &:hover, &:focus {
       background-color: shade($positive-background-color, 20%);
     }
   }
 }
+
+.bubble {
+  @include padding($base-spacing / 2);
+  @include border-radius($base-border-radius);
+  color: $contrast-font-color;
+}
+

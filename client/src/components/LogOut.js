@@ -16,6 +16,10 @@ class LogOut extends React.Component {
     componentDidMount() {
         this.changeListener = this._onChange.bind(this);
         AuthStore.addChangeListener(this.changeListener);
+
+        if (this.state.isLoggedIn) {
+            LoginActions.logout();
+        }
     }
 
     componentWillUnmount() {
@@ -30,7 +34,6 @@ class LogOut extends React.Component {
 
     render() {
         if (this.state.isLoggedIn) {
-            LoginActions.logout();
             return (
                 <div>
                     <p>Logging out</p>
