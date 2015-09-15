@@ -334,6 +334,49 @@ lab.experiment('test authentication', function() {
         });
     });
 
+    lab.test('change password', function(done) {
+        server.inject({
+            method: 'POST',
+            url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
+            headers: {
+                authorization: jwt
+            },
+            payload: {
+                password: 'newpass'
+            }
+        }, function(response) {
+            server.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/users/login',
+                payload: {
+                    username: userInstances[0].get('username'),
+                    password: 'newpass'
+                }
+            }, function(response) {
+                jwt = response.result.data.token;
+                assert.equal(response.result.data.id, userInstances[0].get('id'));
+                assert.equal(response.statusCode, 200);
+                done();
+            });
+        })
+    });
+
+    lab.test('change password unauth should fail', function(done) {
+        server.inject({
+            method: 'POST',
+            url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
+            headers: {
+                authorization: 'none'
+            },
+            payload: {
+                password: 'newpass'
+            }
+        }, function(response) {
+            assert.equal(response.statusCode, 401);
+            done();
+        })
+    });
+
     lab.test('delete self', function(done) {
         server.inject({
             method: 'DELETE',

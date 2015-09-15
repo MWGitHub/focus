@@ -187,11 +187,11 @@ UserHandler.retrieve = function(request, reply) {
 };
 
 /**
- * Updates the user.
+ * Ages the user.
  * @param request
  * @param reply
  */
-UserHandler.update = function(request, reply) {
+UserHandler.age = function(request, reply) {
     var force = request.payload['force'];
     User.forge({id: request.auth.credentials.id}).fetch({require: true})
         // Update the user if needed
@@ -200,6 +200,43 @@ UserHandler.update = function(request, reply) {
         })
         .then(function () {
             reply(API.makeStatusMessage('user-update', true, 'User updated'));
+        })
+        .catch(function (err) {
+            reply(Boom.notFound());
+        });
+};
+
+UserHandler.update = function(request, reply) {
+    var password = request.payload['password'];
+    var timezone = request.payload['timezone'];
+    var options = {};
+    if (timezone) {
+        options.timezone = timezone;
+    }
+
+    var user;
+    User.forge({id: request.auth.credentials.id}).fetch({require: true})
+    .then(function(result) {
+            user = result;
+            // Hash the password if changed
+            if (password) {
+                return Auth.hash(password);
+            } else {
+                return(null);
+            }
+        })
+        .then(function(hash) {
+            if (hash) {
+                options.password = hash;
+            }
+        })
+        .then(function() {
+            return user.set(options).save();
+        })
+        .then(function() {
+            reply(API.makeData({
+                id: user.get('id')
+            }))
         })
         .catch(function (err) {
             reply(Boom.notFound());

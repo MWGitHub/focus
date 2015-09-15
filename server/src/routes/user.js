@@ -80,11 +80,26 @@ var routes = [
     {
         method: 'POST',
         path: API.route + '/users/age',
-        handler: UserAPI.update,
+        handler: UserAPI.age,
         config: {
             validate: {
                 payload: {
                     force: Joi.boolean()
+                }
+            },
+            auth: 'jwt',
+            cors: true
+        }
+    },
+    {
+        method: 'POST',
+        path: API.route + '/users/{id}/update',
+        handler: UserAPI.update,
+        config: {
+            validate: {
+                payload: {
+                    password: Joi.string().min(6).max(100),
+                    timezone: Joi.string().valid(moment.tz.names())
                 }
             },
             auth: 'jwt',
