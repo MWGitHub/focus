@@ -79,7 +79,7 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/users/update',
+        path: API.route + '/users/age',
         handler: UserAPI.update,
         config: {
             validate: {

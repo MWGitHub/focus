@@ -7,6 +7,7 @@ import Index from './components/Index';
 import Routes from './constants/Routes';
 import Logout from './components/LogOut';
 import Board from './components/Board';
+import Settings from './components/Settings';
 import AuthStore from './stores/AuthStore';
 import config from '../config.json';
 
@@ -18,6 +19,7 @@ var routes = (
             <Route name={Routes.register} path={Routes.register} handler={Register}/>
             <Route name={Routes.login} path={Routes.login + ':next?'} handler={Login}/>
             <Route name={Routes.logout} path={Routes.logout} handler={Logout}/>
+            <Route name={Routes.settings} path={Routes.settings} handler={Settings}/>
         </Route>
         <Route handler={Index.IndexMinimal}>
             <Route name={Routes.board} path={Routes.board} handler={Board}/>

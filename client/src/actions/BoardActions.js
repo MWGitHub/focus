@@ -7,13 +7,13 @@ import UserActions from './UserActions';
 var BoardActions = {
     forceUserUpdate: function(uid) {
         Dispatcher.dispatch({
-            actionType: Actions.updateUser,
+            actionType: Actions.ageUser,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.updateUser, API.methods.post, {force: true},
+        API.doAuthActionTo(API.routes.ageUser, API.methods.post, {force: true},
             (data) => {
                 Dispatcher.dispatch({
-                    actionType: Actions.updateUser,
+                    actionType: Actions.ageUser,
                     state: Actions.State.complete,
                     data: data
                 });
@@ -21,7 +21,7 @@ var BoardActions = {
             },
             (error) => {
                 Dispatcher.dispatch({
-                    actionType: Actions.updateUser,
+                    actionType: Actions.ageUser,
                     state: Actions.State.failed
                 });
             }

@@ -41,6 +41,7 @@ class AuthNav extends React.Component {
         var menu = (
             <ul className="nav-menu-content">
                 <li><Router.Link to={Routes.board}>Board</Router.Link></li>
+                <li><Router.Link to={Routes.settings}>Settings</Router.Link></li>
                 <li><Router.Link to={Routes.logout}>Log Out</Router.Link></li>
             </ul>
         );

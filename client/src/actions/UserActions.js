@@ -24,6 +24,32 @@ var UserActions = {
                 });
             }
         )
+    },
+
+    update: function(uid, password, timezone, success, error) {
+        Dispatcher.dispatch({
+            actionType: Actions.updateUser,
+            state: Actions.State.loading,
+            password: password,
+            timezone: timezone
+        });
+
+        API.doAuthActionTo(API.parseRoute(API.routes.updateUser, {id: uid}), API.methods.post,
+            {password: password, timezone: timezone},
+            () => {
+                Dispatcher.dispatch({
+                    actionType: Actions.updateUser,
+                    state: Actions.State.complete
+                });
+                if (success) success();
+            },
+            (e) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.updateUser,
+                    state: Actions.State.failed
+                });
+                if (error) error(e);
+            });
     }
 };
 

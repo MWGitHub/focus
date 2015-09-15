@@ -11,6 +11,7 @@ var Actions = {
 
     retrieveUser: 'retrieveUser',
     updateUser: 'updateUser',
+    ageUser: 'ageUser',
 
     createTask: 'createTask',
     deleteTask: 'deleteTask',
