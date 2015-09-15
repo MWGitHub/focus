@@ -50,6 +50,7 @@ var User = Bookshelf.Model.extend({
                     id: instance.get('id'),
                     attributes: {
                         username: instance.get('username'),
+                        timezone: instance.get('timezone'),
                         boards: []
                     }
                 };
