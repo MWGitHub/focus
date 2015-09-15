@@ -12,8 +12,8 @@ import config from '../config.json';
 
 var Route = Router.Route;
 var routes = (
-    <Route handler={Index.Base}>
-        <Route handler={Index.Index} path={config.root}>
+    <Route handler={Index.Base} path={config.root + '/'}>
+        <Route handler={Index.Index}>
             <Router.DefaultRoute handler={Index.Home} />
             <Route name={Routes.register} path={Routes.register} handler={Register}/>
             <Route name={Routes.login} path={Routes.login + ':next?'} handler={Login}/>

@@ -1,10 +1,12 @@
+import config from '../../config.json';
+
 class RouterUtil {
     constructor() {
         this._router = null;
     }
 
     transitionTo(link) {
-        this._router.transitionTo(link);
+        this._router.transitionTo(config.root + link);
     }
 
     setRouter(router) {
