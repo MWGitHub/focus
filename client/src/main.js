@@ -8,11 +8,12 @@ import Routes from './constants/Routes';
 import Logout from './components/LogOut';
 import Board from './components/Board';
 import AuthStore from './stores/AuthStore';
+import config from '../config.json';
 
 var Route = Router.Route;
 var routes = (
     <Route handler={Index.Base}>
-        <Route handler={Index.Index} path='/'>
+        <Route handler={Index.Index} path={config.root}>
             <Router.DefaultRoute handler={Index.Home} />
             <Route name={Routes.register} path={Routes.register} handler={Register}/>
             <Route name={Routes.login} path={Routes.login + ':next?'} handler={Login}/>

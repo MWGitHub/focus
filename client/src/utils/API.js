@@ -5,7 +5,7 @@ import request from 'reqwest';
 import AuthStore from '../stores/AuthStore';
 import Config from '../../config.json';
 
-var baseURL = Config.baseURL;
+var baseURL = Config.apiBaseURL;
 var contentType = 'application/x-www-form-urlencoded';
 
 var API = {
