@@ -3,6 +3,7 @@ import Router from 'react-router';
 import Routes from '../constants/Routes';
 import AuthStore from '../stores/AuthStore';
 import UserStore from '../stores/UserStore';
+import Config from '../../config.json';
 
 class AuthNav extends React.Component {
     constructor(props) {
@@ -114,7 +115,7 @@ class Header extends React.Component {
         return (
             <header id="header" className="container">
                 <div className="header-left">
-                    <h2 className="no-margin"><Router.Link to="/">Focus</Router.Link></h2>
+                    <h2 className="no-margin"><Router.Link to={Config.root + '/'}>Focus</Router.Link></h2>
                 </div>
                 <div className="header-right">
                     <Nav authenticated={this.state.isLoggedIn}
