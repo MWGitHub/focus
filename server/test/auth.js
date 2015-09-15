@@ -361,6 +361,24 @@ lab.experiment('test authentication', function() {
         })
     });
 
+    lab.test('change timezone', function(done) {
+        server.inject({
+            method: 'POST',
+            url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
+            headers: {
+                authorization: jwt
+            },
+            payload: {
+                timezone: moment.tz.names()[0]
+            }
+        }, function(response) {
+            User.forge({id: userInstances[0].get('id')}).fetch().then(function(user) {
+                assert.equal(user.get('timezone'), moment.tz.names()[0]);
+                done();
+            });
+        });
+    });
+
     lab.test('change password unauth should fail', function(done) {
         server.inject({
             method: 'POST',

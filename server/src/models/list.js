@@ -52,6 +52,7 @@ var List = Bookshelf.Model.extend({
                 var data = {
                     type: 'lists',
                     id: instance.get('id'),
+                    timezone: instance.get('timezone'),
                     attributes: {
                         title: instance.get('title'),
                         tasks: []

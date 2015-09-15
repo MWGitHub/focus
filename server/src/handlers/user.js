@@ -235,7 +235,8 @@ UserHandler.update = function(request, reply) {
         })
         .then(function() {
             reply(API.makeData({
-                id: user.get('id')
+                id: user.get('id'),
+                timezone: user.get('timezone')
             }))
         })
         .catch(function (err) {
