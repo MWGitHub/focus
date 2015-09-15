@@ -2,30 +2,9 @@ import API from '../utils/API';
 import Dispatcher from '../utils/Dispatcher';
 import request from 'reqwest';
 import Actions from '../constants/Actions';
+import UserActions from './UserActions';
 
 var BoardActions = {
-    retrieveData: function(uid) {
-        Dispatcher.dispatch({
-            actionType: Actions.retrieveUser,
-            state: Actions.State.loading
-        });
-        API.retrieveAuthDataFrom(API.routes.user + '/' + uid,
-            (data) => {
-                Dispatcher.dispatch({
-                    actionType: Actions.retrieveUser,
-                    state: Actions.State.complete,
-                    data: data
-                });
-            },
-            (error) => {
-                Dispatcher.dispatch({
-                    actionType: Actions.retrieveUser,
-                    state: Actions.State.failed
-                });
-            }
-        )
-    },
-
     forceUserUpdate: function(uid) {
         Dispatcher.dispatch({
             actionType: Actions.updateUser,
@@ -38,7 +17,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     data: data
                 });
-                this.retrieveData(uid);
+                UserActions.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -66,7 +45,7 @@ var BoardActions = {
                     list: list,
                     title: title
                 });
-                this.retrieveData(uid);
+                UserActions.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -89,7 +68,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     id: id
                 });
-                this.retrieveData(uid);
+                UserActions.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -118,7 +97,7 @@ var BoardActions = {
                     id: id,
                     position: position
                 });
-                this.retrieveData(uid);
+                UserActions.retrieveData(uid);
             },
             (error) => {
                 Dispatcher.dispatch({

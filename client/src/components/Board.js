@@ -2,6 +2,7 @@ import React from 'react';
 import UserStore from '../stores/UserStore';
 import Authenticator from './Authenticator';
 import BoardActions from '../actions/BoardActions';
+import UserActions from '../actions/UserActions';
 import AuthStore from '../stores/AuthStore';
 import Validate from '../utils/Validation';
 
@@ -329,7 +330,7 @@ class Board extends React.Component {
         this.listener = this.onChange.bind(this);
         UserStore.addChangeListener(this.listener);
 
-        BoardActions.retrieveData(this.state.uid);
+        UserActions.retrieveData(this.state.uid);
     }
 
     onChange() {
