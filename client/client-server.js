@@ -13,15 +13,17 @@ app.all('*', function(req, res, next) {
 
     var url = req.url;
     var segments = url.split('/');
-    if (segments.length >= 2 && (segments[1] === 'media' || segments[1] === 'bower_components')) {
+    var rootSegments = config.root.split('/');
+    var offset = rootSegments.length - 1;
+    if (segments.length >= 2 + offset && (segments[offset + 1] === 'media' || segments[offset + 1] === 'bower_components')) {
         next();
     } else {
         res.sendFile(path.join(__dirname + '/index.html'));
     }
 });
 
-app.use('/media', express.static('media'));
-app.use('/bower_components', express.static('bower_components'));
+app.use(config.root + '/media', express.static('media'));
+app.use(config.root + '/bower_components', express.static('bower_components'));
 
 var server = app.listen(config.port, config.host, function() {
     "use strict";
