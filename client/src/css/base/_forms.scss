@@ -60,10 +60,14 @@ select[multiple=multiple] {
   }
 }
 
+%input-error-style {
+  background-color: $error-background;
+  border: $error-border;
+}
+
 form .error {
   input[type="text"], input[type="password"] {
-    background-color: $error-background;
-    border: $error-border;
+    @extend %input-error-style;
   }
 
   label span.error {
@@ -76,8 +80,7 @@ form .error {
 }
 
 input.error[type="text"], input.error[type="password"] {
-  background-color: $error-background;
-  border: $error-border;
+  @extend %input-error-style;
 }
 
 textarea {
