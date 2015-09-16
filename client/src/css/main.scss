@@ -333,12 +333,16 @@ div.task {
   }
 
   input.negative {
+    background-color: $negative-background-color;
+
     &:hover, &:focus {
       background-color: shade($negative-background-color, 20%);
     }
   }
 
   input.positive {
+    background-color: $positive-background-color;
+
     &:hover, &:focus {
       background-color: shade($positive-background-color, 20%);
     }
