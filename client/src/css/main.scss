@@ -216,8 +216,9 @@ div.list {
   }
 
   input[type="button"].create {
-    width: em(25px);
-    height: em(25px);
+    width: em(24px);
+    height: em(24px);
+    margin-left: 0.5em;
   }
 }
 
@@ -230,6 +231,10 @@ div.list {
     float: left;
     line-height: 1.3;
   }
+
+  .temporary {
+    background-color: $temporary-background-color;
+  }
 }
 
 .list-bottom {
@@ -237,6 +242,14 @@ div.list {
   background-color: $near-white;
   padding: 0.3em 0.3em 0 0.3em;
   overflow-y: auto;
+
+  .task.temporary {
+    background-color: tint($temporary-background-color, 60%);
+  }
+
+  .task.create-task.temporary {
+    background-color: tint($temporary-background-color, 60%);
+  }
 }
 
 .list-cap {
@@ -248,18 +261,41 @@ div.list {
 
 .list-tasks .task {
   background-color: $list-task-color;
+
+  &.create-task {
+    background-color: shade($list-task-color, 10%);
+  }
 }
 
 .list-tomorrow .task {
   background-color: $list-tomorrow-color;
+
+  &.create-task {
+    background-color: shade($list-tomorrow-color, 10%);
+  }
 }
 
 .list-today .task {
   background-color: $list-today-color;
+
+  &.create-task {
+    background-color: shade($list-today-color, 10%);
+  }
 }
 
 .list-done .task {
   background-color: $list-done-color;
+
+  &.create-task {
+    background-color: shade($list-done-color, 10%);
+  }
+}
+
+.list-description {
+  font-size: 1.2em;
+  color: $background-font-color;
+  margin: 0;
+  padding: $small-spacing;
 }
 
 div.task {

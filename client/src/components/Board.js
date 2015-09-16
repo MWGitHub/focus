@@ -166,11 +166,12 @@ class TaskCreateBox extends React.Component {
     render() {
         var list = this.props.list;
         var tasks = this.props.tasks;
+        var title = this.props.temporary ? "New Temporary Task" : "New Task";
         return (
-            <div className="task">
+            <div className="task create-task temporary">
                 <form onSubmit={this.createTask(list, tasks).bind(this)}>
                     <div className="top">
-                        <label htmlFor="task-title">New Task</label>
+                        <label htmlFor="task-title">{ title }</label>
                         { this.state.message ? <span className="error">{this.state.message}</span> : null }
                     </div>
                     <input className={this.state.message ? "error" : ""} id="task-title" type="text" ref="title" placeholder="Create New Task" required />
@@ -256,25 +257,49 @@ class List extends React.Component {
         var list = this.props.list;
         // Sort the tasks by position
         var tasks = list.attributes.tasks;
-        var updateButton = (
-            <input className="right" type="button" value="force update" onClick={this.forceUpdate.bind(this)} />
-        );
         var createButton = (
             <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
         );
+        var todayTop = (
+            <div>
+                <input className="create right temporary" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
+                <input className="right" type="button" value="force update" onClick={this.forceUpdate.bind(this)} />
+            </div>
+        );
         var taskCreateBox = (
             <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} />
+        );
+        var temporaryCreateBox = (
+            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} temporary={true} />
+        );
+
+        var taskDescription = (
+            <p className="list-description">Place tasks to be done in the future here.</p>
+        );
+        var tomorrowDescription = (
+            <p className="list-description">These tasks will move to the "Today" list at midnight.</p>
+        );
+        var todayDescription = (
+            <p className="list-description">Tasks in this list are not removable unless aged for over 7 days.</p>
+        );
+        var doneDescription = (
+            <p className="list-description">Tasks that have been completed within the last week.</p>
         );
 
         return (
             <div id={"list-" + list.id} className="list">
                 <div className="list-top">
                     <h2 className="no-margin">{list.attributes.title}</h2>
-                    { this.props.name === 'today' ? updateButton : null }
                     { this.props.disable.create ? null : createButton }
+                    { list.attributes.title === ListTitles.today ? todayTop : null }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
-                    {this.state.isCreateShown ? taskCreateBox : null }
+                    {this.state.isCreateShown && list.attributes.title !== ListTitles.today ? taskCreateBox : null }
+                    {this.state.isCreateShown && list.attributes.title === ListTitles.today ? temporaryCreateBox : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tasks ? taskDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.done ? doneDescription : null}
                     {list.attributes.tasks.map((task) => {
                         return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
                     })}
