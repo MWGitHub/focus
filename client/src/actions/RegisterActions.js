@@ -5,7 +5,7 @@ import API from '../utils/API';
 import Auth from '../utils/Auth';
 
 var RegisterActions = {
-    register: function(username, password, onError) {
+    register: function(username, password, tz, onError) {
         "use strict";
 
         Dispatcher.dispatch({
@@ -15,15 +15,19 @@ var RegisterActions = {
             password: password
         });
 
+        var data = {
+            username: username,
+            password: password
+        };
+        if (tz) {
+            data.timezone = tz;
+        }
         request({
             url: API.routes.register,
             method: 'post',
             contentType: 'application/x-www-form-urlencoded',
             crossOrigin: true,
-            data: {
-                username: username,
-                password: password
-            },
+            data: data,
             success: function(resp) {
                 // Log in after registering.
                 Auth.login(username, password, function(data) {

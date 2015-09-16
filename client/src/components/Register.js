@@ -5,6 +5,7 @@ import AuthStore from '../stores/AuthStore';
 import RouterUtil from '../utils/RouterUtil';
 import LoginActions from '../actions/LoginActions';
 import Validation from '../utils/Validation';
+import jstz from '../../vendor/js/jstz';
 
 class RegisterForm extends React.Component {
     constructor(props) {
@@ -107,7 +108,8 @@ class RegisterForm extends React.Component {
         var passwordCheck = React.findDOMNode(this.refs.passwordcheck).value;
 
         if (this._validateAll()) {
-            RegisterActions.register(username, password, this._registerError.bind(this));
+            var tz = jstz.determine().name();
+            RegisterActions.register(username, password, tz, this._registerError.bind(this));
         }
     }
 
