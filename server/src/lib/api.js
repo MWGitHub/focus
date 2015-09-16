@@ -133,14 +133,18 @@ module.exports.updateUserTasks = function(user, force) {
         var uid = user.get('id');
         var todayList;
         return List.forge({user_id: uid, title: 'Today'}).fetch({require: true})
-            // Update incomplete tasks by one age
+            // Update incomplete tasks by one age or delete temporary tasks
             .then(function (list) {
                 todayList = list;
                 return Task.where({list_id: list.get('id')}).fetchAll();
             })
             .then(function(tasks) {
                 return tasks.mapThen(function(model) {
-                    return model.set('age', model.get('age') + times).save().then();
+                    if (model.get('temporary')) {
+                        return model.destroy().then();
+                    } else {
+                        return model.set('age', model.get('age') + times).save().then();
+                    }
                 });
             })
             // Move all of tomorrow's task to today

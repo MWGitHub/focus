@@ -92,6 +92,29 @@ lab.experiment('test task', function() {
         });
     });
 
+    lab.test('create temporary', function(done) {
+        server.inject({
+            method: 'POST',
+            url: helper.apiRoute + '/tasks',
+            headers: {
+                //authorization: generateAuthHeader(testUsers[0], password)
+                authorization: jwt[0]
+            },
+            payload: {
+                title: 'temporaryTask',
+                list_id: idList1User1,
+                position: 500,
+                temporary: true
+            }
+        }, function(response) {
+            Task.forge({title: 'temporaryTask', list_id: idList1User1}).fetch().then(function(task) {
+                assert.equal(response.statusCode, 200);
+                assert.equal(task.get('temporary'), true);
+                done();
+            });
+        });
+    });
+
     lab.test('get should return not found', function(done) {
         server.inject({
             method: 'GET',

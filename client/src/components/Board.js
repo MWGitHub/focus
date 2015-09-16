@@ -97,14 +97,26 @@ class Task extends React.Component {
         // Do not allow Today tasks to be deleted unless over a week old
         var shouldHideDelete = this.props.disable.del ||
             (this.props.list.attributes.title === ListTitles.today && this.props.task.attributes.age <= 7);
+        var style = 'task';
+        // Temporary tasks complete by deletion.
+        var completeNormal = (
+            <input className="right positive" type="button" button onClick={this.complete.bind(this)} value="complete" />
+        );
+        var completeTemporary = (
+            <input className="right positive" type="button" button onClick={this.deleteTask.bind(this)} value="complete" />
+        );
+        var complete = task.attributes.temporary ? completeTemporary : completeNormal;
+        if (task.attributes.temporary) {
+            style += ' temporary';
+        }
         return (
-            <div className="task">
+            <div className={style}>
                 <h3>{task.attributes.title}</h3>
-                { this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
+                { task.attributes.temporary || this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
                 { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
                 { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
                 { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
-                { this.props.disable.complete ? null : <input className="right positive" type="button" button onClick={this.complete.bind(this)} value="complete" /> }
+                { this.props.disable.complete ? null : complete }
             </div>
         )
     }
@@ -159,7 +171,7 @@ class TaskCreateBox extends React.Component {
             // Set position to mid value if there are no tasks otherwise set it to the next lowest.
             var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
 
-            BoardActions.createTask(this.props.uid, list.id, title, position, this._updateTaskError.bind(this));
+            BoardActions.createTask(this.props.uid, list.id, title, position, this.props.temporary, this._updateTaskError.bind(this));
         }
     }
 

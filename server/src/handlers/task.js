@@ -12,6 +12,7 @@ var handler = {
         var list_id = request.payload['list_id'];
         var title = Hoek.escapeHtml(request.payload['title']);
         var position = request.payload['position'];
+        var temporary = request.payload['temporary'];
         var uid;
         User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
@@ -21,13 +22,17 @@ var handler = {
                 return List.forge({id: list_id, user_id: uid}).fetch({require: true})
             })
             .then(function(list) {
-                return Task.forge({
+                var data = {
                     list_id: list.get('id'),
                     user_id: uid,
                     title: title,
                     age: 0,
                     position: position
-                }).save();
+                };
+                if (temporary) {
+                    data.temporary = temporary;
+                }
+                return Task.forge(data).save();
             })
             .then(function(task) {
                 reply(API.makeStatusMessage('task-create', true, 'Task created'));

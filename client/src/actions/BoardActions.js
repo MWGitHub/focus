@@ -28,16 +28,20 @@ var BoardActions = {
         )
     },
 
-    createTask: function(uid, list, title, position) {
+    createTask: function(uid, list, title, position, temporary) {
         Dispatcher.dispatch({
             actionType: Actions.createTask,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.taskCreate, API.methods.post, {
-                list_id: list,
-                title: title,
-                position: position
-            },
+        var data = {
+            list_id: list,
+            title: title,
+            position: position
+        };
+        if (temporary) {
+            data.temporary = temporary;
+        }
+        API.doAuthActionTo(API.routes.taskCreate, API.methods.post, data,
             (resp) => {
                 Dispatcher.dispatch({
                     actionType: Actions.createTask,
