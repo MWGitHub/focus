@@ -263,7 +263,7 @@ div.list {
   background-color: $list-task-color;
 
   &.create-task {
-    background-color: shade($list-task-color, 10%);
+    background-color: shade($list-task-color, 15%);
   }
 }
 
@@ -271,24 +271,16 @@ div.list {
   background-color: $list-tomorrow-color;
 
   &.create-task {
-    background-color: shade($list-tomorrow-color, 10%);
+    background-color: shade($list-tomorrow-color, 15%);
   }
 }
 
 .list-today .task {
   background-color: $list-today-color;
-
-  &.create-task {
-    background-color: shade($list-today-color, 10%);
-  }
 }
 
 .list-done .task {
   background-color: $list-done-color;
-
-  &.create-task {
-    background-color: shade($list-done-color, 10%);
-  }
 }
 
 .list-description {

@@ -111,7 +111,7 @@ class Task extends React.Component {
         }
         return (
             <div className={style}>
-                <h3>{task.attributes.title}</h3>
+                <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
                 { task.attributes.temporary || this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
                 { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
                 { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
@@ -179,8 +179,9 @@ class TaskCreateBox extends React.Component {
         var list = this.props.list;
         var tasks = this.props.tasks;
         var title = this.props.temporary ? "New Temporary Task" : "New Task";
+        var style = this.props.temporary ? "task create-task temporary" : "task create-task";
         return (
-            <div className="task create-task temporary">
+            <div className={style}>
                 <form onSubmit={this.createTask(list, tasks).bind(this)}>
                     <div className="top">
                         <label htmlFor="task-title">{ title }</label>
