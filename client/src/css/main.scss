@@ -290,6 +290,14 @@ div.list {
   padding: $small-spacing;
 }
 
+.update-time {
+  padding: $small-spacing;
+  background-color: $base-background-color;
+  font-size: 0.65em;
+  @include border-radius($base-border-radius);
+  margin-right: 0.5em;
+}
+
 div.task {
   @extend %white-space-pre-wrap;
   @extend .no-select;
@@ -338,6 +346,21 @@ div.task {
     &:hover, &:focus {
       background-color: shade($positive-background-color, 20%);
     }
+  }
+
+  .age {
+    background-color: $base-background-color;
+    padding: $small-spacing / 2;
+    font-size: 0.85em;
+    @include border-radius($base-border-radius);
+  }
+
+  .right {
+    margin-left: 0.5em;
+  }
+
+  .left {
+    margin-right: 0.5em;
   }
 }
 

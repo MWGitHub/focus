@@ -5,6 +5,7 @@ import BoardActions from '../actions/BoardActions';
 import UserActions from '../actions/UserActions';
 import AuthStore from '../stores/AuthStore';
 import Validate from '../utils/Validation';
+import moment from 'moment-timezone';
 
 function getListByTitle(lists, title) {
     for (var i = 0; i < lists.length; i++) {
@@ -112,11 +113,13 @@ class Task extends React.Component {
         return (
             <div className={style}>
                 <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
-                { task.attributes.temporary || this.props.disable.age ? null : <p>Age: {task.attributes.age}</p> }
-                { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
-                { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
-                { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
-                { this.props.disable.complete ? null : complete }
+                <div className="task-info">
+                    { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
+                    { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
+                    { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
+                    { this.props.disable.complete ? null : complete }
+                    { task.attributes.temporary || this.props.disable.age ? null : <span className="age left">age: {task.attributes.age}</span> }
+                </div>
             </div>
         )
     }
@@ -273,6 +276,7 @@ class List extends React.Component {
         var createButton = (
             <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
         );
+
         var todayTop = (
             <div>
                 <input className="create right temporary" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
@@ -299,6 +303,16 @@ class List extends React.Component {
             <p className="list-description">Tasks that have been completed within the last week.</p>
         );
 
+        // Sort the tasks by age.
+        var tasks = list.attributes.tasks.sort(function(a, b) {
+            if (a.attributes.age < b.attributes.age) {
+                return 1;
+            } else if (a.attributes.age > b.attributes.age) {
+                return -1;
+            }
+            return 0;
+        });
+
         return (
             <div id={"list-" + list.id} className="list">
                 <div className="list-top">
@@ -313,7 +327,7 @@ class List extends React.Component {
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.done ? doneDescription : null}
-                    {list.attributes.tasks.map((task) => {
+                    {tasks.map((task) => {
                         return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
                     })}
                 </div>
