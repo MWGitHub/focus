@@ -14,11 +14,26 @@ function getListByTitle(lists, title) {
     return null;
 }
 
+/**
+ * List titles in the API.
+ * @type {{tasks: string, tomorrow: string, today: string, done: string}}
+ */
 var ListTitles = {
     tasks: 'Tasks',
     tomorrow: 'Tomorrow',
     today: 'Today',
     done: 'Done'
+};
+
+/**
+ * Displayable title for the list.
+ * @type {{tasks: string, tomorrow: string, today: string, done: string}}
+ */
+var ListTitleDisplay = {
+    tasks: 'Tasks',
+    tomorrow: 'Tomorrow',
+    today: 'Today',
+    done: 'Recently Completed'
 };
 
 /**
@@ -353,7 +368,7 @@ class List extends React.Component {
         return (
             <div id={"list-" + list.id} className="list">
                 <div className="list-top">
-                    <h2 className="no-margin">{list.attributes.title}</h2>
+                    <h2 className="no-margin">{ListTitleDisplay[this.props.name]}</h2>
                     { this.props.disable.create ? null : createButton }
                     { list.attributes.title === ListTitles.today ? todayTop : null }
                 </div>
