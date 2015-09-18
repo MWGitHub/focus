@@ -267,8 +267,9 @@ class List extends React.Component {
         var top = document.getElementById('header').clientHeight;
         top += document.getElementsByClassName('list-top')[0].clientHeight;
         top += document.getElementsByClassName('list-cap')[0].clientHeight;
+        top += 16;
         // Give some height for scroll bars.
-        top += this._calculateScrollbarHeight() * 2;
+        top += this._calculateScrollbarHeight();
         for (var i = 0; i < lists.length; i++) {
             lists[i].style['max-height'] = (windowHeight - top).toString() + 'px';
         }
@@ -329,18 +330,25 @@ class List extends React.Component {
             <p className="list-description">Tasks in this list are not removable unless aged for over 7 days.</p>
         );
         var doneDescription = (
-            <p className="list-description">Tasks that have been completed within the last week.</p>
+            <p className="list-description">Tasks that have been recently completed will be placed here.</p>
         );
 
         // Sort the tasks by age.
-        var tasks = list.attributes.tasks.sort(function(a, b) {
-            if (a.attributes.age < b.attributes.age) {
-                return 1;
-            } else if (a.attributes.age > b.attributes.age) {
-                return -1;
-            }
-            return 0;
-        });
+        if (list.attributes.title === ListTitles.today) {
+            var tasks = list.attributes.tasks.sort(function (a, b) {
+                if (a.attributes.age < b.attributes.age) {
+                    return 1;
+                } else if (a.attributes.age > b.attributes.age) {
+                    return -1;
+                }
+                return 0;
+            });
+        }
+
+        // Limit done tasks (should be done server side)
+        if (tasks.length > 10 && list.attributes.title === ListTitles.done) {
+            tasks = tasks.slice(0, 10);
+        }
 
         return (
             <div id={"list-" + list.id} className="list">
