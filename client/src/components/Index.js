@@ -6,6 +6,7 @@ import Routes from '../constants/Routes';
 
 import Header from './Header';
 import Footer from './Footer';
+import Analytics from './Analytics';
 
 class Home extends React.Component {
     static willTransitionTo(transition) {
@@ -35,6 +36,7 @@ class IndexMinimal extends React.Component {
     render() {
         return (
             <div id="page">
+                <Analytics />
                 <Header />
                 <section id="main">
                     <Router.RouteHandler/>
@@ -52,6 +54,7 @@ class Index extends React.Component {
     render() {
         return (
             <div id="page">
+                <Analytics />
                 <div className="top">
                     <Header />
                     <section id="main">
