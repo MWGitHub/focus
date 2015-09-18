@@ -230,16 +230,45 @@ class List extends React.Component {
         this._calculateHeight();
     }
 
+    /**
+     * Calculate the horizontal scroll bar.
+     * @returns {number} the horizontal scroll bar height.
+     * @private
+     */
+    _calculateScrollbarHeight() {
+        var inner = document.createElement('p');
+        inner.style.width = "200px";
+        inner.style.height = "100px";
+
+        var outer = document.createElement('div');
+        outer.style.position = "absolute";
+        outer.style.top = "0px";
+        outer.style.left = "0px";
+        outer.style.visibility = "hidden";
+        outer.style.width = "100px";
+        outer.style.height = "100px";
+        outer.style.overflow = "hidden";
+        outer.appendChild(inner);
+
+        document.body.appendChild(outer);
+        var h1 = outer.offsetHeight;
+        outer.style.overflow = 'scroll';
+        var h2 = outer.clientHeight;
+
+        document.body.removeChild(outer);
+
+        return (h1 - h2);
+    }
+
     _calculateHeight() {
         // Set the height of the lists
         var windowHeight = window.innerHeight;
         var lists = document.getElementsByClassName('list-bottom');
         var top = document.getElementById('header').clientHeight;
         top += document.getElementsByClassName('list-top')[0].clientHeight;
-        // With default font size at 16px
-        var padding = 0.5 * 16 * 2;
-        top += padding;
         top += document.getElementsByClassName('list-cap')[0].clientHeight;
+        // Give some height for scroll bars.
+        top += this._calculateScrollbarHeight() * 2;
         for (var i = 0; i < lists.length; i++) {
             lists[i].style['max-height'] = (windowHeight - top).toString() + 'px';
         }

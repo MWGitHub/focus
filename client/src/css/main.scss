@@ -200,16 +200,21 @@ div.board {
   @include clearfix;
   width: 100%;
   margin-top: 0.5em;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 div.list {
   @include clearfix;
   @include border-top-radius($base-border-radius);
-  width: 24.25%;
-  float: left;
+  //width: 24.25%;
+  white-space: normal;
+  display: inline-block;
+  width: 20em;
   background-color: $blue-grey;
   padding: 0;
   margin-left: 0.6%;
+  vertical-align: top;
 
   input[type='button'], input[type='submit'] {
     padding: 0.25em;
