@@ -230,7 +230,7 @@ class List extends React.Component {
     componentDidMount() {
         if (!this.props.disable.sort) {
             var element = React.findDOMNode(this.refs.list);
-            var slip = new Slip(element);
+            //var slip = new Slip(element);
         }
 
         this._calculateHeight();
