@@ -382,3 +382,12 @@ div.task {
   color: $contrast-font-color;
 }
 
+// Drag style
+.shadow {
+  background-color: $shade-background-color !important;
+}
+
+.drag {
+  transform: rotate(2deg);
+  box-shadow: 3px 3px 10px #000;
+}

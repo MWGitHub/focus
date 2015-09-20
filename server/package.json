@@ -12,6 +12,7 @@
     "bookshelf": "^0.8.1",
     "boom": "^2.8.0",
     "commander": "^2.8.1",
+    "eslint-plugin-hapi": "^1.2.0",
     "good": "^6.3.0",
     "good-console": "^5.0.2",
     "hapi": "^9.0.0",

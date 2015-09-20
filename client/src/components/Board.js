@@ -6,6 +6,7 @@ import UserActions from '../actions/UserActions';
 import AuthStore from '../stores/AuthStore';
 import Validate from '../utils/Validation';
 import moment from 'moment-timezone';
+import DraggableList from '../utils/DraggableList';
 
 function getListByTitle(lists, title) {
     for (var i = 0; i < lists.length; i++) {
@@ -126,7 +127,7 @@ class Task extends React.Component {
             style += ' temporary';
         }
         return (
-            <div className={style}>
+            <div className={'draggable ' + style}>
                 <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
                 <div className="task-info">
                     { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
@@ -230,6 +231,7 @@ class List extends React.Component {
     componentDidMount() {
         if (!this.props.disable.sort) {
             var element = React.findDOMNode(this.refs.list);
+            var draggable = new DraggableList(element, 'draggable', 'shadow', 'drag');
             //var slip = new Slip(element);
         }
 
