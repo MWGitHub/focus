@@ -55,7 +55,7 @@ class Index extends React.Component {
         return (
             <div id="page">
                 <Analytics />
-                <div className="top">
+                <div className="page-top">
                     <Header />
                     <section id="main">
                         <Router.RouteHandler/>

@@ -124,6 +124,7 @@ class DraggableList {
         this.shadowClass = '';
         this.draggingClass = '';
         this.dragTime = 300;
+        this.stepSize = 10;
         this.onSwap = null;
         this.onDrop = null;
 
@@ -132,6 +133,7 @@ class DraggableList {
         this._isDragging = false;
         this._diffWidth = 0;
         this._diffHeight = 0;
+        this._previousMoveY = 0;
 
         this.container.addEventListener('mousedown', this.onDown.bind(this));
         // Unfocus if mouse released
@@ -178,63 +180,11 @@ class DraggableList {
         this._target.style.left = (bounds.left + this._diffWidth / 2) + 'px';
     }
 
-    onDown(e) {
-        if (!isLeftButton(e)) return;
-
-        // Check if item is draggable
-        var item = getFirstElementWithClass(e.target, this.draggableClass);
-        if (!item) return;
-
-        console.log(getRelativeBounds(item, this.container));
-
-        // Set as item to be dragged
-        this._target = item;
-        var initialTarget = this._target;
-        // Drag if target still the focus
-        var self = this;
-        setTimeout(function() {
-            if (self._target === initialTarget) {
-                self._startDrag(e.clientY);
-            }
-        }, this.dragTime);
-    }
-
-    onUp(e) {
-        console.log('up');
-        // Reset or move the items
-        if (this._isDragging) {
-            // Reset the style of the dragged element
-            var self = this;
-            this._target.className = this._target.className.split(' ').reduce(function(p, v) {
-                if (v !== self.draggingClass) {
-                    return p += ' ' + v;
-                }
-                return p
-            });
-            this._target.parentNode.removeChild(this._target);
-            this._target.style.position = '';
-            this._target.style.width = '';
-            this._target.style.height = '';
-            this._target.style.transform = '';
-            this._shadow.parentNode.replaceChild(this._target, this._shadow);
-        }
-        this._target = null;
-        this._isDragging = false;
-        this._shadow = null;
-    }
-
-    onOut(e) {
-        if (!this._isDragging && this._target != null && !isInElement(this._target, e.target)) {
-            console.log('out');
-            this._target = null;
-        }
-    }
-
-    onMove(e) {
+    _move(x, y) {
         var listBounds = this.container.getBoundingClientRect();
         var topOffset = this.container.scrollTop;
-        var ex = e.clientX - listBounds.left;
-        var ey = e.clientY - listBounds.top + topOffset;
+        var ex = x - listBounds.left;
+        var ey = y - listBounds.top + topOffset;
 
         /*
          document.getElementById('cx').innerHTML = e.clientX;
@@ -249,7 +199,7 @@ class DraggableList {
         clearSelection();
 
         // Keep the dragged item in the right place
-        this._target.style.top = (e.clientY - this._target.offsetHeight / 2) + 'px';
+        this._target.style.top = (y - this._target.offsetHeight / 2) + 'px';
 
         // Get all the bounds
         var children = getChildrenWithClass(this.container, this.draggableClass);
@@ -306,6 +256,81 @@ class DraggableList {
                 parent.insertBefore(this._shadow, inside.element);
             }
         }
+    }
+
+    onDown(e) {
+        if (!isLeftButton(e)) return;
+
+        // Check if item is draggable
+        var item = getFirstElementWithClass(e.target, this.draggableClass);
+        if (!item) return;
+
+        console.log(getRelativeBounds(item, this.container));
+
+        // Set as item to be dragged
+        this._target = item;
+        var initialTarget = this._target;
+        // Drag if target still the focus
+        var self = this;
+        setTimeout(function() {
+            if (self._target === initialTarget) {
+                self._startDrag(e.clientY);
+            }
+        }, this.dragTime);
+    }
+
+    onUp(e) {
+        console.log('up');
+        // Reset or move the items
+        if (this._isDragging) {
+            // Reset the style of the dragged element
+            var self = this;
+            this._target.className = this._target.className.split(' ').reduce(function(p, v) {
+                if (v !== self.draggingClass) {
+                    return p += ' ' + v;
+                }
+                return p
+            });
+            this._target.parentNode.removeChild(this._target);
+            this._target.style.position = '';
+            this._target.style.width = '';
+            this._target.style.height = '';
+            this._target.style.transform = '';
+            this._shadow.parentNode.replaceChild(this._target, this._shadow);
+        }
+        this._target = null;
+        this._isDragging = false;
+        this._shadow = null;
+    }
+
+    onOut(e) {
+        if (!this._isDragging && this._target != null && !isInElement(this._target, e.target)) {
+            console.log('out');
+            this._target = null;
+        }
+    }
+
+    onMove(e) {
+        if (this._previousMouseY === 0) {
+            this._move(e.clientX, e.clientY);
+        }
+
+        var listBounds = this.container.getBoundingClientRect();
+        var topOffset = this.container.scrollTop;
+        var ey = e.clientY - listBounds.top + topOffset;
+        var diff = this._previousMouseY - ey;
+        // Move multiple times in steps if needed to prevent going out of order
+        if (Math.abs(diff) > this.stepSize) {
+            var steps = Math.floor(diff / this.stepSize);
+            var direction = diff < 0 ? -1 : 1;
+            for (var i = 0; i < steps; i++) {
+                this._move(e.clientX, e.clientY + i * steps * direction);
+            }
+            this._move(e.clientX, e.clientY);
+        } else {
+            this._move(e.clientX, e.clientY);
+        }
+        this._previousMouseY = ey;
     }
 }
 

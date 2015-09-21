@@ -6,6 +6,7 @@ import UserActions from '../actions/UserActions';
 import AuthStore from '../stores/AuthStore';
 import Validate from '../utils/Validation';
 import moment from 'moment-timezone';
+import sortable from '../../vendor/js/Sortable';
 import DraggableList from '../utils/DraggableList';
 
 function getListByTitle(lists, title) {
@@ -231,9 +232,17 @@ class List extends React.Component {
     componentDidMount() {
         if (!this.props.disable.sort) {
             var element = React.findDOMNode(this.refs.list);
-            var draggable = new DraggableList(element, 'draggable');
-            draggable.shadowClass = 'dragging-shadow';
-            draggable.draggingClass = 'dragging';
+
+            this.draggable = new DraggableList(element, 'draggable');
+            this.draggable.shadowClass = 'dragging-shadow';
+            this.draggable.draggingClass = 'dragging';
+            this.draggable.onDrop = this._positionTask.bind(this);
+            /*
+            var sort = sortable.create(element, {
+                ghostClass: 'dragging-shadow',
+                chosenClass: 'dragging'
+            });
+            */
         }
 
         this._calculateHeight();
@@ -242,6 +251,10 @@ class List extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowSizeChange);
+    }
+
+    _positionTask() {
+
     }
 
     _onWindowSizeChange() {

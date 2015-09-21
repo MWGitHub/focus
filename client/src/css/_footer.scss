@@ -5,7 +5,7 @@
 
 // Uncomment this for a sticky footer.
 //
-.top {
+.page-top {
   min-height: 100%;
   height: auto !important;
   height: 100%;
@@ -16,12 +16,12 @@ html, body, #content, #page {
   height: 100%;
 }
 
-.top:after {
+.page-top:after {
   content: "";
   display: block;
 }
 
-.footer, .top:after {
+.footer, .page-top:after {
   height: 17em;
 
   @include media($large-screen) {

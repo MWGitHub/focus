@@ -16,3 +16,4 @@ client/config.json
 npm-debug.log
 .hgignore
 .hg
+playground
