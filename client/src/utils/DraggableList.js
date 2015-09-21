@@ -124,7 +124,6 @@ class DraggableList {
         this.shadowClass = '';
         this.draggingClass = '';
         this.dragTime = 300;
-        this.stepSize = 10;
         this.onSwap = null;
         this.onDrop = null;
 
@@ -133,7 +132,8 @@ class DraggableList {
         this._isDragging = false;
         this._diffWidth = 0;
         this._diffHeight = 0;
-        this._previousMoveY = 0;
+        this._lastSwapElement = null;
+        this._isLastSwapUp = false;
 
         this.container.addEventListener('mousedown', this.onDown.bind(this));
         // Unfocus if mouse released
@@ -149,8 +149,11 @@ class DraggableList {
      * @private
      */
     _startDrag(y) {
-        console.log('dragging');
+        //console.log('dragging');
         this._isDragging = true;
+        this._lastSwapElement = null;
+        this._isLastSwapUp = false;
+
         // Replace the dragging object with a shadow and make same dimensions
         this._shadow = this._target.cloneNode(false);
         this._shadow.className += " " + this.shadowClass;
@@ -181,22 +184,14 @@ class DraggableList {
     }
 
     _move(x, y) {
-        var listBounds = this.container.getBoundingClientRect();
-        var topOffset = this.container.scrollTop;
-        var ex = x - listBounds.left;
-        var ey = y - listBounds.top + topOffset;
-
-        /*
-         document.getElementById('cx').innerHTML = e.clientX;
-         document.getElementById('cy').innerHTML = e.clientY;
-         document.getElementById('ex').innerHTML = ex;
-         document.getElementById('ey').innerHTML = ey;
-         */
-
         if (!this._isDragging) return;
 
-        // Prevent selecting when dragging
         clearSelection();
+
+        var containerBounds = this.container.getBoundingClientRect();
+        var topOffset = this.container.scrollTop;
+        var ex = x - containerBounds.left;
+        var ey = y - containerBounds.top + topOffset;
 
         // Keep the dragged item in the right place
         this._target.style.top = (y - this._target.offsetHeight / 2) + 'px';
@@ -206,13 +201,16 @@ class DraggableList {
 
         var checked = [];
         var i;
+        var index = 0;
         for (i = 0; i < children.length; i++) {
             var child = children[i];
             if (hasClass(child, this.shadowClass) || hasClass(child, this.draggingClass)) continue;
             checked.push({
+                index: index,
                 element: child,
                 bounds: getRelativeBounds(child, this.container)
             });
+            index += 1;
         }
 
         // Check what bounds the pointer is in
@@ -228,7 +226,7 @@ class DraggableList {
         // Check if from top or bottom and then swap
         // Take scrolling into account
         // TODO: Fix large item height from bouncing
-        // TODO: Fix swap out of order
+        // TODO: If over edge make it go to edge
         if (checked.length > 0 && ey <= 0) {
             // Swap if dragged over top
             this._shadow.parentNode.removeChild(this._shadow);
@@ -241,17 +239,21 @@ class DraggableList {
             var isShadowOnTop = shadowBounds.top < inside.bounds.top;
             var parent = inside.element.parentNode;
             if (isShadowOnTop) {
-                console.log("top");
+                //console.log("top");
                 // Insert before the hovered element and place shadow in original element position.
+                this._isLastSwapUp = false;
+                this._lastSwapElement = inside.element;
                 if (inside.index < checked.length - 1) {
                     parent.removeChild(this._shadow);
                     parent.insertBefore(this._shadow, checked[inside.index + 1].element);
                 } else {
-                    parent.removeChild(inside.element);
-                    parent.insertBefore(inside.element, this._shadow);
+                    parent.removeChild(this._shadow);
+                    parent.appendChild(this._shadow);
                 }
             } else {
-                console.log("bottom");
+                //console.log("bottom");
+                this._isLastSwapUp = true;
+                this._lastSwapElement = inside.element;
                 parent.removeChild(this._shadow);
                 parent.insertBefore(this._shadow, inside.element);
             }
@@ -265,7 +267,7 @@ class DraggableList {
         var item = getFirstElementWithClass(e.target, this.draggableClass);
         if (!item) return;
 
-        console.log(getRelativeBounds(item, this.container));
+        //console.log(getRelativeBounds(item, this.container));
 
         // Set as item to be dragged
         this._target = item;
@@ -280,7 +282,7 @@ class DraggableList {
     }
 
     onUp(e) {
-        console.log('up');
+        //console.log('up');
         // Reset or move the items
         if (this._isDragging) {
             // Reset the style of the dragged element
@@ -297,6 +299,9 @@ class DraggableList {
             this._target.style.height = '';
             this._target.style.transform = '';
             this._shadow.parentNode.replaceChild(this._target, this._shadow);
+            if (this.onDrop) {
+                this.onDrop(this._lastSwapElement, this._isLastSwapUp);
+            }
         }
         this._target = null;
         this._isDragging = false;
@@ -305,32 +310,13 @@ class DraggableList {
 
     onOut(e) {
         if (!this._isDragging && this._target != null && !isInElement(this._target, e.target)) {
-            console.log('out');
+            //console.log('out');
             this._target = null;
         }
     }
 
     onMove(e) {
-        if (this._previousMouseY === 0) {
-            this._move(e.clientX, e.clientY);
-        }
-
-        var listBounds = this.container.getBoundingClientRect();
-        var topOffset = this.container.scrollTop;
-        var ey = e.clientY - listBounds.top + topOffset;
-        var diff = this._previousMouseY - ey;
-        // Move multiple times in steps if needed to prevent going out of order
-        if (Math.abs(diff) > this.stepSize) {
-            var steps = Math.floor(diff / this.stepSize);
-            var direction = diff < 0 ? -1 : 1;
-            for (var i = 0; i < steps; i++) {
-                this._move(e.clientX, e.clientY + i * steps * direction);
-            }
-            this._move(e.clientX, e.clientY);
-        } else {
-            this._move(e.clientX, e.clientY);
-        }
-        this._previousMouseY = ey;
+        this._move(e.clientX, e.clientY);
     }
 }
 
