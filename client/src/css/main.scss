@@ -383,11 +383,11 @@ div.task {
 }
 
 // Drag style
-.shadow {
+.dragging-shadow {
   background-color: $shade-background-color !important;
 }
 
-.drag {
+.dragging {
   transform: rotate(2deg);
   box-shadow: 3px 3px 10px #000;
 }

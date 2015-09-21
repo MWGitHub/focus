@@ -231,8 +231,9 @@ class List extends React.Component {
     componentDidMount() {
         if (!this.props.disable.sort) {
             var element = React.findDOMNode(this.refs.list);
-            var draggable = new DraggableList(element, 'draggable', 'shadow', 'drag');
-            //var slip = new Slip(element);
+            var draggable = new DraggableList(element, 'draggable');
+            draggable.shadowClass = 'dragging-shadow';
+            draggable.draggingClass = 'dragging';
         }
 
         this._calculateHeight();
@@ -305,6 +306,7 @@ class List extends React.Component {
     createButtonClicked(event) {
         event.preventDefault();
 
+        React.findDOMNode(this.refs.list).scrollTop = 0;
         this.setState({
             isCreateShown: !this.state.isCreateShown
         });

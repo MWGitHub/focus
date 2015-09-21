@@ -99,20 +99,33 @@ function getRelativeBounds(ele, relative) {
     };
 }
 
+function clearSelection() {
+    // http://stackoverflow.com/questions/3169786/clear-text-selection-with-javascript
+    if (window.getSelection) {
+        if (window.getSelection().empty) {  // Chrome
+            window.getSelection().empty();
+        } else if (window.getSelection().removeAllRanges) {  // Firefox
+            window.getSelection().removeAllRanges();
+        }
+    } else if (document.selection) {  // IE?
+        document.selection.empty();
+    }
+}
+
 class DraggableList {
     /**
      * Makes the given element draggable.
      * @param {HTMLElement} container the element to make children draggable.
      * @param {String} draggableClass the class for draggable children.
-     * @param {String} shadowClass the class for the shadow.
-     * @param {String} draggingClass the class when dragging.
      */
-    constructor(container, draggableClass, shadowClass, draggingClass) {
+    constructor(container, draggableClass) {
         this.container = container;
         this.draggableClass = draggableClass;
-        this.shadowClass = shadowClass;
-        this.draggingClass = draggingClass;
+        this.shadowClass = '';
+        this.draggingClass = '';
         this.dragTime = 300;
+        this.onSwap = null;
+        this.onDrop = null;
 
         this._target = null;
         this._shadow = null;
@@ -126,6 +139,43 @@ class DraggableList {
         // Unfocus if mouse goes out
         document.addEventListener('mouseout', this.onOut.bind(this));
         document.addEventListener('mousemove', this.onMove.bind(this));
+    }
+
+    /**
+     * Start dragging the target.
+     * @param {Number} y the Y location of the mouse.
+     * @private
+     */
+    _startDrag(y) {
+        console.log('dragging');
+        this._isDragging = true;
+        // Replace the dragging object with a shadow and make same dimensions
+        this._shadow = this._target.cloneNode(false);
+        this._shadow.className += " " + this.shadowClass;
+        var width = this._target.clientWidth;
+        var height = this._target.clientHeight;
+        this._shadow.style.width = width + 'px';
+        this._shadow.style.height = height + 'px';
+        this._target.parentNode.replaceChild(this._shadow, this._target);
+
+        // Remove padding from width and height
+        this._diffWidth = this._shadow.offsetWidth - width;
+        var finalWidth = width - this._diffWidth;
+        this._shadow.style.width = finalWidth + 'px';
+        this._diffHeight = this._shadow.offsetHeight - height;
+        var finalHeight = height - this._diffHeight;
+        this._shadow.style.height = finalHeight + 'px';
+
+        // Float the dragging object
+        this._target.className += ' ' + this.draggingClass;
+        this._target.style.width = finalWidth + 'px';
+        this._target.style.height = finalHeight + 'px';
+        this._target.style.position = 'absolute';
+        this.container.appendChild(this._target);
+        this._target.style.top = (y - this._target.offsetHeight / 2) + 'px';
+        // Align the element with the original position including padding
+        var bounds = this._shadow.getBoundingClientRect();
+        this._target.style.left = (bounds.left + this._diffWidth / 2) + 'px';
     }
 
     onDown(e) {
@@ -144,35 +194,7 @@ class DraggableList {
         var self = this;
         setTimeout(function() {
             if (self._target === initialTarget) {
-                console.log('dragging');
-                self._isDragging = true;
-                // Replace the dragging object with a shadow and make same dimensions
-                self._shadow = self._target.cloneNode();
-                self._shadow.className += " " + self.shadowClass;
-                var width = self._target.clientWidth;
-                var height = self._target.clientHeight;
-                self._shadow.style.width = width + 'px';
-                self._shadow.style.height = height + 'px';
-                self._target.parentNode.replaceChild(self._shadow, self._target);
-
-                // Remove padding from width and height
-                self._diffWidth = self._shadow.offsetWidth - width;
-                var finalWidth = width - self._diffWidth;
-                self._shadow.style.width = finalWidth + 'px';
-                self._diffHeight = self._shadow.offsetHeight - height;
-                var finalHeight = height - self._diffHeight;
-                self._shadow.style.height = finalHeight + 'px';
-
-                // Float the dragging object
-                self._target.className += ' ' + self.draggingClass;
-                self._target.style.width = finalWidth + 'px';
-                self._target.style.height = finalHeight + 'px';
-                self._target.style.position = 'absolute';
-                self.container.appendChild(self._target);
-                self._target.style.top = (e.clientY - self._target.offsetHeight / 2) + 'px';
-                // Align the element with the original position including padding
-                var bounds = self._shadow.getBoundingClientRect();
-                self._target.style.left = (bounds.left + self._diffWidth / 2) + 'px';
+                self._startDrag(e.clientY);
             }
         }, this.dragTime);
     }
@@ -223,6 +245,9 @@ class DraggableList {
 
         if (!this._isDragging) return;
 
+        // Prevent selecting when dragging
+        clearSelection();
+
         // Keep the dragged item in the right place
         this._target.style.top = (e.clientY - this._target.offsetHeight / 2) + 'px';
 
@@ -253,8 +278,15 @@ class DraggableList {
         // Check if from top or bottom and then swap
         // Take scrolling into account
         // TODO: Fix large item height from bouncing
-        // TODO: If over edge make it go to edge
-        if (inside) {
+        // TODO: Fix swap out of order
+        if (checked.length > 0 && ey <= 0) {
+            // Swap if dragged over top
+            this._shadow.parentNode.removeChild(this._shadow);
+            checked[0].element.parentNode.insertBefore(this._shadow, checked[0].element);
+        } else if (checked.length > 0 && ey >= this.container.scrollHeight) {
+            this._shadow.parentNode.removeChild(this._shadow);
+            checked[0].element.parentNode.appendChild(this._shadow);
+        } else if (inside) {
             var shadowBounds = getRelativeBounds(this._shadow, this.container);
             var isShadowOnTop = shadowBounds.top < inside.bounds.top;
             var parent = inside.element.parentNode;
