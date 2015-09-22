@@ -300,7 +300,7 @@ class DraggableList {
             this._target.style.transform = '';
             this._shadow.parentNode.replaceChild(this._target, this._shadow);
             if (this.onDrop) {
-                this.onDrop(this._lastSwapElement, this._isLastSwapUp);
+                this.onDrop(this._target, this._lastSwapElement, this._isLastSwapUp);
             }
         }
         this._target = null;

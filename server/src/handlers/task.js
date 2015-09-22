@@ -13,6 +13,7 @@ var handler = {
         var title = Hoek.escapeHtml(request.payload['title']);
         var position = request.payload['position'];
         var temporary = request.payload['temporary'];
+        var extra = request.payload['extra'];
         var uid;
         User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
@@ -31,6 +32,9 @@ var handler = {
                 };
                 if (temporary) {
                     data.temporary = temporary;
+                }
+                if (extra) {
+                    data.extra = extra;
                 }
                 return Task.forge(data).save();
             })

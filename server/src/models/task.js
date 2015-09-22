@@ -36,7 +36,8 @@ var Task = Bookshelf.Model.extend({
                 completed_at: this.get('completed_at'),
                 age: this.get('age'),
                 position: parseFloat(this.get('position')),
-                temporary: this.get('temporary')
+                temporary: this.get('temporary'),
+                extra: this.get('extra')
             }
         }
     }

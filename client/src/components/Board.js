@@ -127,7 +127,7 @@ class Task extends React.Component {
             style += ' temporary';
         }
         return (
-            <div className={'draggable ' + style}>
+            <div id={this.props.list.id + ":" + this.props.task.id} className={'draggable ' + style}>
                 <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
                 <div className="task-info">
                     { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
@@ -135,6 +135,7 @@ class Task extends React.Component {
                     { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
                     { this.props.disable.complete ? null : complete }
                     { task.attributes.temporary || this.props.disable.age ? null : <span className="age left">age: {task.attributes.age}</span> }
+                    { task.attributes.extra ? <span className="task-flag left">extra</span> : null }
                 </div>
             </div>
         )
@@ -190,7 +191,7 @@ class TaskCreateBox extends React.Component {
             // Set position to mid value if there are no tasks otherwise set it to the next lowest.
             var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
 
-            BoardActions.createTask(this.props.uid, list.id, title, position, this.props.temporary, this._updateTaskError.bind(this));
+            BoardActions.createTask(this.props.uid, list.id, title, position, this.props.temporary, this.props.extra, this._updateTaskError.bind(this));
         }
     }
 
@@ -246,9 +247,60 @@ class List extends React.Component {
         window.removeEventListener('resize', this.onWindowSizeChange);
     }
 
-    _onSwapPosition(element, isUp) {
+    _onSwapPosition(target, element, isUp) {
+        if (!element) return;
+
+        var tid = target.id.split(":")[1];
+        var targetTask = null;
+        var id = element.id.split(":")[1];
+        var tasks = this.props.list.attributes.tasks;
+        var previous = null;
+        var swap = null;
+        var next = null;
+        for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].id.toString() === tid.toString()) {
+                targetTask = tasks[i];
+            }
+            if (tasks[i].id.toString() === id.toString()) {
+                swap = tasks[i];
+                if (i > 0) previous = tasks[i - 1];
+                if (i < tasks.length - 1) next = tasks[i + 1];
+            }
+            if (targetTask && previous) break;
+        }
+        console.log(targetTask);
+        var swapPos = -1;
+        var targetPos = -1;
+        var positionFound = false;
+        // If target and previous of the element is same just swap positions.
+        if (previous === targetTask || next === targetTask) {
+            console.log('swap-prev');
+            // swappos
+            swapPos = tid.attributes.position;
+            targetPos = swap.attributes.position;
+            positionFound = true;
+        }
+        if (!positionFound) {
+            if (!previous) {
+                // set to first
+                swapPos = -1;
+                targetPos = swap.attributes.position / 2;
+            } else if (!next) {
+                swapPos = -1;
+                // Offset slightly from max safe just in case something odd happens where previous is max
+                targetPos = (previous.attributes.position + Number.MAX_SAFE_INTEGER - 1) / 2;
+            } else {
+                swapPos = -1;
+                targetPos = (previous.attributes.position + next.attributes.position) / 2;
+                console.log(previous.attributes.position);
+                console.log(next.attributes.position);
+            }
+        }
         console.log(element);
         console.log(isUp);
+        console.log(id);
+        console.log("swap: " + swapPos);
+        console.log("target: " + targetPos);
     }
 
     _onWindowSizeChange() {
@@ -327,7 +379,6 @@ class List extends React.Component {
 
     render() {
         var list = this.props.list;
-        // Sort the tasks by position
         var tasks = list.attributes.tasks;
         var createButton = (
             <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
@@ -342,8 +393,8 @@ class List extends React.Component {
         var taskCreateBox = (
             <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} />
         );
-        var temporaryCreateBox = (
-            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} temporary={true} />
+        var todayCreateBox = (
+            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} extra={true} />
         );
 
         var taskDescription = (
@@ -361,7 +412,14 @@ class List extends React.Component {
 
         // Sort the tasks by age.
         if (list.attributes.title === ListTitles.today) {
-            var tasks = list.attributes.tasks.sort(function (a, b) {
+            tasks = tasks.sort(function (a, b) {
+                if (a.attributes.age === 0 || b.attributes.age === 0) {
+                    if (a.attributes.extra && (!b.attributes.extra || b.attributes.age > 0)) {
+                        return -1;
+                    } else if ((!a.attributes.extra || a.attributes.age > 0) && b.attributes.extra) {
+                        return 1;
+                    }
+                }
                 if (a.attributes.age < b.attributes.age) {
                     return 1;
                 } else if (a.attributes.age > b.attributes.age) {
@@ -381,11 +439,10 @@ class List extends React.Component {
                 <div className="list-top">
                     <h2 className="no-margin">{ListTitleDisplay[this.props.name]}</h2>
                     { this.props.disable.create ? null : createButton }
-                    { list.attributes.title === ListTitles.today ? todayTop : null }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
                     {this.state.isCreateShown && list.attributes.title !== ListTitles.today ? taskCreateBox : null }
-                    {this.state.isCreateShown && list.attributes.title === ListTitles.today ? temporaryCreateBox : null}
+                    {this.state.isCreateShown && list.attributes.title === ListTitles.today ? todayCreateBox : null }
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tasks ? taskDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}
@@ -421,7 +478,7 @@ class BoardView extends React.Component {
                 <div className="board">
                     <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true, age: true}} />
                     <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true, age: true}} />
-                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: true, left: true, right: true}} />
+                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: false, left: true, right: true, sort: true}} />
                     <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
                 </div>
             </div>

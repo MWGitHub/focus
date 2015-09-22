@@ -367,6 +367,13 @@ div.task {
     @include border-radius($base-border-radius);
   }
 
+  .task-flag {
+    background-color: $base-background-color;
+    padding: $small-spacing / 2;
+    font-size: 0.85em;
+    @include border-radius($base-border-radius);
+  }
+
   .right {
     margin-left: 0.5em;
   }
