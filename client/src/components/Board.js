@@ -256,7 +256,9 @@ class List extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowSizeChange);
-        this.draggable.destroy();
+        if (!this.props.disable.sort) {
+            this.draggable.destroy();
+        }
         this.refreshWindow = false;
     }
 
@@ -476,6 +478,87 @@ class List extends React.Component {
 class BoardView extends React.Component {
     constructor(props) {
         super(props);
+
+        this.onMouseDown = this._onMouseDown.bind(this);
+        this.onMouseUp = this._onMouseUp.bind(this);
+        this.onTouchStart = this._onTouchStart.bind(this);
+        this.onTouchEnd = this._onTouchEnd.bind(this);
+    }
+
+    componentDidMount() {
+        this.mouseDownX = 0;
+        // Amount of distance before swiping
+        this.swipeDifference = 25;
+        // Current list in view
+        this.currentList = 0;
+
+        this.listLeft = [];
+        var lists = document.getElementsByClassName('list');
+        for (var i = 0; i < lists.length; i++) {
+            var bounds = lists[i].getBoundingClientRect();
+            this.listLeft.push(bounds.left);
+        }
+
+        //document.addEventListener('mousedown', this.onMouseDown);
+        //document.addEventListener('mouseup', this.onMouseUp);
+        document.addEventListener('touchstart', this.onTouchStart);
+        document.addEventListener('touchend', this.onTouchEnd);
+    }
+
+    componentWillUnmount() {
+        //document.removeEventListener('mousedown', this.onMouseDown);
+        //document.removeEventListener('mouseup', this.onMouseUp);
+        document.removeEventListener('touchstart', this.onTouchStart);
+        document.removeEventListener('touchend', this.onTouchEnd);
+    }
+
+    _onTouchStart(e) {
+        this.mouseDownX = e.touches[0].clientX;
+    }
+
+    _onTouchEnd(e) {
+        var diff = this.mouseDownX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > this.swipeDifference) {
+            this._onSwipeHorizontal(diff)
+        }
+    }
+
+    _onMouseDown(e) {
+        this.mouseDownX = e.clientX;
+    }
+
+    _onMouseUp(e) {
+        var diff = this.mouseDownX - e.clientX;
+        if (Math.abs(diff) > this.swipeDifference) {
+            this._onSwipeHorizontal(diff)
+        }
+    }
+
+    _onSwipeHorizontal(amount) {
+        // Ignore if can't scroll left or right
+        if (this.currentList === 0 && amount < 0 || this.currentList === this.listLeft.length - 1 && amount > 0) {
+            return;
+        }
+        var scrollAmount = 0;
+        var buffer = 20;
+        if (amount < 0) {
+            console.log('scroll left');
+            scrollAmount = this.listLeft[this.currentList - 1];
+            this.currentList -= 1;
+        } else {
+            console.log('scroll right');
+            scrollAmount = this.listLeft[this.currentList + 1];
+            this.currentList += 1;
+        }
+        console.log(scrollAmount);
+        var board = React.findDOMNode(this.refs.board);
+        board.style.overflow = 'hidden';
+        board.scrollLeft = scrollAmount - buffer;
+        window.setTimeout(function() {
+            board.scrollLeft = scrollAmount - buffer;
+            board.style.overflow = 'auto';
+        }, 10);
+        console.log(this.currentList);
     }
 
     render() {
@@ -488,7 +571,7 @@ class BoardView extends React.Component {
         var done = getListByTitle(lists, ListTitles.done);
         return (
             <div>
-                <div className="board">
+                <div className="board" ref="board">
                     <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true, age: true}} />
                     <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true, age: true}} />
                     <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: false, left: true, right: true, sort: true}} />
