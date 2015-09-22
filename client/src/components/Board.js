@@ -234,10 +234,30 @@ class List extends React.Component {
 
         this._calculateHeight();
         window.addEventListener('resize', this.onWindowSizeChange);
+
+        // Refresh window in cases where resize does not trigger
+        this.windowHeight = window.innerHeight;
+        this.refreshWindow = true;
+        var self = this;
+        var requestFrame = function() {
+            if (!self.refreshWindow) return;
+            window.requestAnimationFrame(function() {
+                window.setTimeout(function() {
+                    if (self.windowHeight !== window.innerHeight) {
+                        self._calculateHeight();
+                    }
+                    self.windowHeight = window.innerHeight;
+                    requestFrame();
+                }, 1000);
+            });
+        };
+        requestFrame();
     }
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowSizeChange);
+        this.draggable.destroy();
+        this.refreshWindow = false;
     }
 
     _onSwapPosition(target, element, isUp) {

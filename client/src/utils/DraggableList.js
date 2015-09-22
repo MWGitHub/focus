@@ -135,12 +135,18 @@ class DraggableList {
         this._lastSwapElement = null;
         this._isLastSwapUp = false;
 
-        this.container.addEventListener('mousedown', this.onDown.bind(this));
+        // Add events
+        this._onDown = this.onDown.bind(this);
+        this._onUp = this.onUp.bind(this);
+        this._onOut = this.onOut.bind(this);
+        this._onMove = this.onMove.bind(this);
+
+        this.container.addEventListener('mousedown', this._onDown);
         // Unfocus if mouse released
-        document.addEventListener('mouseup', this.onUp.bind(this));
+        document.addEventListener('mouseup', this._onUp);
         // Unfocus if mouse goes out
-        document.addEventListener('mouseout', this.onOut.bind(this));
-        document.addEventListener('mousemove', this.onMove.bind(this));
+        document.addEventListener('mouseout', this._onOut);
+        document.addEventListener('mousemove', this._onMove);
     }
 
     /**
@@ -317,6 +323,15 @@ class DraggableList {
 
     onMove(e) {
         this._move(e.clientX, e.clientY);
+    }
+
+    destroy() {
+        this.container.removeEventListener('mousedown', this._onDown);
+        // Unfocus if mouse released
+        document.removeEventListener('mouseup', this._onUp);
+        // Unfocus if mouse goes out
+        document.removeEventListener('mouseout', this._onOut);
+        document.removeEventListener('mousemove', this._onMove);
     }
 }
 
