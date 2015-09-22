@@ -361,16 +361,24 @@ div.task {
   }
 
   .age {
-    background-color: $base-background-color;
+    background-color: $age-final-background;
+    font-weight: $medium-font-weight;
     padding: $small-spacing / 2;
     font-size: 0.85em;
     @include border-radius($base-border-radius);
+  }
+
+  @for $i from 0 through 10 {
+    .age-#{$i} {
+      background-color: transparentize($age-final-background, 0.75 - 0.75 * $i / 10);
+    }
   }
 
   .task-flag {
     background-color: $base-background-color;
     padding: $small-spacing / 2;
     font-size: 0.85em;
+    font-weight: $medium-font-weight;
     @include border-radius($base-border-radius);
   }
 

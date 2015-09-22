@@ -127,7 +127,7 @@ class Task extends React.Component {
                     { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
                     { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
                     { this.props.disable.complete ? null : completeNormal }
-                    { this.props.disable.age ? null : <span className="age left">age: {task.attributes.age}</span> }
+                    { this.props.disable.age ? null : <span className={"age left age-" + task.attributes.age}>age: {task.attributes.age}</span> }
                     { task.attributes.extra ? <span className="task-flag left">extra</span> : null }
                 </div>
             </div>
