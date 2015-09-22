@@ -92,7 +92,7 @@ lab.experiment('test task', function() {
         });
     });
 
-    lab.test('create temporary', function(done) {
+    lab.test('create extra', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -101,15 +101,15 @@ lab.experiment('test task', function() {
                 authorization: jwt[0]
             },
             payload: {
-                title: 'temporaryTask',
+                title: 'extraTask',
                 list_id: idList1User1,
                 position: 500,
-                temporary: true
+                extra: true
             }
         }, function(response) {
-            Task.forge({title: 'temporaryTask', list_id: idList1User1}).fetch().then(function(task) {
+            Task.forge({title: 'extraTask', list_id: idList1User1}).fetch().then(function(task) {
                 assert.equal(response.statusCode, 200);
-                assert.equal(task.get('temporary'), true);
+                assert.equal(task.get('extra'), true);
                 done();
             });
         });

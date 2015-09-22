@@ -28,7 +28,7 @@ var BoardActions = {
         )
     },
 
-    createTask: function(uid, list, title, position, temporary, extra) {
+    createTask: function(uid, list, title, position, extra) {
         Dispatcher.dispatch({
             actionType: Actions.createTask,
             state: Actions.State.loading
@@ -38,9 +38,6 @@ var BoardActions = {
             title: title,
             position: position
         };
-        if (temporary) {
-            data.temporary = temporary;
-        }
         if (extra) {
             data.extra = extra;
         }

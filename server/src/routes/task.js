@@ -14,7 +14,6 @@ var routes = [
                     list_id: Joi.number().integer().required(),
                     title: Joi.string().min(1).max(30).required(),
                     position: Joi.number().min(0).max(Number.MAX_SAFE_INTEGER).required(),
-                    temporary: Joi.boolean(),
                     extra: Joi.boolean()
                 }
             },

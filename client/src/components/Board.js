@@ -115,17 +115,10 @@ class Task extends React.Component {
         var shouldHideDelete = this.props.disable.del ||
             (this.props.list.attributes.title === ListTitles.today && this.props.task.attributes.age <= 7);
         var style = 'task';
-        // Temporary tasks complete by deletion.
+        // Complete tasks
         var completeNormal = (
             <input className="right positive" type="button" button onClick={this.complete.bind(this)} value="complete" />
         );
-        var completeTemporary = (
-            <input className="right positive" type="button" button onClick={this.deleteTask.bind(this)} value="complete" />
-        );
-        var complete = task.attributes.temporary ? completeTemporary : completeNormal;
-        if (task.attributes.temporary) {
-            style += ' temporary';
-        }
         return (
             <div id={this.props.list.id + ":" + this.props.task.id} className={'draggable ' + style}>
                 <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
@@ -133,8 +126,8 @@ class Task extends React.Component {
                     { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
                     { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
                     { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
-                    { this.props.disable.complete ? null : complete }
-                    { task.attributes.temporary || this.props.disable.age ? null : <span className="age left">age: {task.attributes.age}</span> }
+                    { this.props.disable.complete ? null : completeNormal }
+                    { this.props.disable.age ? null : <span className="age left">age: {task.attributes.age}</span> }
                     { task.attributes.extra ? <span className="task-flag left">extra</span> : null }
                 </div>
             </div>
@@ -191,15 +184,15 @@ class TaskCreateBox extends React.Component {
             // Set position to mid value if there are no tasks otherwise set it to the next lowest.
             var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
 
-            BoardActions.createTask(this.props.uid, list.id, title, position, this.props.temporary, this.props.extra, this._updateTaskError.bind(this));
+            BoardActions.createTask(this.props.uid, list.id, title, position, this.props.extra, this._updateTaskError.bind(this));
         }
     }
 
     render() {
         var list = this.props.list;
         var tasks = this.props.tasks;
-        var title = this.props.temporary ? "New Temporary Task" : "New Task";
-        var style = this.props.temporary ? "task create-task temporary" : "task create-task";
+        var title = "New Task";
+        var style = "task create-task";
         return (
             <div className={style}>
                 <form onSubmit={this.createTask(list, tasks).bind(this)}>

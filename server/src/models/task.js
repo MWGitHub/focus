@@ -36,7 +36,6 @@ var Task = Bookshelf.Model.extend({
                 completed_at: this.get('completed_at'),
                 age: this.get('age'),
                 position: parseFloat(this.get('position')),
-                temporary: this.get('temporary'),
                 extra: this.get('extra')
             }
         }
@@ -56,7 +55,9 @@ var Task = Bookshelf.Model.extend({
         // Age of the task, increments each time the task is not completed in today
         age: {type: 'integer', notNullable: true},
         // Position of the task
-        position: {type: 'decimal', notNullable: true}
+        position: {type: 'decimal', notNullable: true},
+        // Extra flag for tasks created in the today list
+        extra: {type: 'boolean'}
     }
 });
 

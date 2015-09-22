@@ -140,11 +140,7 @@ module.exports.updateUserTasks = function(user, force) {
             })
             .then(function(tasks) {
                 return tasks.mapThen(function(model) {
-                    if (model.get('temporary')) {
-                        return model.destroy().then();
-                    } else {
-                        return model.set('age', model.get('age') + times).save().then();
-                    }
+                    return model.set('age', model.get('age') + times).save().then();
                 });
             })
             // Move all of tomorrow's task to today
