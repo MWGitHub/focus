@@ -291,7 +291,7 @@ class List extends React.Component {
         if (previous === targetTask || next === targetTask) {
             console.log('swap-prev');
             // swappos
-            swapPos = tid.attributes.position;
+            swapPos = target.attributes.position;
             targetPos = swap.attributes.position;
             positionFound = true;
         }
