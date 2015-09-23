@@ -37,15 +37,17 @@ var routes = [
     {
         method: 'POST',
         path: API.route + '/tasks/{id}/update',
-        handler: TaskAPI.updatePosition,
+        handler: TaskAPI.update,
         config: {
             auth: 'jwt',
             validate: {
                 payload: {
-                    id: Joi.number().integer().required(),
                     list_id: Joi.number().integer(),
                     position: Joi.number().min(0).max(Number.MAX_SAFE_INTEGER),
                     title: Joi.string().min(1).max(30)
+                },
+                params: {
+                    id: Joi.number().integer().required()
                 }
             },
             cors: true

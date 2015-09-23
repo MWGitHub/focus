@@ -64,11 +64,11 @@ var handler = {
             });
     },
 
-    updatePosition: function(request, reply) {
+    update: function(request, reply) {
         "use strict";
 
         var listId = request.payload['list_id'];
-        var id = request.payload['id'];
+        var id = request.params['id'];
         var position = request.payload['position'];
         var title;
         if (request.payload['title']) {

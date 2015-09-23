@@ -329,7 +329,6 @@ lab.experiment('test task', function() {
                 authorization: jwt[0]
             },
             payload: {
-                id: taskUser1Id,
                 position: 1
             }
         }, function(response) {
@@ -350,7 +349,6 @@ lab.experiment('test task', function() {
             },
             payload: {
                 list_id: idList2User1,
-                id: taskUser1Id,
                 position: 1
             }
         }, function(response) {
@@ -371,7 +369,6 @@ lab.experiment('test task', function() {
             },
             payload: {
                 list_id: idList1User2,
-                id: taskUser1Id,
                 position: 1
             }
         }, function(response) {
@@ -392,7 +389,6 @@ lab.experiment('test task', function() {
             },
             payload: {
                 list_id: idList1User2,
-                id: taskUser1Id,
                 position: 1
             }
         }, function(response) {
@@ -410,7 +406,6 @@ lab.experiment('test task', function() {
                 authorization: jwt[0]
             },
             payload: {
-                id: taskUser1Id,
                 title: 'wasd'
             }
         }, function(response) {
@@ -430,7 +425,6 @@ lab.experiment('test task', function() {
                 authorization: jwt[1]
             },
             payload: {
-                id: taskUser1Id,
                 title: 'wasd'
             }
         }, function(response) {

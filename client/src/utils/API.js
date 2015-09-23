@@ -34,8 +34,8 @@ var API = {
         ageUser: baseURL + '/users/age',
         updateUser: baseURL + '/users/{id}/update',
         taskCreate: baseURL + '/tasks',
-        taskUpdateTitle: baseURL + '/tasks/update/title',
-        taskUpdatePosition: baseURL + '/tasks/update/position',
+        taskUpdateTitle: baseURL + '/tasks/{id}/update/',
+        taskUpdatePosition: baseURL + '/tasks/{id}/update/',
         taskDelete: baseURL + '/tasks/{id}/delete'
     },
 

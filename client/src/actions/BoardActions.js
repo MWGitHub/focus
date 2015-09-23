@@ -88,8 +88,7 @@ var BoardActions = {
             actionType: Actions.moveTask,
             state: Actions.State.loading
         });
-        API.doAuthActionTo(API.routes.taskUpdatePosition, API.methods.post, {
-                id: id,
+        API.doAuthActionTo(API.parseRoute(API.routes.taskUpdatePosition, {id: id}), API.methods.post, {
                 list_id: list,
                 position: position
             },
