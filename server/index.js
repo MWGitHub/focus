@@ -3,6 +3,7 @@ var Good = require('good');
 var Auth = require('./src/lib/auth');
 var User = require('./src/lib/user');
 var Board = require('./src/lib/board');
+var List = require('./src/lib/list');
 var Task = require('./src/lib/task');
 var Boom = require('boom');
 var RedisClient = require('./src/lib/redis-client');
@@ -60,6 +61,9 @@ server.register([
     },
     {
         register: Board
+    },
+    {
+        register: List
     },
     {
         register: Task

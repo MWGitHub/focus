@@ -1,6 +1,6 @@
-var Board = require('../models/board');
 var API = require('../lib/api');
 var User = require('../models/user');
+var List = require('../models/list');
 var Boom = require('boom');
 
 var handler = {
@@ -26,18 +26,18 @@ var handler = {
     deleteSelf: function(request, reply) {
         "use strict";
 
-        var boardID = request.params['id'];
+        var listId = request.params['id'];
         var userId;
         User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
                 userId = user.get('id');
-                return Board.forge({id: boardID}).fetch({require: true});
+                return List.forge({id: listId}).fetch({require: true});
             })
-            .then(function(board) {
-                if (board.get('user_id') !== userId) {
+            .then(function(list) {
+                if (list.get('user_id') !== userId) {
                     throw Boom.unauthorized();
                 }
-                return board.destroyDeep().then();
+                return list.destroyDeep().then();
             })
             .catch(function(err) {
                 reply(Boom.wrap(err));
@@ -47,18 +47,18 @@ var handler = {
     retrieve: function(request, reply) {
         "use strict";
 
-        var boardID = request.params['id'];
+        var listId = request.params['id'];
         var userId;
         User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function (user) {
                 userId = user.get('id');
-                return Board.forge({id: boardID}).fetch({require: true});
+                return List.forge({id: listId}).fetch({require: true});
             })
-            .then(function(board) {
-                if (board.get('user_id') !== userId) {
+            .then(function(list) {
+                if (list.get('user_id') !== userId) {
                     throw Boom.unauthorized();
                 }
-                return board.retrieveAsData();
+                return list.retrieveAsData();
             })
             .then(function(data) {
                 reply(API.makeData(data));

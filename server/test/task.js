@@ -246,6 +246,67 @@ lab.experiment('test task', function() {
         });
     });
 
+    lab.test('retrieve from task, list, and board', function(done) {
+        server.inject({
+            method: 'GET',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            headers: {
+                authorization: jwt[0]
+            }
+        }, function(response) {
+            var data = response.result.data;
+            assert.equal(data.attributes.title, testTaskTitle);
+
+            // Retrieve list
+            var listId = data.attributes.list_id;
+            server.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/lists/' + listId,
+                headers: {
+                    authorization: jwt[0]
+                }
+            }, function(response) {
+                var listData = response.result.data;
+                assert.equal(response.statusCode, 200);
+
+                // Retrieve board
+                var boardId = listData.attributes.board_id;
+                server.inject({
+                    method: 'GET',
+                    url: helper.apiRoute + '/boards/' + boardId,
+                    headers: {
+                        authorization: jwt[0]
+                    }
+                }, function(response) {
+                    assert.equal(response.statusCode, 200);
+
+                    // Retrieve as wrong user from list
+                    server.inject({
+                        method: 'GET',
+                        url: helper.apiRoute + '/lists/' + listId,
+                        headers: {
+                            authorization: jwt[1]
+                        }
+                    }, function(response) {
+                        assert.equal(response.statusCode, 401);
+
+                        // Retrieve as wrong user from boards
+                        server.inject({
+                            method: 'GET',
+                            url: helper.apiRoute + '/boards/' + boardId,
+                            headers: {
+                                authorization: jwt[1]
+                            }
+                        }, function(response) {
+                            assert.equal(response.statusCode, 401);
+                            done();
+                        });
+                    });
+                });
+            })
+        });
+    });
+
     lab.test('retrieve as another user should fail', function(done) {
         server.inject({
             method: 'GET',

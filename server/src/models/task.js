@@ -30,6 +30,7 @@ var Task = Bookshelf.Model.extend({
             type: 'tasks',
             id: this.get('id'),
             attributes: {
+                list_id: this.get('list_id'),
                 title: this.get('title'),
                 duration: this.get('duration'),
                 started_at: this.get('started_at'),

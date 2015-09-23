@@ -53,6 +53,8 @@ var List = Bookshelf.Model.extend({
                     type: 'lists',
                     id: instance.get('id'),
                     attributes: {
+                        board_id: instance.get('board_id'),
+                        user_id: instance.get('user_id'),
                         title: instance.get('title'),
                         tasks: []
                     }
@@ -62,7 +64,7 @@ var List = Bookshelf.Model.extend({
                     data.attributes.tasks.push(task.retrieveAsData());
                 }
                 return data;
-            })
+            });
     }
 }, {
     schema: {

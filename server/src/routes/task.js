@@ -26,7 +26,12 @@ var routes = [
         handler: TaskAPI.retrieve,
         config: {
             auth: 'jwt',
-            cors: true
+            cors: true,
+            validate: {
+                params: {
+                    id: Joi.number().integer().required()
+                }
+            }
         }
     },
     {

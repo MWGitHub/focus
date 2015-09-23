@@ -47,6 +47,7 @@ var Board = Bookshelf.Model.extend({
                     type: 'boards',
                     id: instance.get('id'),
                     attributes: {
+                        user_id: instance.get('user_id'),
                         title: instance.get('title'),
                         lists: []
                     }
