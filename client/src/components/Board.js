@@ -488,7 +488,7 @@ class BoardView extends React.Component {
     componentDidMount() {
         this.mouseDownX = 0;
         // Amount of distance before swiping
-        this.swipeDifference = 25;
+        this.swipeDifference = 75;
         // Current list in view
         this.currentList = 0;
 

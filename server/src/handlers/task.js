@@ -48,64 +48,50 @@ var handler = {
         var listId = request.payload['list_id'];
         var id = request.payload['id'];
         var position = request.payload['position'];
+        var title;
+        if (request.payload['title']) {
+            title = Hoek.escapeHtml(request.payload['title']);
+        }
         var uid = null;
         User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
                 uid = user.get('id');
-                return List.forge({id: listId}).fetch({require: true});
-            })
-            .then(function(list) {
-                if (list.get('user_id') !== uid) {
-                    throw new Error('User does not match owner');
-                } else {
-                    return Task.forge({id: id}).fetch({require: true});
+                if (listId) {
+                    return List.forge({id: listId}).fetch({require: true})
                 }
             })
-            .then(function (task) {
-                if (task.get('user_id') !== uid) {
-                    throw new Error('User does not match owner');
-                } else {
-                    if (task.get('position') === position && task.get('list_id') === listId) {
-                        reply(API.makeStatusMessage('task-update-position', true, 'Position unchanged'));
-                    } else {
-                        task.set({
-                            position: position,
-                            list_id: listId
-                        }).save().then(function () {
-                            reply(API.makeStatusMessage('task-update-position', true, 'Position updated'));
-                        })
+            .then(function(list) {
+                if (list) {
+                    if (list.get('user_id') !== uid) {
+                        console.log('not owner');
+                        throw Boom.unauthorized();
                     }
                 }
             })
-            .catch(function(err) {
-                reply(Boom.notFound());
-            });
-    },
-
-    updateTitle: function(request, reply) {
-        "use strict";
-
-        var id = request.payload['id'];
-        var title = Hoek.escapeHtml(request.payload['title']);
-        var uid;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
-            .then(function(user) {
-                uid = user.get('id');
-                return Task.forge({id: id}).fetch({require: true})
+            .then(function() {
+                return Task.forge({id: id}).fetch({require: true});
             })
-            .then(function(task) {
+            .then(function (task) {
                 if (task.get('user_id') !== uid) {
-                    reply(Boom.unauthorized('Owner does not match user'));
-                } else if (task.get('title') === title) {
-                    reply(API.makeStatusMessage('task-update-title', true, 'Title unchanged'));
+                    throw Boom.unauthorized();
                 } else {
-                    task.set('title', title).save().then(function () {
-                        reply(API.makeStatusMessage('task-update-title', true, 'Title updated'));
+                    var data = {};
+                    if (position) {
+                        data.position = position;
+                    }
+                    if (title) {
+                        data.title = title;
+                    }
+                    if (listId) {
+                        data.list_id = listId;
+                    }
+                    task.set(data).save().then(function () {
+                        reply(API.makeData(task.retrieveAsData()));
                     })
                 }
             })
-            .catch(function(e) {
-                reply(Boom.notFound());
+            .catch(function(err) {
+                reply(Boom.wrap(err));
             });
     },
 

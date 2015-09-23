@@ -236,13 +236,12 @@ lab.experiment('test task', function() {
     lab.test('update position', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/update/position',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
             },
             payload: {
-                list_id: idList1User1,
                 id: taskUser1Id,
                 position: 1
             }
@@ -257,7 +256,7 @@ lab.experiment('test task', function() {
     lab.test('move to other list', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/update/position',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -278,7 +277,7 @@ lab.experiment('test task', function() {
     lab.test('move to other user list should fail', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/update/position',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -290,7 +289,7 @@ lab.experiment('test task', function() {
             }
         }, function(response) {
             Task.forge({id: taskUser1Id}).fetch().then(function(task) {
-                assert.equal(response.statusCode, 404);
+                assert.equal(response.statusCode, 401);
                 done();
             });
         });
@@ -299,7 +298,7 @@ lab.experiment('test task', function() {
     lab.test('update position wrong user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/update/position',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
@@ -310,7 +309,7 @@ lab.experiment('test task', function() {
                 position: 1
             }
         }, function(response) {
-            assert.equal(response.statusCode, 404);
+            assert.equal(response.statusCode, 401);
             done();
         });
     });
@@ -318,7 +317,7 @@ lab.experiment('test task', function() {
     lab.test('update title', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/update/title',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -338,7 +337,7 @@ lab.experiment('test task', function() {
     lab.test('update title wrong user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/update/title',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
