@@ -233,6 +233,32 @@ lab.experiment('test task', function() {
         });
     });
 
+    lab.test('retrieve', function(done) {
+        server.inject({
+            method: 'GET',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            headers: {
+                authorization: jwt[0]
+            }
+        }, function(response) {
+            assert.equal(response.result.data.attributes.title, testTaskTitle);
+            done();
+        });
+    });
+
+    lab.test('retrieve as another user should fail', function(done) {
+        server.inject({
+            method: 'GET',
+            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            headers: {
+                authorization: jwt[1]
+            }
+        }, function(response) {
+            assert.equal(response.statusCode, 401);
+            done();
+        });
+    });
+
     lab.test('update position', function(done) {
         server.inject({
             method: 'POST',

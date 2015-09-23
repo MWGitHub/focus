@@ -21,6 +21,15 @@ var routes = [
         }
     },
     {
+        method: 'GET',
+        path: API.route + '/tasks/{id}',
+        handler: TaskAPI.retrieve,
+        config: {
+            auth: 'jwt',
+            cors: true
+        }
+    },
+    {
         method: 'POST',
         path: API.route + '/tasks/{id}/update',
         handler: TaskAPI.updatePosition,

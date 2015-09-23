@@ -42,6 +42,28 @@ var handler = {
             });
     },
 
+    retrieve: function(request, reply) {
+        "use strict";
+
+        var id = request.params['id'];
+
+        var uid = null;
+        User.forge({id: request.auth.credentials.id}).fetch({require: true})
+            .then(function(user) {
+                uid = user.get('id');
+                return Task.forge({id: id}).fetch({require: true});
+            })
+            .then(function(task) {
+                if (task.get('user_id') !== uid) {
+                    throw Boom.unauthorized();
+                }
+                reply(API.makeData(task.retrieveAsData()));
+            })
+            .catch(function(err) {
+                reply(Boom.wrap(err));
+            });
+    },
+
     updatePosition: function(request, reply) {
         "use strict";
 
