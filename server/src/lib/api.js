@@ -60,8 +60,8 @@ module.exports.populateUser = function(user) {
 
     var uid = user.get('id');
     return Board.forge({
-                title: 'Main',
-                user_id: uid
+        title: 'Main',
+        user_id: uid
     }).save()
     .then(function(board) {
         // Create the lists
@@ -88,6 +88,8 @@ module.exports.populateUser = function(user) {
                 user_id: uid
             }).save()
         ]);
+    }).then(function() {
+        return user;
     });
 };
 

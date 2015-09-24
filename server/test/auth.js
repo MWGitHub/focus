@@ -50,8 +50,9 @@ lab.experiment('test registration', function() {
                 password: 'testpw0'
             }
         }, function(response) {
+            console.log(response.result);
             assert.equal(response.statusCode, 200);
-            assert.equal(response.result.data.username, helper.testUsers[0]);
+            assert.equal(response.result.data.attributes.username, helper.testUsers[0]);
             done();
         });
     });
@@ -83,7 +84,7 @@ lab.experiment('test registration', function() {
             }
         }, function(response) {
             assert.equal(response.statusCode, 200);
-            assert.equal(response.result.data.timezone, moment.tz.names()[0]);
+            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[0]);
             done();
         });
     });
@@ -372,6 +373,7 @@ lab.experiment('test authentication', function() {
                 timezone: moment.tz.names()[0]
             }
         }, function(response) {
+            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[0]);
             User.forge({id: userInstances[0].get('id')}).fetch().then(function(user) {
                 assert.equal(user.get('timezone'), moment.tz.names()[0]);
                 done();

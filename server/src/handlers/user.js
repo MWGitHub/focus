@@ -37,13 +37,13 @@ UserHandler.register = function(request, reply) {
             }).save()
         })
         .then(function(user) {
-            return API.populateUser(user).then(function() {
-                reply(API.makeData({
-                    id: user.get('id'),
-                    username: user.get('username'),
-                    timezone: user.get('timezone')
-                }));
-            });
+            return API.populateUser(user);
+        })
+        .then(function(user) {
+            return user.retrieveAsData(false);
+        })
+        .then(function(data) {
+            reply(API.makeData(data));
         })
         .catch(function(e) {
             reply(Boom.wrap(e, 400));
@@ -69,29 +69,31 @@ UserHandler.login = function(request, reply) {
     var password = request.payload['password'];
 
     // Check to make sure the username exists
+    var token;
     User.forge({username: username}).fetch({require: true})
         .then(function (user) {
             Bcrypt.compare(password, user.get('password'), function (err, isValid) {
                 if (err) {
                     reply(Boom.badImplementation());
                 } else if (isValid) {
-                    var token = Auth.generateToken(user.get('id'));
-                    Auth.login(token).then(function () {
-                        reply(API.makeData({
-                            id: user.get('id'),
-                            token: token
-                        }));
+                    token = Auth.generateToken(user.get('id'));
+                    Auth.login(token).then(function() {
+                        return user.retrieveAsData(false);
                     })
-                        .catch(function (err) {
-                            reply(Boom.unauthorized());
-                        });
+                    .then(function(data) {
+                        data.token = token;
+                        reply(API.makeData(data));
+                    })
+                    .catch(function (err) {
+                        reply(Boom.unauthorized());
+                    });
                 } else {
                     reply(Boom.unauthorized());
                 }
             });
         })
         .catch(function (e) {
-            reply(Boom.unauthorized());
+            reply(Boom.wrap(e));
         });
 };
 
@@ -193,15 +195,20 @@ UserHandler.retrieve = function(request, reply) {
  */
 UserHandler.age = function(request, reply) {
     var force = request.payload['force'];
+    var user;
     User.forge({id: request.auth.credentials.id}).fetch({require: true})
         // Update the user if needed
-        .then(function (user) {
+        .then(function(u) {
+            user = u;
             return API.updateUserTasks(user, force);
         })
-        .then(function () {
-            reply(API.makeStatusMessage('user-update', true, 'User updated'));
+        .then(function() {
+            return user.retrieveAsData(false);
         })
-        .catch(function (err) {
+        .then(function(data) {
+            reply(API.makeData(data));
+        })
+        .catch(function(err) {
             reply(Boom.notFound());
         });
 };
@@ -234,10 +241,10 @@ UserHandler.update = function(request, reply) {
             return user.set(options).save();
         })
         .then(function() {
-            reply(API.makeData({
-                id: user.get('id'),
-                timezone: user.get('timezone')
-            }))
+            return user.retrieveAsData(false);
+        })
+        .then(function(data) {
+            reply(API.makeData(data));
         })
         .catch(function (err) {
             reply(Boom.notFound());
