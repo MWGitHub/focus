@@ -71,11 +71,16 @@ var List = Bookshelf.Model.extend({
                             tasks: []
                         }
                     };
+                    var promises = [];
                     for (var i = 0; i < collection.length; i++) {
                         var task = collection.models[i];
-                        data.attributes.tasks.push(task.retrieveAsData());
+                        promises.push(task.retrieveAsData().then(function(taskData) {
+                            data.attributes.tasks.push(taskData);
+                        }));
                     }
-                    return data;
+                    return Promise.all(promises).then(function() {
+                        return data;
+                    });
                 });
         }
     }
