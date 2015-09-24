@@ -83,6 +83,7 @@ lab.experiment('test task', function() {
             }
         }, function(response) {
             // Save the ID for later use
+            assert.equal(response.result.data.attributes.title, testTaskTitle);
             Task.forge({title: testTaskTitle, list_id: idList1User1}).fetch().then(function(task) {
                 taskUser1Id = task.get('id');
 
@@ -107,6 +108,7 @@ lab.experiment('test task', function() {
                 extra: true
             }
         }, function(response) {
+            assert.equal(response.result.data.attributes.extra, true);
             Task.forge({title: 'extraTask', list_id: idList1User1}).fetch().then(function(task) {
                 assert.equal(response.statusCode, 200);
                 assert.equal(task.get('extra'), true);
@@ -334,6 +336,7 @@ lab.experiment('test task', function() {
                 position: 1
             }
         }, function(response) {
+            assert.equal(response.result.data.attributes.position, 1);
             Task.forge({id: taskUser1Id}).fetch().then(function(task) {
                 assert.equal(task.get('position'), 1);
                 done();
@@ -354,6 +357,7 @@ lab.experiment('test task', function() {
                 position: 1
             }
         }, function(response) {
+            assert.equal(response.result.data.attributes.list_id, idList2User1);
             Task.forge({id: taskUser1Id}).fetch().then(function(task) {
                 assert.equal(task.get('list_id'), idList2User1);
                 done();
@@ -374,10 +378,8 @@ lab.experiment('test task', function() {
                 position: 1
             }
         }, function(response) {
-            Task.forge({id: taskUser1Id}).fetch().then(function(task) {
-                assert.equal(response.statusCode, 401);
-                done();
-            });
+            assert.equal(response.statusCode, 401);
+            done();
         });
     });
 
@@ -411,6 +413,7 @@ lab.experiment('test task', function() {
                 title: 'wasd'
             }
         }, function(response) {
+            assert.equal(response.result.data.attributes.title, 'wasd');
             Task.forge({id: taskUser1Id}).fetch().then(function(task) {
                 assert.equal(task.get('title'), 'wasd');
                 done();

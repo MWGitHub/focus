@@ -35,7 +35,10 @@ var handler = {
                 return Task.forge(data).save();
             })
             .then(function(task) {
-                reply(API.makeStatusMessage('task-create', true, 'Task created'));
+                return task.retrieveAsData();
+            })
+            .then(function(data) {
+                reply(API.makeData(data));
             })
             .catch(function(err) {
                 reply(Boom.unauthorized());
@@ -110,10 +113,14 @@ var handler = {
                     if (listId) {
                         data.list_id = listId;
                     }
-                    task.set(data).save().then(function () {
-                        reply(API.makeData(task.retrieveAsData()));
-                    })
+                    return task.set(data).save();
                 }
+            })
+            .then(function(task) {
+                return task.retrieveAsData();
+            })
+            .then(function(data) {
+                reply(API.makeData(data));
             })
             .catch(function(err) {
                 reply(Boom.wrap(err));
