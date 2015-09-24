@@ -596,7 +596,7 @@ class Board extends React.Component {
 
         this.isRefreshing = false;
         this.onFrame = this._onFrame.bind(this);
-        this.refreshTime = 1000;
+        this.refreshTime = 10000;
     }
 
     _onFrame() {
@@ -604,7 +604,7 @@ class Board extends React.Component {
 
         var self = this;
         window.setTimeout(function() {
-            if (!Dispatcher.isDispatching) {
+            if (!Dispatcher.isDispatching()) {
                 UserActions.retrieveData(self.state.uid);
             }
             window.requestAnimationFrame(self.onFrame);
