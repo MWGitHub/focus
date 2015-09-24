@@ -58,7 +58,7 @@ var handler = {
                 if (list.get('user_id') !== userId) {
                     throw Boom.unauthorized();
                 }
-                return list.retrieveAsData();
+                return list.retrieveAsData(true);
             })
             .then(function(data) {
                 reply(API.makeData(data));

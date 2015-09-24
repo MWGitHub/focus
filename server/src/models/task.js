@@ -26,7 +26,7 @@ var Task = Bookshelf.Model.extend({
     retrieveAsData: function() {
         "use strict";
 
-        return {
+        return Promise.resolve({
             type: 'tasks',
             id: this.get('id'),
             attributes: {
@@ -39,7 +39,7 @@ var Task = Bookshelf.Model.extend({
                 position: parseFloat(this.get('position')),
                 extra: this.get('extra')
             }
-        }
+        });
     }
 }, {
     schema: {

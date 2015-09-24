@@ -176,7 +176,7 @@ UserHandler.retrieve = function(request, reply) {
         })
         // Retrieve the user data
         .then(function () {
-            return user.retrieveAsData();
+            return user.retrieveAsData(true);
         })
         .then(function (data) {
             reply(API.makeData(data));

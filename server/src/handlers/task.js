@@ -57,7 +57,11 @@ var handler = {
                 if (task.get('user_id') !== uid) {
                     throw Boom.unauthorized();
                 }
-                reply(API.makeData(task.retrieveAsData()));
+
+                return task.retrieveAsData();
+            })
+            .then(function(data) {
+                reply(API.makeData(data));
             })
             .catch(function(err) {
                 reply(Boom.wrap(err));
@@ -85,7 +89,6 @@ var handler = {
             .then(function(list) {
                 if (list) {
                     if (list.get('user_id') !== uid) {
-                        console.log('not owner');
                         throw Boom.unauthorized();
                     }
                 }

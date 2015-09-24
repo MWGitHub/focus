@@ -278,6 +278,8 @@ lab.experiment('test task', function() {
                         authorization: jwt[0]
                     }
                 }, function(response) {
+                    console.log(boardId);
+                    console.log(listData.attributes.board_id);
                     assert.equal(response.statusCode, 200);
 
                     // Retrieve as wrong user from list

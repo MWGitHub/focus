@@ -39,32 +39,48 @@ var User = Bookshelf.Model.extend({
             });
     },
 
-    retrieveAsData: function() {
+    /**
+     * Retrieves the data of the board.
+     * @param {Boolean?} isDeep true to retrieve children.
+     * @return {Promise} the promise with the data.
+     */
+    retrieveAsData: function(isDeep) {
         "use strict";
 
-        var instance = this;
-        return Board.where({user_id: instance.get('id')}).fetchAll()
-            .then(function(collection) {
-                var data = {
-                    type: 'users',
-                    id: instance.get('id'),
-                    attributes: {
-                        username: instance.get('username'),
-                        timezone: instance.get('timezone'),
-                        boards: []
-                    }
-                };
-                var promises = [];
-                for (var i = 0; i < collection.length; i++) {
-                    var model = collection.models[i];
-                    promises.push(model.retrieveAsData().then(function(boardData) {
-                        data.attributes.boards.push(boardData);
-                    }));
+        if (!isDeep) {
+            return Promise.resolve({
+                type: 'users',
+                id: this.get('id'),
+                attributes: {
+                    username: this.get('username'),
+                    timezone: this.get('timezone')
                 }
-                return Promise.all(promises).then(function() {
-                    return data;
-                });
             });
+        } else {
+            var instance = this;
+            return Board.where({user_id: instance.get('id')}).fetchAll()
+                .then(function (collection) {
+                    var data = {
+                        type: 'users',
+                        id: instance.get('id'),
+                        attributes: {
+                            username: instance.get('username'),
+                            timezone: instance.get('timezone'),
+                            boards: []
+                        }
+                    };
+                    var promises = [];
+                    for (var i = 0; i < collection.length; i++) {
+                        var model = collection.models[i];
+                        promises.push(model.retrieveAsData(isDeep).then(function (boardData) {
+                            data.attributes.boards.push(boardData);
+                        }));
+                    }
+                    return Promise.all(promises).then(function () {
+                        return data;
+                    });
+                });
+        }
     }
 }, {
     schema: {

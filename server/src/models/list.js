@@ -41,30 +41,43 @@ var List = Bookshelf.Model.extend({
 
     /**
      * Retrieves the list and properties as data.
+     * @param {Boolean?} isDeep true to retrieve children.
      * @return {Promise} the promise for retrieval with the tasks.
      */
-    retrieveAsData: function() {
+    retrieveAsData: function(isDeep) {
         "use strict";
 
-        var instance = this;
-        return Task.where({list_id: instance.get('id')}).fetchAll()
-            .then(function(collection) {
-                var data = {
-                    type: 'lists',
-                    id: instance.get('id'),
-                    attributes: {
-                        board_id: instance.get('board_id'),
-                        user_id: instance.get('user_id'),
-                        title: instance.get('title'),
-                        tasks: []
-                    }
-                };
-                for (var i = 0; i < collection.length; i++) {
-                    var task = collection.models[i];
-                    data.attributes.tasks.push(task.retrieveAsData());
+        if (!isDeep) {
+            return Promise.resolve({
+                type: 'lists',
+                id: this.get('id'),
+                attributes: {
+                    board_id: this.get('board_id'),
+                    user_id: this.get('user_id'),
+                    title: this.get('title')
                 }
-                return data;
             });
+        } else {
+            var instance = this;
+            return Task.where({list_id: instance.get('id')}).fetchAll()
+                .then(function (collection) {
+                    var data = {
+                        type: 'lists',
+                        id: instance.get('id'),
+                        attributes: {
+                            board_id: instance.get('board_id'),
+                            user_id: instance.get('user_id'),
+                            title: instance.get('title'),
+                            tasks: []
+                        }
+                    };
+                    for (var i = 0; i < collection.length; i++) {
+                        var task = collection.models[i];
+                        data.attributes.tasks.push(task.retrieveAsData());
+                    }
+                    return data;
+                });
+        }
     }
 }, {
     schema: {
