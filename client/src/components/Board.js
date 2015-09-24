@@ -7,6 +7,7 @@ import AuthStore from '../stores/AuthStore';
 import Validate from '../utils/Validation';
 import moment from 'moment-timezone';
 import DraggableList from '../utils/DraggableList';
+import Dispatcher from '../utils/Dispatcher';
 
 function getListByTitle(lists, title) {
     for (var i = 0; i < lists.length; i++) {
@@ -592,6 +593,22 @@ class Board extends React.Component {
             data: UserStore.getData(),
             uid: AuthStore.getID()
         };
+
+        this.isRefreshing = false;
+        this.onFrame = this._onFrame.bind(this);
+        this.refreshTime = 1000;
+    }
+
+    _onFrame() {
+        if (!this.isRefreshing) return;
+
+        var self = this;
+        window.setTimeout(function() {
+            if (!Dispatcher.isDispatching) {
+                UserActions.retrieveData(self.state.uid);
+            }
+            window.requestAnimationFrame(self.onFrame);
+        }, this.refreshTime);
     }
 
     componentDidMount() {
@@ -599,6 +616,16 @@ class Board extends React.Component {
         UserStore.addChangeListener(this.listener);
 
         UserActions.retrieveData(this.state.uid);
+
+        this.isRefreshing = true;
+
+        window.requestAnimationFrame(this.onFrame);
+    }
+
+    componentWillUnmount() {
+        UserStore.removeChangeListener(this.listener);
+
+        this.isRefreshing = false;
     }
 
     onChange() {
@@ -606,10 +633,6 @@ class Board extends React.Component {
             data: UserStore.getData(),
             uid: AuthStore.getID()
         });
-    }
-
-    componentWillUnmount() {
-        UserStore.removeChangeListener(this.listener);
     }
 
     render() {
