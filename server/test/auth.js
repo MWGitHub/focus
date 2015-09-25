@@ -6,8 +6,13 @@ var Auth = require('../src/lib/auth');
 var moment = require('moment-timezone');
 var API = require('../src/lib/api');
 var helper = require('./helper');
+var should = require('chai').should();
 
 var lab = exports.lab = Lab.script();
+var describe = lab.describe;
+var it = lab.it;
+var before = lab.before;
+var after = lab.after;
 var server = require('../index');
 
 /**
@@ -22,10 +27,10 @@ function generateAuthHeader(username, password) {
     return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
 }
 
-lab.experiment('test registration', function() {
+describe('registration', function() {
     "use strict";
 
-    lab.before(function(done) {
+    before(function(done) {
         console.log('\nBefore: Removing any previous test users');
         // Remove all test users if exists
         helper.removeAllTestUsers().then(function() {
@@ -33,7 +38,7 @@ lab.experiment('test registration', function() {
         });
     });
 
-    lab.after(function(done) {
+    after(function(done) {
         console.log('\nAfter: Removing all test users');
 
         helper.removeAllTestUsers().then(function() {
@@ -41,7 +46,7 @@ lab.experiment('test registration', function() {
         });
     });
 
-    lab.test('registers a user', function(done) {
+    it('should register a user when POSTing to api/users', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -50,14 +55,13 @@ lab.experiment('test registration', function() {
                 password: 'testpw0'
             }
         }, function(response) {
-            console.log(response.result);
-            assert.equal(response.statusCode, 200);
-            assert.equal(response.result.data.attributes.username, helper.testUsers[0]);
+            response.statusCode.should.equal(200);
+            response.result.data.attributes.username.should.equal(helper.testUsers[0]);
             done();
         });
     });
 
-    lab.test('registers a user with invalid time zone', function(done) {
+    it('should return error status when given an invalid time zone', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -67,12 +71,12 @@ lab.experiment('test registration', function() {
                 timezone: 'nope'
             }
         }, function(response) {
-            assert.equal(response.statusCode, 400);
+            response.statusCode.should.equal(400);
             done();
         });
     });
 
-    lab.test('registers a user with a time zone', function(done) {
+    it('should register with a time zone and set it', function(done) {
 
         server.inject({
             method: 'POST',
@@ -83,13 +87,13 @@ lab.experiment('test registration', function() {
                 timezone: moment.tz.names()[0]
             }
         }, function(response) {
-            assert.equal(response.statusCode, 200);
-            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[0]);
+            response.statusCode.should.equal(200);
+            response.result.data.attributes.timezone.should.equal(moment.tz.names()[0]);
             done();
         });
     });
 
-    lab.test('returns an error when registering an existing user', function(done) {
+    it('should return an error status when registering an existing user', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -98,12 +102,12 @@ lab.experiment('test registration', function() {
                 password: helper.password
             }
         }, function(response) {
-            assert.equal(response.statusCode, UserHandler.StatusCodes.NameTaken);
+            response.statusCode.should.equal(UserHandler.StatusCodes.NameTaken);
             done();
         });
     });
 
-    lab.test('returns an error when missing password', function(done) {
+    it('should return an error when missing password', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -111,12 +115,12 @@ lab.experiment('test registration', function() {
                 username: helper.testUsers[1]
             }
         }, function (response) {
-            assert.equal(response.statusCode, 400, 'Error when missing the password');
+            response.statusCode.should.equal(400);
             done();
         });
     });
 
-    lab.test('returns an error when missing the username', function(done) {
+    it('should return an error when missing the username', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -124,12 +128,12 @@ lab.experiment('test registration', function() {
                 password: helper.password
             }
         }, function(response) {
-            assert.equal(response.statusCode, 400, 'Error when missing the username');
+            response.statusCode.should.equal(400);
             done();
         });
     });
 
-    lab.test('returns an error when username is too short', function(done) {
+    it('should return an error when username is too short', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -138,12 +142,12 @@ lab.experiment('test registration', function() {
                 password: helper.password
             }
         }, function(response) {
-            assert.equal(response.statusCode, 400, 'Error when username is too short');
+            response.statusCode.should.equal(400);
             done();
         });
     });
 
-    lab.test('returns an error when username is too long', function(done) {
+    it('should return an error when username is too long', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -152,12 +156,12 @@ lab.experiment('test registration', function() {
                 password: helper.password
             }
         }, function(response) {
-            assert.equal(response.statusCode, 400, 'Error when username is too long');
+            response.statusCode.should.equal(400);
             done();
         });
     });
 
-    lab.test('returns an error when password is too short', function(done) {
+    it('should return an error when password is too short', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users',
@@ -166,18 +170,18 @@ lab.experiment('test registration', function() {
                 password: 'test'
             }
         }, function(response) {
-            assert.equal(response.statusCode, 400, 'Error when password is too short');
+            response.statusCode.should.equal(400);
             done();
         });
     });
 });
 
-lab.experiment('test authentication', function() {
+describe('authentication', function() {
     "use strict";
     var jwt = null;
     var userInstances;
 
-    lab.before(function(done) {
+    before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
         helper.removeAllTestUsers().then(function() {
@@ -188,7 +192,7 @@ lab.experiment('test authentication', function() {
         });
     });
 
-    lab.after(function(done) {
+    after(function(done) {
         console.log('\nAfter: Removing all test users');
 
         helper.removeAllTestUsers().then(function() {
@@ -196,7 +200,7 @@ lab.experiment('test authentication', function() {
         });
     });
 
-    lab.test('fails log in', function(done) {
+    it('should fail log in with wrong password', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users/login',
@@ -205,12 +209,12 @@ lab.experiment('test authentication', function() {
                 password: 'wrong54'
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            response.statusCode.should.equal(401);
             done();
         });
     });
 
-    lab.test('logged in', function(done) {
+    it('should log in when correct', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users/login',
@@ -220,23 +224,23 @@ lab.experiment('test authentication', function() {
             }
         }, function(response) {
             jwt = response.result.data.token;
-            assert.equal(response.result.data.id, userInstances[0].get('id'));
-            assert.equal(response.statusCode, 200);
+            response.result.data.id.should.equal(userInstances[0].get('id'));
+            response.statusCode.should.equal(200);
             done();
         });
     });
 
-    lab.test('access authorized page without being logged in', function(done) {
+    it('should be unauthorized when accessing authorized page without being logged in', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id')
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            response.statusCode.should.equal(401);
             done();
         });
     });
 
-    lab.test('access authorized page while logged in', function(done) {
+    it('should retrieve authorized page while logged in', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
@@ -245,13 +249,13 @@ lab.experiment('test authentication', function() {
                 authorization: jwt
             }
         }, function(response) {
-            assert.equal(response.statusCode, 200);
-            assert.equal(response.result.data.attributes.username, userInstances[0].get('username'));
+            response.statusCode.should.equal(200);
+            response.result.data.attributes.username.should.equal(userInstances[0].get('username'));
             done();
         });
     });
 
-    lab.test('logout when logged in', function(done) {
+    it('should log out when logged in', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/users/logout',
@@ -260,22 +264,22 @@ lab.experiment('test authentication', function() {
                 authorization: jwt
             }
         }, function(response) {
-            assert.equal(response.statusCode, 200);
+            response.statusCode.should.equal(200);
             done();
         });
     });
 
-    lab.test('logout when not logged in', function(done) {
+    it('should return not logged in when logging out without authentication', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/users/logout'
         }, function(response) {
-            assert.equal(response.result.meta.message, 'Not logged in');
+            response.result.meta.message.should.equal('Not logged in');
             done();
         });
     });
 
-    lab.test('access authorized page while using logged out credentials should fail', function(done) {
+    it('should fail when accessing authorized page while using revoked credentials', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
@@ -283,12 +287,12 @@ lab.experiment('test authentication', function() {
                 authorization: jwt
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            response.statusCode.should.equal(401);
             done();
         });
     });
 
-    lab.test('access authorized page while logged in with expired token', function(done) {
+    it('should fail when accessing authorized page with expired token', function(done) {
         var token = Auth.generateToken(userInstances[0].get('id'));
         Auth.login(token, 1).then(function() {
             setTimeout(function() {
@@ -299,14 +303,14 @@ lab.experiment('test authentication', function() {
                         authorization: token
                     }
                 }, function(response) {
-                    assert.equal(response.statusCode, 401);
+                    response.statusCode.should.equal(401);
                     done();
                 });
             }, 1100);
         });
     });
 
-    lab.test('delete user without permission should fail', function(done) {
+    it('should fail when deleting user without correct authorization', function(done) {
         server.inject({
             method: 'DELETE',
             url: helper.apiRoute + '/users/' + userInstances[1].get('id'),
@@ -314,12 +318,12 @@ lab.experiment('test authentication', function() {
                 authorization: jwt
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            response.statusCode.should.equal(401);
             done();
         });
     });
 
-    lab.test('logged in again', function(done) {
+    it('should log in again', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users/login',
@@ -329,13 +333,13 @@ lab.experiment('test authentication', function() {
             }
         }, function(response) {
             jwt = response.result.data.token;
-            assert.equal(response.result.data.id, userInstances[0].get('id'));
-            assert.equal(response.statusCode, 200);
+            response.result.data.id.should.equal(userInstances[0].get('id'));
+            response.statusCode.should.equal(200);
             done();
         });
     });
 
-    lab.test('change password', function(done) {
+    it('should change password', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
@@ -355,14 +359,14 @@ lab.experiment('test authentication', function() {
                 }
             }, function(response) {
                 jwt = response.result.data.token;
-                assert.equal(response.result.data.id, userInstances[0].get('id'));
-                assert.equal(response.statusCode, 200);
+                response.result.data.id.should.equal(userInstances[0].get('id'));
+                response.statusCode.should.equal(200);
                 done();
             });
         })
     });
 
-    lab.test('change timezone', function(done) {
+    it('should change timezone', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
@@ -373,15 +377,15 @@ lab.experiment('test authentication', function() {
                 timezone: moment.tz.names()[0]
             }
         }, function(response) {
-            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[0]);
+            response.result.data.attributes.timezone.should.equal(moment.tz.names()[0]);
             User.forge({id: userInstances[0].get('id')}).fetch().then(function(user) {
-                assert.equal(user.get('timezone'), moment.tz.names()[0]);
+                user.get('timezone').should.equal(moment.tz.names()[0]);
                 done();
             });
         });
     });
 
-    lab.test('change password unauth should fail', function(done) {
+    it('should fail when changing password with correct authorization', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
@@ -392,12 +396,12 @@ lab.experiment('test authentication', function() {
                 password: 'newpass'
             }
         }, function(response) {
-            assert.equal(response.statusCode, 401);
+            response.statusCode.should.equal(401);
             done();
         })
     });
 
-    lab.test('delete self', function(done) {
+    it('should delete itself', function(done) {
         server.inject({
             method: 'DELETE',
             url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
@@ -405,9 +409,9 @@ lab.experiment('test authentication', function() {
                 authorization: jwt
             }
         }, function(response) {
-            assert.equal(response.statusCode, 200);
+            response.statusCode.should.equal(200);
             User.forge({username: userInstances[0]}).fetch().then(function(user) {
-                assert.notOk(user);
+                should.not.exist(user);
                 done();
             });
         });
