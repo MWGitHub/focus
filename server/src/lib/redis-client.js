@@ -22,7 +22,7 @@ var client = {
                 }
             });
             client.on('error', function(err) {
-                console.error('Error ' + err);
+                console.error(err);
                 reject(err);
             });
         });

@@ -17,6 +17,8 @@ var minify = require('gulp-minify-css');
 var mainJS = './src/main.js';
 var cssDir = './src/css/**/*.scss';
 //var mainCSS = './src/css/main.scss';
+var destJS = './media/js';
+var destCSS = './media/css';
 
 function bundleProduction(bundler) {
     var time = new Date().getTime();
@@ -25,7 +27,7 @@ function bundleProduction(bundler) {
         .pipe(source('focus.min.js'))
         .pipe(buffer())
         .pipe(uglify())
-        .pipe(gulp.dest('./media/js'))
+        .pipe(gulp.dest(destJS))
         .on('end', function() { gutil.log('Done bundling js after '
             + (new Date().getTime() - time).toString() + ' ms' )})
         .pipe(notify({message: 'Done bundling!'}));
@@ -39,7 +41,7 @@ function bundle(bundler) {
         .pipe(buffer())
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('./media/js'))
+        .pipe(gulp.dest(destJS))
         .on('end', function() { gutil.log('Done bundling js after '
             + (new Date().getTime() - time).toString() + ' ms' )})
         .pipe(notify({message: 'Done bundling js!'}));
@@ -72,7 +74,7 @@ gulp.task('sass-production', function() {
         .pipe(sass().on('error', sass.logError))
         .pipe(minify({compatibility: 'ie8'}))
         .pipe(rename('main.min.css'))
-        .pipe(gulp.dest('./media/css'))
+        .pipe(gulp.dest(destCSS))
         .pipe(notify({message: 'Done compiling css!'}));
 });
 
@@ -81,7 +83,7 @@ gulp.task('sass', function() {
         .pipe(sourcemaps.init())
         .pipe(sass().on('error', sass.logError))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest('./media/css'))
+        .pipe(gulp.dest(destCSS))
         .pipe(notify({message: 'Done compiling css!'}));
 });
 
