@@ -36,7 +36,8 @@ var API = {
         taskCreate: baseURL + '/tasks',
         taskUpdateTitle: baseURL + '/tasks/{id}/update/',
         taskUpdatePosition: baseURL + '/tasks/{id}/update/',
-        taskDelete: baseURL + '/tasks/{id}/delete'
+        taskDelete: baseURL + '/tasks/{id}/delete',
+        getStaleness: baseURL + '/stale/{id}'
     },
 
     parseRoute: function(route, tokens) {

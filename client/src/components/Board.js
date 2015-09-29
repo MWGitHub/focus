@@ -8,6 +8,7 @@ import Validate from '../utils/Validation';
 import moment from 'moment-timezone';
 import DraggableList from '../utils/DraggableList';
 import Dispatcher from '../utils/Dispatcher';
+import BoardStore from '../stores/BoardStore';
 
 function getListByTitle(lists, title) {
     for (var i = 0; i < lists.length; i++) {
@@ -591,7 +592,8 @@ class Board extends React.Component {
         super(props);
         this.state = {
             data: UserStore.getData(),
-            uid: AuthStore.getID()
+            uid: AuthStore.getID(),
+            isStale: false
         };
 
         this.isRefreshing = false;
@@ -605,7 +607,11 @@ class Board extends React.Component {
         var self = this;
         window.setTimeout(function() {
             if (!Dispatcher.isDispatching()) {
-                UserActions.retrieveData(self.state.uid);
+                if (self.state.isStale) {
+                    UserActions.retrieveData(self.state.uid);
+                } else {
+                    BoardActions.checkStaleness(self.state.data.attributes.boards[0].id);
+                }
             }
             window.requestAnimationFrame(self.onFrame);
         }, this.refreshTime);
@@ -614,6 +620,7 @@ class Board extends React.Component {
     componentDidMount() {
         this.listener = this.onChange.bind(this);
         UserStore.addChangeListener(this.listener);
+        BoardStore.addChangeListener(this.listener);
 
         UserActions.retrieveData(this.state.uid);
 
@@ -629,9 +636,11 @@ class Board extends React.Component {
     }
 
     onChange() {
+        var data = UserStore.getData();
         this.setState({
-            data: UserStore.getData(),
-            uid: AuthStore.getID()
+            data: data,
+            uid: AuthStore.getID(),
+            isStale: BoardStore.isStale(data.attributes.boards[0].id)
         });
     }
 

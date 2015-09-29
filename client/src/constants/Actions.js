@@ -16,7 +16,9 @@ var Actions = {
     createTask: 'createTask',
     deleteTask: 'deleteTask',
     moveTask: 'moveTask',
-    renameTask: 'renameTask'
+    renameTask: 'renameTask',
+
+    checkStaleness: 'checkStaleness'
 };
 
 export default Actions;

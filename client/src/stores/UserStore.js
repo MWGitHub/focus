@@ -4,7 +4,6 @@
  */
 import BaseStore from './BaseStore';
 import Actions from '../constants/Actions';
-import StorageKeys from '../constants/StorageKeys';
 
 var data = null;
 class UserStore extends BaseStore {

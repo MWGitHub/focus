@@ -109,6 +109,28 @@ var BoardActions = {
                 });
             }
         )
+    },
+
+    checkStaleness: function(boardId) {
+        Dispatcher.dispatch({
+            actionType: Actions.checkStaleness,
+            state: Actions.State.loading
+        });
+        API.retrieveAuthDataFrom(API.parseRoute(API.routes.getStaleness, {id: boardId}),
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.checkStaleness,
+                    state: Actions.State.complete,
+                    staleness: resp.data.staleness,
+                    boardId: boardId
+                });
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.checkStaleness,
+                    state: Actions.State.failed
+                })
+            });
     }
 };
 
