@@ -5,6 +5,7 @@ var Boom = require('boom');
 var List = require('../models/list');
 var API = require('../lib/api');
 var stale = require('../lib/stale');
+var co = require('co');
 
 var handler = {
     create: function(request, reply) {
@@ -14,43 +15,39 @@ var handler = {
         var title = Hoek.escapeHtml(request.payload['title']);
         var position = request.payload['position'];
         var extra = request.payload['extra'];
-        var uid;
-        var bid;
-        var task;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
-            .then(function(user) {
-                uid = user.get('id');
-            })
-            .then(function() {
-                return List.forge({id: list_id, user_id: uid}).fetch({require: true})
-            })
-            .then(function(list) {
-                var data = {
-                    list_id: list.get('id'),
-                    user_id: uid,
-                    title: title,
-                    age: 0,
-                    position: position
-                };
-                if (extra) {
-                    data.extra = extra;
-                }
-                bid = list.get('board_id');
-                return Task.forge(data).save();
-            })
-            .then(function(v) {
-                task = v;
-                return stale.touch(bid);
-            })
-            .then(function() {
-                return task.retrieveAsData();
-            })
-            .then(function(data) {
-                reply(API.makeData(data));
-            })
-            .catch(function(err) {
-                reply(Boom.unauthorized());
-            });
+
+        co(function* () {
+            try {
+                var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
+            } catch(e) {
+                throw Boom.notFound();
+            }
+            var uid = user.get('id');
+            try {
+                var list = yield List.forge({id: list_id, user_id: uid}).fetch({require: true});
+            } catch(e) {
+                throw Boom.unauthorized();
+            }
+            var data = {
+                list_id: list.get('id'),
+                user_id: uid,
+                title: title,
+                age: 0,
+                position: position
+            };
+            if (extra) {
+                data.extra = extra;
+            }
+            var task = yield Task.forge(data).save();
+            var taskData = yield task.retrieveAsData();
+
+            // Signal that the board has been updated
+            yield stale.touch(list.get('board_id'));
+
+            reply(API.makeData(taskData));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
+        });
     },
 
     retrieve: function(request, reply) {
@@ -58,25 +55,21 @@ var handler = {
 
         var id = request.params['id'];
 
-        var uid = null;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
-            .then(function(user) {
-                uid = user.get('id');
-                return Task.forge({id: id}).fetch({require: true});
-            })
-            .then(function(task) {
-                if (task.get('user_id') !== uid) {
-                    throw Boom.unauthorized();
-                }
-
-                return task.retrieveAsData();
-            })
-            .then(function(data) {
-                reply(API.makeData(data));
-            })
-            .catch(function(err) {
-                reply(Boom.wrap(err));
-            });
+        co(function* () {
+            try {
+                var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
+                var task = yield Task.forge({id: id}).fetch({require: true});
+            } catch(e) {
+                throw Boom.notFound();
+            }
+            if (task.get('user_id') !== user.get('id')) {
+                throw Boom.unauthorized();
+            }
+            var data = yield task.retrieveAsData();
+            reply(API.makeData(data));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
+        });
     },
 
     update: function(request, reply) {
@@ -89,74 +82,69 @@ var handler = {
         if (request.payload['title']) {
             title = Hoek.escapeHtml(request.payload['title']);
         }
-        var uid = null;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
-            .then(function(user) {
-                uid = user.get('id');
-                if (listId) {
-                    return List.forge({id: listId}).fetch({require: true})
-                }
-            })
-            .then(function(list) {
-                if (list) {
-                    if (list.get('user_id') !== uid) {
-                        throw Boom.unauthorized();
-                    }
-                }
-            })
-            .then(function() {
-                return Task.forge({id: id}).fetch({require: true});
-            })
-            .then(function (task) {
-                if (task.get('user_id') !== uid) {
+
+        co(function* () {
+            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
+            var uid = user.get('id');
+            var list = null;
+            if (listId) {
+                list = yield List.forge({id: listId}).fetch({require: true});
+                if (list.get('user_id') !== uid) {
                     throw Boom.unauthorized();
-                } else {
-                    var data = {};
-                    if (position) {
-                        data.position = position;
-                    }
-                    if (title) {
-                        data.title = title;
-                    }
-                    if (listId) {
-                        data.list_id = listId;
-                    }
-                    return task.set(data).save();
                 }
-            })
-            .then(function(task) {
-                return task.retrieveAsData();
-            })
-            .then(function(data) {
-                reply(API.makeData(data));
-            })
-            .catch(function(err) {
-                reply(Boom.wrap(err));
-            });
+            }
+            var task = yield Task.forge({id: id}).fetch({require: true});
+            if (task.get('user_id') !== uid) {
+                throw Boom.unauthorized();
+            }
+            var data = {};
+            if (position) {
+                data.position = position;
+            }
+            if (title) {
+                data.title = title;
+            }
+            if (listId) {
+                data.list_id = listId;
+            }
+            task = yield task.set(data).save();
+            var taskData = yield task.retrieveAsData();
+
+            // Update staleness
+            var bid;
+            if (list) {
+                bid = list.get('board_id');
+            } else {
+                list = yield List.forge({id: task.get('list_id')}).fetch({require: true});
+                bid = list.get('board_id');
+            }
+            yield stale.touch(bid);
+
+            reply(API.makeData(taskData));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
+        });
     },
 
     deleteSelf: function(request, reply) {
         "use strict";
 
         var id = request.params['id'];
-        var uid;
-        User.forge({id: request.auth.credentials.id}).fetch({required: true})
-            .then(function(user) {
-                uid = user.get('id');
-                return Task.forge({id: id}).fetch({required: true})
-            })
-            .then(function(task) {
-                if (task.get('user_id') !== uid) {
-                    reply(Boom.unauthorized('Owner does not match user'));
-                } else {
-                    return task.destroy().then(function () {
-                        reply(API.makeStatusMessage('task-delete', true, 'Task deleted'));
-                    })
-                }
-            })
-            .catch(function(e) {
-                reply(Boom.notFound());
-            });
+        co(function* () {
+            try {
+                var user = yield User.forge({id: request.auth.credentials.id}).fetch({required: true});
+                var task = yield Task.forge({id: id}).fetch({required: true})
+            } catch(e) {
+                throw Boom.notFound();
+            }
+            if (user.get('id') !== task.get('user_id')) {
+                throw Boom.unauthorized();
+            }
+            yield task.destroy();
+            reply(API.makeStatusMessage('task-delete', true, 'Task deleted'));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
+        });
     }
 };
 

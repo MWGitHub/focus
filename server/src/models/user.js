@@ -48,7 +48,6 @@ var User = Bookshelf.Model.extend({
         "use strict";
 
         var instance = this;
-        console.log(JSON.stringify(instance));
         return co(function* () {
             if (!isDeep) {
                 return Promise.resolve({

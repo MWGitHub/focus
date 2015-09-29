@@ -5,6 +5,8 @@ tasks are set, deleted, and updated.
 
 ## Installation
 
+Requires node.js >= 4.0.
+
 Install postgresql and set up the database that will be used for the application.
 Install redis for storing sessions.
 
