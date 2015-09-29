@@ -1,6 +1,7 @@
 var User = require('../src/models/user');
 var API = require('../src/lib/api');
 var Auth = require('../src/lib/auth');
+var server = require('../index');
 
 module.exports = {
     apiRoute: '/api/v1',
@@ -64,5 +65,18 @@ module.exports = {
      */
     generateSimpleAuthHeader: function(username, password) {
         return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
+    },
+
+    /**
+     * Injects as a promise.
+     * @param {*} data the data to inject.
+     * @returns {Promise} the promise with the response.
+     */
+    inject: function(data) {
+        return new Promise(function(resolve, reject) {
+            server.inject(data, function(response) {
+                resolve(response);
+            });
+        });
     }
 };

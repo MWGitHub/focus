@@ -8,11 +8,16 @@ var API = require('../src/lib/api');
 var helper = require('./helper');
 
 var lab = exports.lab = Lab.script();
+var describe = lab.describe;
+var it = lab.it;
+var before = lab.before;
+var after = lab.after;
+
 var server = require('../index');
 
 var testTaskTitle = 'testtask1';
 
-lab.experiment('test task', function() {
+describe('test task', function() {
     "use strict";
 
     // List of user IDs.

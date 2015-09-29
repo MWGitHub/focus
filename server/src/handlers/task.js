@@ -4,6 +4,7 @@ var User = require('../models/user');
 var Boom = require('boom');
 var List = require('../models/list');
 var API = require('../lib/api');
+var stale = require('../lib/stale');
 
 var handler = {
     create: function(request, reply) {
@@ -14,6 +15,8 @@ var handler = {
         var position = request.payload['position'];
         var extra = request.payload['extra'];
         var uid;
+        var bid;
+        var task;
         User.forge({id: request.auth.credentials.id}).fetch({require: true})
             .then(function(user) {
                 uid = user.get('id');
@@ -32,9 +35,14 @@ var handler = {
                 if (extra) {
                     data.extra = extra;
                 }
+                bid = list.get('board_id');
                 return Task.forge(data).save();
             })
-            .then(function(task) {
+            .then(function(v) {
+                task = v;
+                return stale.touch(bid);
+            })
+            .then(function() {
                 return task.retrieveAsData();
             })
             .then(function(data) {
