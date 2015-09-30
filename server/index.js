@@ -6,7 +6,6 @@ var Config = require('./config.json');
 var Routes = require('./src/routes/routes');
 
 var Auth = require('./src/lib/auth');
-var Task = require('./src/lib/task');
 
 // Connect to the database
 var bookshelf = require('./src/lib/bookshelf');
@@ -48,9 +47,6 @@ server.register([
     },
     {
         register: Auth
-    },
-    {
-        register: Task
     }
 ], function(err) {
     "use strict";
