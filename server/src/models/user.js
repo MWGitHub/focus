@@ -50,14 +50,14 @@ var User = Bookshelf.Model.extend({
         var instance = this;
         return co(function* () {
             if (!isDeep) {
-                return Promise.resolve({
+                return {
                     type: 'users',
                     id: instance.get('id'),
                     attributes: {
                         username: instance.get('username'),
                         timezone: instance.get('timezone')
                     }
-                });
+                };
             } else {
                 var boards = yield Board.where({user_id: instance.get('id')}).fetchAll();
                 var data = {

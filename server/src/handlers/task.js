@@ -8,6 +8,9 @@ var stale = require('../lib/stale');
 var co = require('co');
 
 var handler = {
+    /**
+     * Create a new task.
+     */
     create: function(request, reply) {
         "use strict";
 
@@ -17,17 +20,24 @@ var handler = {
         var extra = request.payload['extra'];
 
         co(function* () {
-            try {
-                var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-            } catch(e) {
-                throw Boom.notFound();
+            var user = yield User.forge({id: request.auth.credentials.id}).fetch();
+            if (!user) {
+                reply(Boom.notFound());
+                return;
             }
             var uid = user.get('id');
-            try {
-                var list = yield List.forge({id: list_id, user_id: uid}).fetch({require: true});
-            } catch(e) {
-                throw Boom.unauthorized();
+
+            var list = yield List.forge({id: list_id}).fetch();
+            if (!list) {
+                reply(Boom.notFound());
+                return;
             }
+
+            if (uid !== list.get('user_id')) {
+                reply(Boom.unauthorized());
+                return;
+            }
+
             var data = {
                 list_id: list.get('id'),
                 user_id: uid,
@@ -110,7 +120,7 @@ var handler = {
             task = yield task.set(data).save();
             var taskData = yield task.retrieveAsData();
 
-            // Update staleness
+            // Update board staleness
             var bid;
             if (list) {
                 bid = list.get('board_id');
@@ -140,6 +150,10 @@ var handler = {
             if (user.get('id') !== task.get('user_id')) {
                 throw Boom.unauthorized();
             }
+            // Update board staleness
+            var list = yield List.forge({id: task.get('list_id')}).fetch({required: true});
+            yield stale.touch(list.get('board_id'));
+
             yield task.destroy();
             reply(API.makeStatusMessage('task-delete', true, 'Task deleted'));
         }).catch(function(error) {

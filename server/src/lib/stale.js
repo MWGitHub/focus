@@ -20,6 +20,23 @@ var stale = {
                 err ? reject(err) : resolve(res);
             });
         });
+    },
+
+    /**
+     * Retrieves the staleness of a board.
+     * @param {String} bid the board ID.
+     * @returns {Promise}
+     */
+    getStaleness: function(bid) {
+        return new Promise(function(resolve, reject) {
+            redis.client.get(staleTable + bid, function(err, reply) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply);
+                }
+            });
+        })
     }
 };
 

@@ -264,60 +264,78 @@ class List extends React.Component {
         this.refreshWindow = false;
     }
 
-    _onSwapPosition(target, element, isUp) {
+    _onSwapPosition(target, element, isFromAbove) {
         if (!element) return;
 
-        var tid = target.id.split(":")[1];
+        var targetID = target.id.split(":")[1];
         var targetTask = null;
-        var id = element.id.split(":")[1];
+        var swapID = element.id.split(":")[1];
         var tasks = this.props.list.attributes.tasks;
+
         var previous = null;
         var swap = null;
         var next = null;
         for (var i = 0; i < tasks.length; i++) {
-            if (tasks[i].id.toString() === tid.toString()) {
+            // Get the target task
+            if (tasks[i].id.toString() === targetID.toString()) {
                 targetTask = tasks[i];
             }
-            if (tasks[i].id.toString() === id.toString()) {
+            // Get the tasks around the swapped element and itself
+            if (tasks[i].id.toString() === swapID.toString()) {
                 swap = tasks[i];
                 if (i > 0) previous = tasks[i - 1];
                 if (i < tasks.length - 1) next = tasks[i + 1];
             }
             if (targetTask && previous) break;
         }
-        console.log(targetTask);
-        var swapPos = -1;
+
+        // Used for debugging
+        var oldTargetPosition = targetTask.attributes.position;
+
         var targetPos = -1;
         var positionFound = false;
-        // If target and previous of the element is same just swap positions.
-        if (previous === targetTask || next === targetTask) {
+        // If target is previous or next of the element get midpoint between the two positions
+        if (previous === targetTask) {
             console.log('swap-prev');
-            // swappos
-            swapPos = target.attributes.position;
-            targetPos = swap.attributes.position;
+            if (next) {
+                targetPos = (swap.attributes.position + next.attributes.position) / 2;
+            } else {
+                targetPos = (swap.attributes.position + Number.MAX_SAFE_INTEGER) / 2;
+            }
+            positionFound = true;
+        } else if (next === targetTask) {
+            console.log('swap-next');
+            if (previous) {
+                targetPos = (swap.attributes.position + previous.attributes.position) / 2;
+            } else {
+                targetPos = swap.attributes.position / 2;
+            }
             positionFound = true;
         }
+
         if (!positionFound) {
-            if (!previous) {
-                // set to first
-                swapPos = -1;
-                targetPos = swap.attributes.position / 2;
-            } else if (!next) {
-                swapPos = -1;
-                // Offset slightly from max safe just in case something odd happens where previous is max
-                targetPos = (previous.attributes.position + Number.MAX_SAFE_INTEGER - 1) / 2;
+            if (isFromAbove) {
+                if (!previous) {
+                    targetPos = swap.attributes.position / 2;
+                } else {
+                    targetPos = (swap.attributes.position + previous.attributes.position) / 2;
+                }
             } else {
-                swapPos = -1;
-                targetPos = (previous.attributes.position + next.attributes.position) / 2;
-                console.log(previous.attributes.position);
-                console.log(next.attributes.position);
+                if (!next) {
+                    targetPos = (swap.attributes.position + Number.MAX_SAFE_INTEGER) / 2;
+                } else {
+                    targetPos = (swap.attributes.position + next.attributes.position) / 2;
+                }
             }
         }
+        console.log(targetTask);
         console.log(element);
-        console.log(isUp);
-        console.log(id);
-        console.log("swap: " + swapPos);
-        console.log("target: " + targetPos);
+        console.log(isFromAbove);
+        console.log(swapID);
+        console.log("target old: " + oldTargetPosition);
+        console.log("target new: " + targetPos);
+
+        BoardActions.moveTask(this.props.uid, targetID, this.props.list.id, targetPos);
     }
 
     _onWindowSizeChange() {

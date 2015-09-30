@@ -1,13 +1,14 @@
 var Hapi = require('hapi');
 var Good = require('good');
-var Auth = require('./src/lib/auth');
-var User = require('./src/lib/user');
-var Board = require('./src/lib/board');
-var List = require('./src/lib/list');
-var Task = require('./src/lib/task');
 var Boom = require('boom');
 var RedisClient = require('./src/lib/redis-client');
 var Config = require('./config.json');
+var Routes = require('./src/routes/routes');
+
+var Auth = require('./src/lib/auth');
+var User = require('./src/lib/user');
+var List = require('./src/lib/list');
+var Task = require('./src/lib/task');
 
 // Connect to the database
 var bookshelf = require('./src/lib/bookshelf');
@@ -16,12 +17,6 @@ var bookshelf = require('./src/lib/bookshelf');
 var args = process.argv.slice(2);
 var host = Config.host;
 var port = Config.port;
-// TODO: Use argument parser instead
-/*
-if (args[0]) {
-    port = parseInt(args[0]);
-}
-*/
 
 // Create a server with a host and port
 var options = {
@@ -60,9 +55,6 @@ server.register([
         register: User
     },
     {
-        register: Board
-    },
-    {
         register: List
     },
     {
@@ -73,6 +65,9 @@ server.register([
     if (err) {
         throw err;
     }
+
+    // Route all routes that are not plugins.
+    Routes.addRoutes(server);
 
     // 404 response if a route is not matched.
     server.route({

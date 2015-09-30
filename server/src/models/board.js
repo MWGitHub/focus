@@ -1,6 +1,7 @@
 var Bookshelf = require('../lib/bookshelf');
 var List = require('./list');
 var User = require('./user');
+var co = require('co');
 
 var Board = Bookshelf.Model.extend({
     tableName: 'boards',
@@ -24,13 +25,11 @@ var Board = Bookshelf.Model.extend({
         "use strict";
 
         var instance = this;
-        return List.where({board_id: instance.get('id')}).fetchAll()
-            .then(function(collection) {
-                return collection.invokeThen('destroyDeep').then();
-            })
-            .then(function() {
-                return instance.destroy();
-            });
+        return co(function* () {
+            var lists = yield List.where({board_id: instance.get('id')}).fetchAll();
+            yield lists.invokeThen('destroyDeep');
+            return instance.destroy();
+        });
     },
 
     /**
@@ -41,40 +40,37 @@ var Board = Bookshelf.Model.extend({
     retrieveAsData: function(isDeep) {
         "use strict";
 
-        if (!isDeep) {
-            return Promise.resolve({
-                type: 'boards',
-                id: this.get('id'),
-                attributes: {
-                    user_id: this.get('user_id'),
-                    title: this.get('title')
-                }
-            });
-        } else {
-            var instance = this;
-            return List.where({board_id: instance.get('id')}).fetchAll()
-                .then(function(collection) {
-                    var data = {
-                        type: 'boards',
-                        id: instance.get('id'),
-                        attributes: {
-                            user_id: instance.get('user_id'),
-                            title: instance.get('title'),
-                            lists: []
-                        }
-                    };
-                    var promises = [];
-                    for (var i = 0; i < collection.length; i++) {
-                        var list = collection.models[i];
-                        promises.push(list.retrieveAsData(isDeep).then(function(listData) {
-                            data.attributes.lists.push(listData);
-                        }));
+        var instance = this;
+        return co(function* () {
+            if (!isDeep) {
+                return {
+                    type: 'boards',
+                    id: this.get('id'),
+                    attributes: {
+                        user_id: this.get('user_id'),
+                        title: this.get('title')
                     }
-                    return Promise.all(promises).then(function() {
-                        return data;
-                    });
-                });
-        }
+                };
+            } else {
+                var lists = yield List.where({board_id: instance.get('id')}).fetchAll();
+                var data = {
+                    type: 'boards',
+                    id: instance.get('id'),
+                    attributes: {
+                        user_id: instance.get('user_id'),
+                        title: instance.get('title'),
+                        lists: []
+                    }
+                };
+                for (var i = 0; i < lists.length; i++) {
+                    var list = lists.models[i];
+                    var listData = yield list.retrieveAsData(isDeep);
+                    data.attributes.lists.push(listData);
+                }
+                return data;
+            }
+        });
+
     }
 }, {
     schema: {

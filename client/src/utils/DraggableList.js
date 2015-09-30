@@ -125,6 +125,10 @@ class DraggableList {
         this.draggingClass = '';
         this.dragTime = 300;
         this.onSwap = null;
+        /**
+         * Callback with the target being moved, the element that was swapped with, and true if swapping from above.
+         * @type {function(HTMLElement, HTMLElement, Boolean)}
+         */
         this.onDrop = null;
 
         this._target = null;
@@ -305,6 +309,7 @@ class DraggableList {
             this._target.style.height = '';
             this._target.style.transform = '';
             this._shadow.parentNode.replaceChild(this._target, this._shadow);
+            // Call the callback with the target, swapped element, and if it was swapping from above
             if (this.onDrop) {
                 this.onDrop(this._target, this._lastSwapElement, this._isLastSwapUp);
             }
