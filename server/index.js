@@ -7,7 +7,6 @@ var Routes = require('./src/routes/routes');
 
 var Auth = require('./src/lib/auth');
 var User = require('./src/lib/user');
-var List = require('./src/lib/list');
 var Task = require('./src/lib/task');
 
 // Connect to the database
@@ -53,9 +52,6 @@ server.register([
     },
     {
         register: User
-    },
-    {
-        register: List
     },
     {
         register: Task

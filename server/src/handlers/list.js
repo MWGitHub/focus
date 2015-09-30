@@ -2,6 +2,7 @@ var API = require('../lib/api');
 var User = require('../models/user');
 var List = require('../models/list');
 var Boom = require('boom');
+var co = require('co');
 
 var handler = {
     create: function(request, reply) {
@@ -27,45 +28,35 @@ var handler = {
         "use strict";
 
         var listId = request.params['id'];
-        var userId;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
-            .then(function(user) {
-                userId = user.get('id');
-                return List.forge({id: listId}).fetch({require: true});
-            })
-            .then(function(list) {
-                if (list.get('user_id') !== userId) {
-                    throw Boom.unauthorized();
-                }
-                return list.destroyDeep().then();
-            })
-            .catch(function(err) {
-                reply(Boom.wrap(err));
-            });
+        co(function* () {
+            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
+            var list = yield List.forge({id: listId}).fetch({require: true});
+            if (list.get('user_id') !== user.get('id')) {
+                throw Boom.unauthorized();
+            }
+            yield list.destroyDeep();
+            reply(API.makeStatusMessage('list-delete', true, 'list deleted'));
+        }).catch(function(err) {
+            reply(Boom.wrap(err));
+        });
+
     },
 
     retrieve: function(request, reply) {
         "use strict";
 
         var listId = request.params['id'];
-        var userId;
-        User.forge({id: request.auth.credentials.id}).fetch({require: true})
-            .then(function (user) {
-                userId = user.get('id');
-                return List.forge({id: listId}).fetch({require: true});
-            })
-            .then(function(list) {
-                if (list.get('user_id') !== userId) {
-                    throw Boom.unauthorized();
-                }
-                return list.retrieveAsData(true);
-            })
-            .then(function(data) {
-                reply(API.makeData(data));
-            })
-            .catch(function(err) {
-                reply(Boom.wrap(err));
-            });
+        co(function* () {
+            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
+            var list = yield List.forge({id: listId}).fetch({require: true});
+            if (list.get('user_id') !== user.get('id')) {
+                throw Boom.unauthorized();
+            }
+            var data = yield list.retrieveAsData(true);
+            reply(API.makeData(data));
+        }).catch(function(err) {
+            reply(Boom.wrap(err));
+        });
     }
 };
 

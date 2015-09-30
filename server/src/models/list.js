@@ -2,6 +2,7 @@ var Bookshelf = require('../lib/bookshelf');
 var Task = require('./task');
 var Board = require('./board');
 var User = require('./user');
+var co = require('co');
 
 var List = Bookshelf.Model.extend({
     tableName: 'lists',
@@ -47,42 +48,38 @@ var List = Bookshelf.Model.extend({
     retrieveAsData: function(isDeep) {
         "use strict";
 
-        if (!isDeep) {
-            return Promise.resolve({
-                type: 'lists',
-                id: this.get('id'),
-                attributes: {
-                    board_id: this.get('board_id'),
-                    user_id: this.get('user_id'),
-                    title: this.get('title')
-                }
-            });
-        } else {
-            var instance = this;
-            return Task.where({list_id: instance.get('id')}).fetchAll()
-                .then(function (collection) {
-                    var data = {
-                        type: 'lists',
-                        id: instance.get('id'),
-                        attributes: {
-                            board_id: instance.get('board_id'),
-                            user_id: instance.get('user_id'),
-                            title: instance.get('title'),
-                            tasks: []
-                        }
-                    };
-                    var promises = [];
-                    for (var i = 0; i < collection.length; i++) {
-                        var task = collection.models[i];
-                        promises.push(task.retrieveAsData().then(function(taskData) {
-                            data.attributes.tasks.push(taskData);
-                        }));
+        var instance = this;
+        return co(function* () {
+            if (!isDeep) {
+                return {
+                    type: 'lists',
+                    id: this.get('id'),
+                    attributes: {
+                        board_id: this.get('board_id'),
+                        user_id: this.get('user_id'),
+                        title: this.get('title')
                     }
-                    return Promise.all(promises).then(function() {
-                        return data;
-                    });
-                });
-        }
+                };
+            } else {
+                var tasks = yield Task.where({list_id: instance.get('id')}).fetchAll();
+                var data = {
+                    type: 'lists',
+                    id: instance.get('id'),
+                    attributes: {
+                        board_id: instance.get('board_id'),
+                        user_id: instance.get('user_id'),
+                        title: instance.get('title'),
+                        tasks: []
+                    }
+                };
+                for (var i = 0; i < tasks.length; i++) {
+                    var task = tasks.models[i];
+                    var taskData = yield task.retrieveAsData();
+                    data.attributes.tasks.push(taskData);
+                }
+                return data;
+            }
+        });
     }
 }, {
     schema: {

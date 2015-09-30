@@ -37,7 +37,7 @@ var handler = {
                 return;
             }
             yield board.destroyDeep();
-            reply(API.makeStatusMessage('board-destroy', true, 'board destroyed'));
+            reply(API.makeStatusMessage('board-delete', true, 'board deleted'));
         }).catch(function(error) {
             reply(Boom.wrap(error));
         });
