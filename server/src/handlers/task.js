@@ -64,7 +64,7 @@ var handler = {
         "use strict";
 
         var id = request.params['id'];
-
+        var isDeep = !!request.query['isDeep'];
         co(function* () {
             try {
                 var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
@@ -75,7 +75,7 @@ var handler = {
             if (task.get('user_id') !== user.get('id')) {
                 throw Boom.unauthorized();
             }
-            var data = yield task.retrieveAsData();
+            var data = yield task.retrieveAsData(isDeep);
             reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));

@@ -33,7 +33,13 @@ var API = {
         login: baseURL + '/users/login',
         ageUser: baseURL + '/users/age',
         updateUser: baseURL + '/users/{id}/update',
+
+        boardRetrieve: baseURL + '/boards/{id}',
+
+        listRetrieve: baseURL + '/lists/{id}',
+
         taskCreate: baseURL + '/tasks',
+        taskRetrieve: baseURL +  '/tasks/{id}',
         taskUpdateTitle: baseURL + '/tasks/{id}/update/',
         taskUpdatePosition: baseURL + '/tasks/{id}/update/',
         taskDelete: baseURL + '/tasks/{id}/delete',
@@ -52,30 +58,31 @@ var API = {
     /**
      * Retrieves data that requires authentication from a given URL.
      * @param {String} url the URL to retrieve the data from.
+     * @param {*} data JSON data to use as queries.
      * @param {Function<*>?} success the success callback with the data retrieved.
      * @param {Function<Error>?} error the error callback with the error.
      */
-    retrieveAuthDataFrom: function(url, success, error) {
+    retrieveAuthDataFrom: function(url, data, success, error) {
         if (!AuthStore.isLoggedIn()) {
             if (error) error(new Error('Not logged in'));
             return;
         }
 
-        request({
+        var options = {
             url: url,
             method: 'GET',
             contentType: contentType,
             crossOrigin: true,
-            data: {
-                token: AuthStore.getJWT()
-            },
+            data: data || {},
             success: function(resp) {
                 if (success) success(resp);
             },
             error: function(err) {
                 if (error) error(err);
             }
-        });
+        };
+        options.data.token = AuthStore.getJWT();
+        request(options);
     },
 
     /**

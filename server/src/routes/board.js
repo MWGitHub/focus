@@ -13,6 +13,10 @@ var routes = [
             validate: {
                 params: {
                     id: Joi.number().integer().required()
+                },
+                query: {
+                    token: Joi.string(),
+                    isDeep: Joi.boolean()
                 }
             }
         }

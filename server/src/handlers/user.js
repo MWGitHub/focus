@@ -162,6 +162,7 @@ UserHandler.retrieve = function(request, reply) {
     "use strict";
 
     var id = request.params.id;
+    var isDeep = !!request.query['isDeep'];
     // Do not allow non owning user to retrieve user data
     // TODO: Add partial retrieval of user page when not owner
     if (!request.auth.isAuthenticated || id !== request.auth.credentials.id) {
@@ -178,7 +179,7 @@ UserHandler.retrieve = function(request, reply) {
         })
         // Retrieve the user data
         .then(function () {
-            return user.retrieveAsData(true);
+            return user.retrieveAsData(isDeep);
         })
         .then(function (data) {
             reply(API.makeData(data));

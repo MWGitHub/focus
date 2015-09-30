@@ -29,7 +29,11 @@ var routes = [
             cors: true,
             validate: {
                 params: {
-                    id: Joi.number().integer().required()
+                    id: Joi.number().integer().required(),
+                },
+                query: {
+                    token: Joi.string(),
+                    isDeep: Joi.boolean()
                 }
             }
         }

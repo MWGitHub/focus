@@ -9,7 +9,7 @@ var UserActions = {
             actionType: Actions.retrieveUser,
             state: Actions.State.loading
         });
-        API.retrieveAuthDataFrom(API.routes.user + '/' + uid,
+        API.retrieveAuthDataFrom(API.routes.user + '/' + uid, {isDeep: true},
             (data) => {
                 Dispatcher.dispatch({
                     actionType: Actions.retrieveUser,

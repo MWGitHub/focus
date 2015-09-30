@@ -1,9 +1,18 @@
+/**
+ * Stores board data
+ */
+
 import BaseStore from './BaseStore';
 import Actions from '../constants/Actions';
 import StorageKeys from '../constants/StorageKeys';
 
 // Hash with board ID as keys and {isStale: Boolean, staleness: Number}
 var staleness = {};
+
+// Hashes with ID as key and data as value
+var boardData = {};
+var listData = {};
+var taskData = {};
 class BoardStore extends BaseStore {
     constructor() {
         super();
@@ -43,6 +52,18 @@ class BoardStore extends BaseStore {
                     }
                 }
                 break;
+            case Actions.retrieveBoard:
+                boardData[action.data.data.id] = action.data.data;
+                this.emitChange();
+                break;
+            case Actions.retrieveList:
+                listData[action.data.data.id] = action.data.data;
+                this.emitChange();
+                break;
+            case Actions.retrieveTask:
+                taskData[action.data.data.id] = action.data.data;
+                this.emitChange();
+                break;
         }
     }
 
@@ -53,6 +74,18 @@ class BoardStore extends BaseStore {
     isStale(id) {
         if (!staleness[id]) return true;
         return staleness[id].isStale;
+    }
+
+    getBoardData(id) {
+        return boardData[id];
+    }
+
+    getListData(id) {
+        return listData[id];
+    }
+
+    getTaskData(id) {
+        return taskData[id];
     }
 }
 

@@ -46,13 +46,18 @@ var handler = {
         "use strict";
 
         var listId = request.params['id'];
+        var isDeep = !!request.query['isDeep'];
         co(function* () {
-            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-            var list = yield List.forge({id: listId}).fetch({require: true});
+            try {
+                var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
+                var list = yield List.forge({id: listId}).fetch({require: true});
+            } catch(e) {
+                throw Boom.notFound();
+            }
             if (list.get('user_id') !== user.get('id')) {
                 throw Boom.unauthorized();
             }
-            var data = yield list.retrieveAsData(true);
+            var data = yield list.retrieveAsData(isDeep);
             reply(API.makeData(data));
         }).catch(function(err) {
             reply(Boom.wrap(err));

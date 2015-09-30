@@ -43,7 +43,7 @@ var List = Bookshelf.Model.extend({
     /**
      * Retrieves the list and properties as data.
      * @param {Boolean?} isDeep true to retrieve children.
-     * @return {Promise} the promise for retrieval with the tasks.
+     * @return {Promise} the promise with the data.
      */
     retrieveAsData: function(isDeep) {
         "use strict";
@@ -53,11 +53,11 @@ var List = Bookshelf.Model.extend({
             if (!isDeep) {
                 return {
                     type: 'lists',
-                    id: this.get('id'),
+                    id: instance.get('id'),
                     attributes: {
-                        board_id: this.get('board_id'),
-                        user_id: this.get('user_id'),
-                        title: this.get('title')
+                        board_id: instance.get('board_id'),
+                        user_id: instance.get('user_id'),
+                        title: instance.get('title')
                     }
                 };
             } else {

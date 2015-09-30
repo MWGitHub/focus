@@ -48,12 +48,6 @@ class Task extends React.Component {
     }
 
     componentDidMount() {
-        /*
-        var listElement = React.findDOMNode(this.props.list);
-        listElement.addEventListener('slip:reorder', function(e) {
-            console.log(e);
-        });
-        */
     }
 
     deleteTask(e) {
@@ -523,6 +517,11 @@ class BoardView extends React.Component {
         //document.addEventListener('mouseup', this.onMouseUp);
         document.addEventListener('touchstart', this.onTouchStart);
         document.addEventListener('touchend', this.onTouchEnd);
+
+        var instance = this;
+        window.setTimeout(function() {
+            BoardActions.retrieveBoard(instance.props.board.id, false);
+        }, 1000);
     }
 
     componentWillUnmount() {

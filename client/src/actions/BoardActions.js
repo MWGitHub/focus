@@ -116,7 +116,7 @@ var BoardActions = {
             actionType: Actions.checkStaleness,
             state: Actions.State.loading
         });
-        API.retrieveAuthDataFrom(API.parseRoute(API.routes.getStaleness, {id: boardId}),
+        API.retrieveAuthDataFrom(API.parseRoute(API.routes.getStaleness, {id: boardId}), null,
             (resp) => {
                 Dispatcher.dispatch({
                     actionType: Actions.checkStaleness,
@@ -128,6 +128,81 @@ var BoardActions = {
             (error) => {
                 Dispatcher.dispatch({
                     actionType: Actions.checkStaleness,
+                    state: Actions.State.failed
+                })
+            });
+    },
+
+    retrieveBoard: function(id, isDeep) {
+        Dispatcher.dispatch({
+            actionType: Actions.retrieveBoard,
+            state: Actions.State.loading
+        });
+        var data = {};
+        if (isDeep) {
+            data.isDeep = isDeep;
+        }
+        API.retrieveAuthDataFrom(API.parseRoute(API.routes.boardRetrieve, {id: id}), data,
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveBoard,
+                    state: Actions.State.complete,
+                    data: resp
+                });
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveBoard,
+                    state: Actions.State.failed
+                })
+            });
+    },
+
+    retrieveList: function(id, isDeep) {
+        Dispatcher.dispatch({
+            actionType: Actions.retrieveList,
+            state: Actions.State.loading
+        });
+        var data = {};
+        if (isDeep) {
+            data.isDeep = isDeep;
+        }
+        API.retrieveAuthDataFrom(API.parseRoute(API.routes.listRetrieve, {id: id}), data,
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveList,
+                    state: Actions.State.complete,
+                    data: resp
+                });
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveList,
+                    state: Actions.State.failed
+                })
+            });
+    },
+
+    retrieveTask: function(id, isDeep) {
+        Dispatcher.dispatch({
+            actionType: Actions.retrieveTask,
+            state: Actions.State.loading
+        });
+        var data = {};
+        if (isDeep) {
+            data.isDeep = isDeep;
+        }
+        API.retrieveAuthDataFrom(API.parseRoute(API.routes.taskRetrieve, {id: id}),
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveTask,
+                    state: Actions.State.complete,
+                    data: resp
+                });
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveTask,
                     state: Actions.State.failed
                 })
             });

@@ -45,10 +45,10 @@ var Board = Bookshelf.Model.extend({
             if (!isDeep) {
                 return {
                     type: 'boards',
-                    id: this.get('id'),
+                    id: instance.get('id'),
                     attributes: {
-                        user_id: this.get('user_id'),
-                        title: this.get('title')
+                        user_id: instance.get('user_id'),
+                        title: instance.get('title')
                     }
                 };
             } else {
