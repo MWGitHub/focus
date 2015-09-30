@@ -4,12 +4,14 @@ import request from 'reqwest';
 import Actions from '../constants/Actions';
 
 var UserActions = {
-    retrieveData: function(uid) {
+    retrieveData: function(uid, isDeep) {
         Dispatcher.dispatch({
             actionType: Actions.retrieveUser,
             state: Actions.State.loading
         });
-        API.retrieveAuthDataFrom(API.routes.user + '/' + uid, {isDeep: true},
+        var data = {};
+        if (isDeep) data.isDeep = isDeep;
+        API.retrieveAuthDataFrom(API.routes.user + '/' + uid, data,
             (data) => {
                 Dispatcher.dispatch({
                     actionType: Actions.retrieveUser,

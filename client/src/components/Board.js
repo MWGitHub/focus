@@ -517,11 +517,6 @@ class BoardView extends React.Component {
         //document.addEventListener('mouseup', this.onMouseUp);
         document.addEventListener('touchstart', this.onTouchStart);
         document.addEventListener('touchend', this.onTouchEnd);
-
-        var instance = this;
-        window.setTimeout(function() {
-            BoardActions.retrieveBoard(instance.props.board.id, false);
-        }, 1000);
     }
 
     componentWillUnmount() {
@@ -625,7 +620,7 @@ class Board extends React.Component {
         window.setTimeout(function() {
             if (!Dispatcher.isDispatching()) {
                 if (self.state.isStale) {
-                    UserActions.retrieveData(self.state.uid);
+                    UserActions.retrieveData(self.state.uid, true);
                 } else {
                     BoardActions.checkStaleness(self.state.data.attributes.boards[0].id);
                 }
@@ -639,7 +634,7 @@ class Board extends React.Component {
         UserStore.addChangeListener(this.listener);
         BoardStore.addChangeListener(this.listener);
 
-        UserActions.retrieveData(this.state.uid);
+        UserActions.retrieveData(this.state.uid, true);
 
         this.isRefreshing = true;
 

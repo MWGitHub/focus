@@ -17,7 +17,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     data: data
                 });
-                UserActions.retrieveData(uid);
+                UserActions.retrieveData(uid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -49,7 +49,7 @@ var BoardActions = {
                     list: list,
                     title: title
                 });
-                UserActions.retrieveData(uid);
+                UserActions.retrieveData(uid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -72,7 +72,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     id: id
                 });
-                UserActions.retrieveData(uid);
+                UserActions.retrieveData(uid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -100,7 +100,7 @@ var BoardActions = {
                     id: id,
                     position: position
                 });
-                UserActions.retrieveData(uid);
+                UserActions.retrieveData(uid, true);
             },
             (error) => {
                 Dispatcher.dispatch({

@@ -7,8 +7,7 @@ var Routes = {
     logout: 'logout',
     user: 'user',
     board: 'board',
-    settings: 'user/settings',
-    test: 'test'
+    settings: 'user/settings'
 };
 
 export default Routes;
