@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - 4
+
+addons:
+  postgresql: "9.4"
+
+before_script:
+  - cd server
+  - mv config-sample.json config.json
+  - mv knexfile-sample.js knexfile.js
+  - psql -c 'create database dev_focus;' -U postgres
+
+services:
+  - redis-server
+
+env:
+  - NODE_ENV=development
