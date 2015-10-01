@@ -126,7 +126,7 @@ class Task extends React.Component {
             <input className="right positive" type="button" button onClick={this.complete.bind(this)} value="complete" />
         );
         return (
-            <div id={this.props.list.id + ":" + this.props.task.id} className={'draggable ' + style}>
+            <div id={'task:' + this.props.list.id + ":" + this.props.task.id} className={'draggable ' + style}>
                 <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
                 <div className="task-info">
                     { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
@@ -223,10 +223,21 @@ class List extends React.Component {
         super(props);
 
         this.state = {
-            tasks: this.props.list.attributes.tasks,
             isCreateShown: false
         };
         this.onWindowSizeChange = this._onWindowSizeChange.bind(this);
+    }
+
+    componentWillUpdate() {
+        // Place all tasks back in their original locations
+        var tasks = this.props.list.attributes.tasks;
+        for (var i = 0; i < tasks.length; i++) {
+            var id = tasks[i].id;
+            var element = document.getElementById('task:' + this.props.list.id + ':' + id);
+            var parent = element.parentNode;
+            parent.removeChild(element);
+            parent.appendChild(element);
+        }
     }
 
     componentDidMount() {
@@ -285,10 +296,10 @@ class List extends React.Component {
     _onSwapPosition(target, element, isFromAbove) {
         if (!element) return;
 
-        var targetID = target.id.split(":")[1];
+        var targetID = target.id.split(":")[2];
         var targetTask = null;
-        var swapID = element.id.split(":")[1];
-        var tasks = this.state.tasks;
+        var swapID = element.id.split(":")[2];
+        var tasks = this.props.list.attributes.tasks;
 
         var previous = null;
         var swap = null;
@@ -351,31 +362,18 @@ class List extends React.Component {
                 }
             }
         }
+        /*
         console.log(targetTask);
         console.log(element);
         console.log(isFromAbove);
         console.log(swapID);
         console.log("target old: " + oldTargetPosition);
         console.log("target new: " + targetPos);
-
-        targetTask.attributes.position = targetPos;
-        // Sort the tasks by position
-        /*
-        tasks = tasks.sort(function (a, b) {
-            if (a.attributes.position > b.attributes.position) {
-                return 1;
-            } else if (a.attributes.position < b.attributes.position) {
-                return -1;
-            }
-            return 0;
-        });
-        this.setState({
-            tasks: tasks
-        });
         */
 
+        targetTask.attributes.position = targetPos;
+
         BoardActions.moveTask(this.props.uid, targetID, this.props.list.id, targetPos);
-        //BoardActions.retrieveList(this.props.list.id, true);
     }
 
     _onWindowSizeChange() {
@@ -454,7 +452,6 @@ class List extends React.Component {
 
     render() {
         var list = this.props.list;
-        //var tasks = this.state.tasks;
         var tasks = list.attributes.tasks;
         var createButton = (
             <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
@@ -505,6 +502,7 @@ class List extends React.Component {
             });
         } else {
             // Sort the tasks by position
+            // TODO: Make this server side
             tasks = tasks.sort(function (a, b) {
                 if (a.attributes.position > b.attributes.position) {
                     return 1;
@@ -518,19 +516,6 @@ class List extends React.Component {
         // Limit done tasks (should be done server side)
         if (tasks.length > 10 && list.attributes.title === ListTitles.done) {
             tasks = tasks.slice(0, 10);
-        }
-
-        var taskComponents = [];
-        var i;
-        for (i = 0; i < tasks.length; i++) {
-            taskComponents.push(<Task uid={this.props.uid} lists={this.props.lists} list={list} task={tasks[i]} key={tasks[i].id} disable={this.props.disable} />);
-        }
-
-        if (list.attributes.title === ListTitles.tasks) {
-            console.log('==== List Sorted ====');
-            for (i = 0; i < tasks.length; i++) {
-                console.log(tasks[i].attributes.position);
-            }
         }
 
         timesRendered++;
@@ -547,7 +532,9 @@ class List extends React.Component {
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.done ? doneDescription : null}
-                    {taskComponents}
+                    {tasks.map((task) => {
+                        return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />;
+                    })}
                 </div>
                 <div className={"list-cap"}></div>
             </div>
