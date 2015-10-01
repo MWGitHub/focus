@@ -7,9 +7,11 @@ addons:
 
 before_script:
   - cd server
+  - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
   - psql -c 'create database dev_focus;' -U postgres
+  - ./node_modules/.bin/knex migrate:latest
 
 services:
   - redis-server
