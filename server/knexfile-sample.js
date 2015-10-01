@@ -1,13 +1,13 @@
-// Update with your config settings.
+// Please at least change the user and password for the database.
 var path = require('path');
 
 module.exports = {
     development: {
         client: 'postgresql',
         connection: {
-            database: 'focus',
-            user:     'yourusername',
-            password: 'yourpassword'
+            database: 'dev_focus',
+            user:     'postgres',
+            password: ''
         },
         pool: {
             min: 2,
@@ -23,9 +23,9 @@ module.exports = {
     staging: {
         client: 'postgresql',
         connection: {
-            database: 'focus',
-            user:     'yourusername',
-            password: 'yourpassword'
+            database: 'stage_focus',
+            user:     'postgres',
+            password: ''
         },
         pool: {
             min: 2,
@@ -40,9 +40,9 @@ module.exports = {
     production: {
         client: 'postgresql',
         connection: {
-            database: 'focus',
-            user:     'yourusername',
-            password: 'yourpassword'
+            database: 'production_focus',
+            user:     'postgres',
+            password: ''
         },
         pool: {
             min: 2,

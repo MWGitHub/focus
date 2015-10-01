@@ -1,5 +1,8 @@
 {
-  "authkey": "your token here",
+  "authkey": "B55F52390359618D57884150F78007C50147B8C1869049B92200270216BC4DF7",
   "defaultTimeZone": "America/New York",
-  "redisDB": 0
+  "redisDB": 0,
+  "port": 4010,
+  "host": "0.0.0.0",
+  "apiRoute": "/api/v1"
 }

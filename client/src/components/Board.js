@@ -40,6 +40,16 @@ var ListTitleDisplay = {
 };
 
 /**
+ * Flags for disabled features in a list.
+ */
+var ListDisableOptions = {
+    tasks: {left: true, complete: true, age: true},
+    tomorrow: {right: true, complete: true, age: true},
+    today: {create: false, left: true, right: true, sort: true},
+    done: {create: true, del: true, left: true, right: true, complete: true, sort: true}
+};
+
+/**
  * Renders a task.
  */
 class Task extends React.Component {
@@ -213,12 +223,16 @@ class List extends React.Component {
         super(props);
 
         this.state = {
+            tasks: this.props.list.attributes.tasks,
             isCreateShown: false
         };
         this.onWindowSizeChange = this._onWindowSizeChange.bind(this);
     }
 
     componentDidMount() {
+        this.changeListener = this._onChange.bind(this);
+        BoardStore.addChangeListener(this.changeListener);
+
         if (!this.props.disable.sort) {
             var element = React.findDOMNode(this.refs.list);
 
@@ -256,6 +270,16 @@ class List extends React.Component {
             this.draggable.destroy();
         }
         this.refreshWindow = false;
+        BoardStore.removeChangeListener(this.changeListener);
+    }
+
+    _onChange() {
+        var listData = BoardStore.getListData(this.props.list.id);
+        if (listData) {
+            this.setState({
+                tasks: BoardStore.getListData(this.props.list.id).attributes.tasks
+            });
+        }
     }
 
     _onSwapPosition(target, element, isFromAbove) {
@@ -264,7 +288,7 @@ class List extends React.Component {
         var targetID = target.id.split(":")[1];
         var targetTask = null;
         var swapID = element.id.split(":")[1];
-        var tasks = this.props.list.attributes.tasks;
+        var tasks = this.state.tasks;
 
         var previous = null;
         var swap = null;
@@ -288,6 +312,11 @@ class List extends React.Component {
 
         var targetPos = -1;
         var positionFound = false;
+        // Do nothing if task has not moved
+        if ((previous === targetTask && isFromAbove) || (next === targetTask && !isFromAbove)) {
+            return;
+        }
+
         // If target is previous or next of the element get midpoint between the two positions
         if (previous === targetTask) {
             console.log('swap-prev');
@@ -329,7 +358,24 @@ class List extends React.Component {
         console.log("target old: " + oldTargetPosition);
         console.log("target new: " + targetPos);
 
+        targetTask.attributes.position = targetPos;
+        // Sort the tasks by position
+        /*
+        tasks = tasks.sort(function (a, b) {
+            if (a.attributes.position > b.attributes.position) {
+                return 1;
+            } else if (a.attributes.position < b.attributes.position) {
+                return -1;
+            }
+            return 0;
+        });
+        this.setState({
+            tasks: tasks
+        });
+        */
+
         BoardActions.moveTask(this.props.uid, targetID, this.props.list.id, targetPos);
+        //BoardActions.retrieveList(this.props.list.id, true);
     }
 
     _onWindowSizeChange() {
@@ -385,7 +431,7 @@ class List extends React.Component {
 
     }
 
-    forceUpdate(event) {
+    forceUserUpdate(event) {
         event.preventDefault();
 
         BoardActions.forceUserUpdate(this.props.uid);
@@ -408,6 +454,7 @@ class List extends React.Component {
 
     render() {
         var list = this.props.list;
+        //var tasks = this.state.tasks;
         var tasks = list.attributes.tasks;
         var createButton = (
             <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
@@ -416,7 +463,7 @@ class List extends React.Component {
         var todayTop = (
             <div>
                 <input className="create right temporary" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
-                <input className="right" type="button" value="force update" onClick={this.forceUpdate.bind(this)} />
+                <input className="right" type="button" value="force update" onClick={this.forceUserUpdate.bind(this)} />
             </div>
         );
         var taskCreateBox = (
@@ -456,6 +503,16 @@ class List extends React.Component {
                 }
                 return 0;
             });
+        } else {
+            // Sort the tasks by position
+            tasks = tasks.sort(function (a, b) {
+                if (a.attributes.position > b.attributes.position) {
+                    return 1;
+                } else if (a.attributes.position < b.attributes.position) {
+                    return -1;
+                }
+                return 0;
+            });
         }
 
         // Limit done tasks (should be done server side)
@@ -463,10 +520,24 @@ class List extends React.Component {
             tasks = tasks.slice(0, 10);
         }
 
+        var taskComponents = [];
+        var i;
+        for (i = 0; i < tasks.length; i++) {
+            taskComponents.push(<Task uid={this.props.uid} lists={this.props.lists} list={list} task={tasks[i]} key={tasks[i].id} disable={this.props.disable} />);
+        }
+
+        if (list.attributes.title === ListTitles.tasks) {
+            console.log('==== List Sorted ====');
+            for (i = 0; i < tasks.length; i++) {
+                console.log(tasks[i].attributes.position);
+            }
+        }
+
+        timesRendered++;
         return (
             <div id={"list-" + list.id} className="list">
                 <div className="list-top">
-                    <h2 className="no-margin">{ListTitleDisplay[this.props.name]}</h2>
+                    <h2 className="no-margin">{ListTitleDisplay[this.props.name]} - {timesRendered}</h2>
                     { this.props.disable.create ? null : createButton }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
@@ -476,15 +547,14 @@ class List extends React.Component {
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.done ? doneDescription : null}
-                    {tasks.map((task) => {
-                        return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />
-                    })}
+                    {taskComponents}
                 </div>
                 <div className={"list-cap"}></div>
             </div>
         )
     }
 }
+var timesRendered = 0;
 
 /**
  * Renders the board and sets the settings for the lists.
@@ -586,10 +656,10 @@ class BoardView extends React.Component {
         return (
             <div>
                 <div className="board" ref="board">
-                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={{left: true, complete: true, age: true}} />
-                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={{right: true, complete: true, age: true}} />
-                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={{create: false, left: true, right: true, sort: true}} />
-                    <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={{create: true, del: true, left: true, right: true, complete: true, sort: true}} />
+                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={ListDisableOptions.tasks} />
+                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={ListDisableOptions.tomorrow} />
+                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={ListDisableOptions.today} />
+                    <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={ListDisableOptions.done} />
                 </div>
             </div>
         )
@@ -602,11 +672,16 @@ class BoardView extends React.Component {
 class Board extends React.Component {
     constructor(props) {
         super(props);
+
         this.state = {
-            data: UserStore.getData(),
+            board: null,
             uid: AuthStore.getID(),
             isStale: false
         };
+        var data = UserStore.getData();
+        if (data) {
+            this.state.board = data.attributes.boards[0];
+        }
 
         this.isRefreshing = false;
         this.onFrame = this._onFrame.bind(this);
@@ -619,10 +694,10 @@ class Board extends React.Component {
         var self = this;
         window.setTimeout(function() {
             if (!Dispatcher.isDispatching()) {
-                if (self.state.isStale) {
+                if (self.state.isStale && self.state.data) {
                     UserActions.retrieveData(self.state.uid, true);
                 } else {
-                    BoardActions.checkStaleness(self.state.data.attributes.boards[0].id);
+                    BoardActions.checkStaleness(self.state.board.id);
                 }
             }
             window.requestAnimationFrame(self.onFrame);
@@ -649,17 +724,18 @@ class Board extends React.Component {
 
     onChange() {
         var data = UserStore.getData();
+        var board = data.attributes.boards[0];
         this.setState({
-            data: data,
+            board: board,
             uid: AuthStore.getID(),
-            isStale: BoardStore.isStale(data.attributes.boards[0].id)
+            isStale: BoardStore.isStale(board.id)
         });
     }
 
     render() {
-        if (!this.state.data) return null;
+        if (!this.state.board) return null;
         return (
-            <BoardView uid={this.state.uid} board={this.state.data.attributes.boards[0]} />
+            <BoardView uid={this.state.uid} board={this.state.board} />
         )
     }
 }
