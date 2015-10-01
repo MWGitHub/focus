@@ -4,6 +4,12 @@ node_js:
 sudo: true
 addons:
   postgresql: "9.4"
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+
 
 before_script:
   - cd server
@@ -18,3 +24,4 @@ services:
 
 env:
   - NODE_ENV=development
+  - CXX=g++-4.8
