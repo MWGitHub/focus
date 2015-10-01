@@ -518,11 +518,10 @@ class List extends React.Component {
             tasks = tasks.slice(0, 10);
         }
 
-        timesRendered++;
         return (
             <div id={"list-" + list.id} className="list">
                 <div className="list-top">
-                    <h2 className="no-margin">{ListTitleDisplay[this.props.name]} - {timesRendered}</h2>
+                    <h2 className="no-margin">{ListTitleDisplay[this.props.name]}</h2>
                     { this.props.disable.create ? null : createButton }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
@@ -541,7 +540,6 @@ class List extends React.Component {
         )
     }
 }
-var timesRendered = 0;
 
 /**
  * Renders the board and sets the settings for the lists.
