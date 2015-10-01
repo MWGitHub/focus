@@ -13,6 +13,7 @@ addons:
 
 before_script:
   - cd server
+  - sudo npm i -g node-gyp && node-gyp clean
   - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
