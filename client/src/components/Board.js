@@ -458,18 +458,8 @@ class List extends React.Component {
                 <i className="fa fa-plus fa-pull-right"></i><span>add task</span>
             </button>
         );
-
-        var todayTop = (
-            <div>
-                <input className="create right temporary" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
-                <input className="right" type="button" value="force update" onClick={this.forceUserUpdate.bind(this)} />
-            </div>
-        );
         var taskCreateBox = (
             <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} />
-        );
-        var todayCreateBox = (
-            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} extra={true} />
         );
 
         var taskDescription = (
@@ -504,7 +494,6 @@ class List extends React.Component {
             });
         } else {
             // Sort the tasks by position
-            // TODO: Make this server side
             tasks = tasks.sort(function (a, b) {
                 if (a.attributes.position > b.attributes.position) {
                     return 1;
@@ -515,7 +504,8 @@ class List extends React.Component {
             });
         }
 
-        // Limit done tasks (should be done server side)
+        // Limit done tasks
+        // TODO: Make this server side
         if (tasks.length > 10 && list.attributes.title === ListTitles.done) {
             tasks = tasks.slice(0, 10);
         }
