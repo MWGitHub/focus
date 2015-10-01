@@ -25,4 +25,4 @@ services:
 
 env:
   - NODE_ENV=development
-  - CXX=g++-4.8
+  - CC=clang CXX=clang++ npm_config_clang=1
