@@ -1,19 +1,19 @@
 language: node_js
 node_js:
   - 4
-sudo: true
+sudo: false
 addons:
   postgresql: "9.4"
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - g++-4.8
+    - g++-4.8
 
 
 before_script:
   - cd server
-  - sudo npm i -g node-gyp && node-gyp clean
+  - npm i -g node-gyp && node-gyp clean
   - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
@@ -25,4 +25,4 @@ services:
 
 env:
   - NODE_ENV=development
-  - CXX=g++-4.8
+  - CC=clang CXX=clang++ npm_config_clang=1
