@@ -454,7 +454,7 @@ class List extends React.Component {
         var list = this.props.list;
         var tasks = list.attributes.tasks;
         var createButton = (
-            <input className="create right" type="button" value="+" onClick={this.createButtonClicked.bind(this)} />
+            <input className="create right" type="button" value="add task" onClick={this.createButtonClicked.bind(this)} />
         );
 
         var todayTop = (

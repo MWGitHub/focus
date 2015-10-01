@@ -17,7 +17,7 @@ var server = require('../index');
 
 var testTaskTitle = 'testtask1';
 
-describe('test task', function() {
+describe('task', function() {
     "use strict";
 
     // List of user IDs.
@@ -35,7 +35,7 @@ describe('test task', function() {
 
     var jwt = [];
 
-    lab.before(function(done) {
+    before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
         helper.removeAllTestUsers().then(function() {
@@ -64,7 +64,7 @@ describe('test task', function() {
         });
     });
 
-    lab.after(function(done) {
+    after(function(done) {
         console.log('\nAfter: Removing all test users');
 
         helper.removeAllTestUsers().then(function() {
@@ -73,7 +73,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('create', function(done) {
+    it('should create a task', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -98,7 +98,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('create extra', function(done) {
+    it('should create a task with the extra flag', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -122,7 +122,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('get should return not found', function(done) {
+    it('should return not found for a nonexistent task', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/tasks',
@@ -141,7 +141,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('create title too long', function(done) {
+    it('should return an error when creating and title is too long', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -160,7 +160,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('create title not given', function(done) {
+    it('should return an error when creating and title is not given', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -178,7 +178,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('create list not given', function(done) {
+    it('should return an error when creating and list is not given', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -196,7 +196,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('create position not given', function(done) {
+    it('should return an error when creating and position is not given', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -214,14 +214,14 @@ describe('test task', function() {
         });
     });
 
-    lab.test('check that created task exists', function(done) {
+    it('should check if a task has been created in the database with the matching user', function(done) {
         Task.forge({title: testTaskTitle, user_id: userIds[0]}).fetch().then(function(task) {
             assert.isOk(task);
             done();
         });
     });
 
-    lab.test('create for other user error', function(done) {
+    it('should return an error when creating a task for other user', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks',
@@ -240,7 +240,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('retrieve', function(done) {
+    it('should retrieve a task', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/tasks/' + taskUser1Id,
@@ -253,7 +253,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('retrieve from task, list, and board', function(done) {
+    it('should retrieve from task, list, and board', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/tasks/' + taskUser1Id,
@@ -314,7 +314,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('retrieve as another user should fail', function(done) {
+    it('should return an error when retrieving as another user', function(done) {
         server.inject({
             method: 'GET',
             url: helper.apiRoute + '/tasks/' + taskUser1Id,
@@ -327,7 +327,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('update position', function(done) {
+    it('should update position', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
@@ -347,7 +347,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('move to other list', function(done) {
+    it('should move to another list', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
@@ -368,7 +368,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('move to other user list should fail', function(done) {
+    it("should return an error when moving to other user's list", function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
@@ -386,7 +386,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('update position wrong user', function(done) {
+    it('should return an error when updating position as an unauthorized user', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
@@ -404,7 +404,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('update title', function(done) {
+    it('should update title', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
@@ -424,7 +424,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('update title wrong user', function(done) {
+    it('should return an error when updating title as the wrong user', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
@@ -441,7 +441,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('delete as other user error', function(done) {
+    it('should return an error when deleting a task as the wrong user', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
@@ -455,7 +455,7 @@ describe('test task', function() {
         });
     });
 
-    lab.test('delete', function(done) {
+    it('should delete the task', function(done) {
         server.inject({
             method: 'POST',
             url: helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
