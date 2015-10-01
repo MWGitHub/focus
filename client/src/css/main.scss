@@ -1,5 +1,6 @@
 @import "../../node_modules/normalize.css/normalize";
 
+@import "../../node_modules/font-awesome/scss/font-awesome";
 @import "bourbon/bourbon";
 @import "neat/neat";
 @import "base/base";
@@ -225,11 +226,11 @@ div.list {
   margin-left: 0.6%;
   vertical-align: top;
 
-  input[type='button'], input[type='submit'] {
+  button, input[type='button'], input[type='submit'] {
     padding: 0.25em;
   }
 
-  input[type="button"].create {
+  input[type='button'].create, button.create {
     //width: em(24px);
     //height: em(24px);
     margin-left: 0.5em;
