@@ -129,7 +129,7 @@ class Task extends React.Component {
             <div id={'task:' + this.props.list.id + ":" + this.props.task.id} className={'draggable ' + style}>
                 <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
                 <div className="task-info">
-                    { shouldHideDelete ? null : <input className="left negative" type="button" onClick={this.deleteTask.bind(this)} value="delete" /> }
+                    { shouldHideDelete ? null : <button className="left negative" onClick={this.deleteTask.bind(this)}><span>delete</span></button> }
                     { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
                     { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
                     { this.props.disable.complete ? null : completeNormal }
@@ -454,7 +454,7 @@ class List extends React.Component {
         var list = this.props.list;
         var tasks = list.attributes.tasks;
         var createButton = (
-            <button className="create right" type="button" value="add task" onClick={this.createButtonClicked.bind(this)}>
+            <button className="create right" onClick={this.createButtonClicked.bind(this)}>
                 <i className="fa fa-plus fa-pull-right"></i><span>add task</span>
             </button>
         );
