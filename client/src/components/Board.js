@@ -243,8 +243,8 @@ class List extends React.Component {
     }
 
     componentDidMount() {
-        this.changeListener = this._onChange.bind(this);
-        BoardStore.addChangeListener(this.changeListener);
+        this.onClick = this._onClick.bind(this);
+        document.addEventListener('mouseup', this.onClick);
 
         if (!this.props.disable.sort) {
             var element = React.findDOMNode(this.refs.list);
@@ -279,19 +279,21 @@ class List extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.onWindowSizeChange);
+        document.removeEventListener('mouseup', this.onClick);
         if (!this.props.disable.sort) {
             this.draggable.destroy();
         }
         this.refreshWindow = false;
-        BoardStore.removeChangeListener(this.changeListener);
     }
 
-    _onChange() {
-        var listData = BoardStore.getListData(this.props.list.id);
-        if (listData) {
-            this.setState({
-                tasks: BoardStore.getListData(this.props.list.id).attributes.tasks
-            });
+    _onClick(e) {
+        if (this.state.isCreateShown) {
+            var createBox = React.findDOMNode(this.refs.createBox);
+            if (!createBox.contains(e.target)) {
+                this.setState({
+                    isCreateShown: false
+                });
+            }
         }
     }
 
@@ -461,7 +463,7 @@ class List extends React.Component {
             </button>
         );
         var taskCreateBox = (
-            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} />
+            <TaskCreateBox uid={this.props.uid} list={list} tasks={tasks} closeCallback={this.createDialogClosed.bind(this)} ref="createBox" />
         );
 
         var taskDescription = (
@@ -519,8 +521,7 @@ class List extends React.Component {
                     { this.props.disable.create ? null : createButton }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
-                    {this.state.isCreateShown && list.attributes.title !== ListTitles.today ? taskCreateBox : null }
-                    {this.state.isCreateShown && list.attributes.title === ListTitles.today ? todayCreateBox : null }
+                    {this.state.isCreateShown ? taskCreateBox : null }
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tasks ? taskDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}

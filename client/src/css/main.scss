@@ -300,6 +300,10 @@ div.list {
 
 .list-today .task {
   background-color: $list-today-color;
+
+  &.create-task {
+    background-color: shade($list-today-color, 15%);
+  }
 }
 
 .list-done .task {

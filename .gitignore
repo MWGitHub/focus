@@ -5,6 +5,7 @@ server/knexfile.js
 server/config.json
 server/knex
 server/playground.js
+server/logs
 .idea
 server/favicon.ico
 client/bower_components
