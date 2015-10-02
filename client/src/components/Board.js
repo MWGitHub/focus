@@ -230,13 +230,15 @@ class List extends React.Component {
 
     componentWillUpdate() {
         // Place all tasks back in their original locations
-        var tasks = this.props.list.attributes.tasks;
-        for (var i = 0; i < tasks.length; i++) {
-            var id = tasks[i].id;
-            var element = document.getElementById('task:' + this.props.list.id + ':' + id);
-            var parent = element.parentNode;
-            parent.removeChild(element);
-            parent.appendChild(element);
+        if (!this.props.disable.sort) {
+            var tasks = this.props.list.attributes.tasks;
+            for (var i = 0; i < tasks.length; i++) {
+                var id = tasks[i].id;
+                var element = document.getElementById('task:' + this.props.list.id + ':' + id);
+                var parent = element.parentNode;
+                parent.removeChild(element);
+                parent.appendChild(element);
+            }
         }
     }
 
