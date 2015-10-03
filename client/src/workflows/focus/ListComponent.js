@@ -359,14 +359,29 @@ class List extends React.Component {
                 } else if (a.attributes.age > b.attributes.age) {
                     return -1;
                 }
+                if (a.attributes.position > b.attributes.position) {
+                    return 1;
+                } else if (a.attributes.position < b.attributes.position) {
+                    return -1;
+                }
+                if (a.id < b.id) {
+                    return 1;
+                } else if (a.id > b.id) {
+                    return -1;
+                }
                 return 0;
             });
         } else {
-            // Sort the tasks by position
+            // Sort the tasks by position, then by id
             tasks = tasks.sort(function (a, b) {
                 if (a.attributes.position > b.attributes.position) {
                     return 1;
                 } else if (a.attributes.position < b.attributes.position) {
+                    return -1;
+                }
+                if (a.id < b.id) {
+                    return 1;
+                } else if (a.id > b.id) {
                     return -1;
                 }
                 return 0;
