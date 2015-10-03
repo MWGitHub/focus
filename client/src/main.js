@@ -6,7 +6,7 @@ import Login from './components/Login';
 import Index from './components/Index';
 import Routes from './constants/Routes';
 import Logout from './components/LogOut';
-import Board from './components/Board';
+import Board from './workflows/focus/BoardComponent';
 import Settings from './components/Settings';
 import AuthStore from './stores/AuthStore';
 import config from '../config.json';

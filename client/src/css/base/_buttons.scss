@@ -60,25 +60,3 @@ a.secondary-button {
     }
   }
 }
-
-input[type="button"].temporary, a.temporary {
-  background-color: $temporary-background-color;
-
-  &:active, &:visited {
-    background-color: $temporary-background-color;
-  }
-
-  &:hover, &:focus {
-    background-color: shade($temporary-background-color, 20%);
-    color: #fff;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-
-    &:hover {
-      background-color: $temporary-background-color;
-    }
-  }
-}

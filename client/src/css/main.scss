@@ -359,7 +359,7 @@ div.task {
     font-size: 0.7em;
   }
 
-  input.negative {
+  input.negative, button.negative {
     background-color: $negative-background-color;
 
     &:hover, &:focus {
@@ -367,7 +367,7 @@ div.task {
     }
   }
 
-  input.positive {
+  input.positive, button.positive {
     background-color: $positive-background-color;
 
     &:hover, &:focus {

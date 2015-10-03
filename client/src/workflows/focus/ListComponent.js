@@ -1,145 +1,8 @@
 import React from 'react';
-import UserStore from '../stores/UserStore';
-import Authenticator from './Authenticator';
-import BoardActions from '../actions/BoardActions';
-import UserActions from '../actions/UserActions';
-import AuthStore from '../stores/AuthStore';
-import Validate from '../utils/Validation';
-import moment from 'moment-timezone';
-import DraggableList from '../utils/DraggableList';
-import Dispatcher from '../utils/Dispatcher';
-import BoardStore from '../stores/BoardStore';
-
-function getListByTitle(lists, title) {
-    for (var i = 0; i < lists.length; i++) {
-        if (lists[i].attributes.title == title) return lists[i];
-    }
-    return null;
-}
-
-/**
- * List titles in the API.
- * @type {{tasks: string, tomorrow: string, today: string, done: string}}
- */
-var ListTitles = {
-    tasks: 'Tasks',
-    tomorrow: 'Tomorrow',
-    today: 'Today',
-    done: 'Done'
-};
-
-/**
- * Displayable title for the list.
- * @type {{tasks: string, tomorrow: string, today: string, done: string}}
- */
-var ListTitleDisplay = {
-    tasks: 'Tasks',
-    tomorrow: 'Tomorrow',
-    today: 'Today',
-    done: 'Recently Completed'
-};
-
-/**
- * Flags for disabled features in a list.
- */
-var ListDisableOptions = {
-    tasks: {left: true, complete: true, age: true},
-    tomorrow: {right: true, complete: true, age: true},
-    today: {create: false, left: true, right: true, sort: true},
-    done: {create: true, del: true, left: true, right: true, complete: true, sort: true}
-};
-
-/**
- * Renders a task.
- */
-class Task extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    componentDidMount() {
-    }
-
-    deleteTask(e) {
-        e.preventDefault();
-
-        BoardActions.deleteTask(this.props.uid, this.props.task.id);
-    }
-
-    move(e) {
-
-    }
-
-    complete(e) {
-        e.preventDefault();
-
-        // Should only be allowed on today's tasks
-        if (this.props.list.attributes.title !== ListTitles.today) return;
-
-        // Get the new list and position
-        var nextList = getListByTitle(this.props.lists, ListTitles.done);
-        var listId = nextList.id;
-        var tasks = nextList.attributes.tasks;
-        var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position - 1;
-
-        BoardActions.moveTask(this.props.uid, this.props.task.id, listId, position);
-    }
-
-    moveTaskLeft(e) {
-        e.preventDefault();
-
-        // Should only be allowed to move right from tasks
-        if (this.props.list.attributes.title !== ListTitles.tomorrow) return;
-
-        // Get the new list and position
-        var nextList = getListByTitle(this.props.lists, ListTitles.tasks);
-        var listId = nextList.id;
-        var tasks = nextList.attributes.tasks;
-        var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
-
-        BoardActions.moveTask(this.props.uid, this.props.task.id, listId, position);
-    }
-
-    moveTaskRight(e) {
-        e.preventDefault();
-
-        // Should only be allowed to move right from tasks or today
-        if (this.props.list.attributes.title !== ListTitles.tasks) return;
-
-        // Get the new list and position
-        var nextList = getListByTitle(this.props.lists, ListTitles.tomorrow);
-        var listId = nextList.id;
-        var tasks = nextList.attributes.tasks;
-        var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
-
-        BoardActions.moveTask(this.props.uid, this.props.task.id, listId, position);
-    }
-
-    render() {
-        var task = this.props.task;
-        // Do not allow Today tasks to be deleted unless over a week old
-        var shouldHideDelete = this.props.disable.del ||
-            (this.props.list.attributes.title === ListTitles.today && this.props.task.attributes.age <= 7);
-        var style = 'task';
-        // Complete tasks
-        var completeNormal = (
-            <input className="right positive" type="button" button onClick={this.complete.bind(this)} value="complete" />
-        );
-        return (
-            <div id={'task:' + this.props.list.id + ":" + this.props.task.id} className={'draggable ' + style}>
-                <h3><span dangerouslySetInnerHTML={{__html: task.attributes.title}} /></h3>
-                <div className="task-info">
-                    { shouldHideDelete ? null : <button className="left negative" onClick={this.deleteTask.bind(this)}><span>delete</span></button> }
-                    { this.props.disable.left ? null : <input className="right" type="button" onClick={this.moveTaskLeft.bind(this)} value="dequeue" /> }
-                    { this.props.disable.right ? null : <input className="right positive" type="button" button onClick={this.moveTaskRight.bind(this)} value="queue" /> }
-                    { this.props.disable.complete ? null : completeNormal }
-                    { this.props.disable.age ? null : <span className={"age left age-" + task.attributes.age}>age: {task.attributes.age}</span> }
-                    { task.attributes.extra ? <span className="task-flag left">extra</span> : null }
-                </div>
-            </div>
-        )
-    }
-}
+import BoardActions from '../../actions/BoardActions';
+import Constants from './Constants';
+import Task from './TaskComponent';
+import DraggableList from '../../utils/DraggableList';
 
 /**
  * Renders the task creating box and handles task creation.
@@ -287,9 +150,11 @@ class List extends React.Component {
     }
 
     _onClick(e) {
+        // Remove task create when clicking outside the button or dialog.
         if (this.state.isCreateShown) {
             var createBox = React.findDOMNode(this.refs.createBox);
-            if (!createBox.contains(e.target)) {
+            var createTaskButton = React.findDOMNode(this.refs.createTaskButton);
+            if (!createBox.contains(e.target) && !createTaskButton.contains(e.target)) {
                 this.setState({
                     isCreateShown: false
                 });
@@ -367,13 +232,13 @@ class List extends React.Component {
             }
         }
         /*
-        console.log(targetTask);
-        console.log(element);
-        console.log(isFromAbove);
-        console.log(swapID);
-        console.log("target old: " + oldTargetPosition);
-        console.log("target new: " + targetPos);
-        */
+         console.log(targetTask);
+         console.log(element);
+         console.log(isFromAbove);
+         console.log(swapID);
+         console.log("target old: " + oldTargetPosition);
+         console.log("target new: " + targetPos);
+         */
 
         targetTask.attributes.position = targetPos;
 
@@ -458,7 +323,7 @@ class List extends React.Component {
         var list = this.props.list;
         var tasks = list.attributes.tasks;
         var createButton = (
-            <button className="create right" onClick={this.createButtonClicked.bind(this)}>
+            <button ref="createTaskButton" className="create right" onClick={this.createButtonClicked.bind(this)}>
                 <i className="fa fa-plus fa-pull-right"></i><span>add task</span>
             </button>
         );
@@ -480,7 +345,7 @@ class List extends React.Component {
         );
 
         // Sort the tasks by age.
-        if (list.attributes.title === ListTitles.today) {
+        if (list.attributes.title === Constants.ListTitles.today) {
             tasks = tasks.sort(function (a, b) {
                 if (a.attributes.age === 0 || b.attributes.age === 0) {
                     if (a.attributes.extra && (!b.attributes.extra || b.attributes.age > 0)) {
@@ -510,22 +375,22 @@ class List extends React.Component {
 
         // Limit done tasks
         // TODO: Make this server side
-        if (tasks.length > 10 && list.attributes.title === ListTitles.done) {
+        if (tasks.length > 10 && list.attributes.title === Constants.ListTitles.done) {
             tasks = tasks.slice(0, 10);
         }
 
         return (
             <div id={"list-" + list.id} className="list">
                 <div className="list-top">
-                    <h2 className="no-margin">{ListTitleDisplay[this.props.name]}</h2>
+                    <h2 className="no-margin">{Constants.ListTitleDisplay[this.props.name]}</h2>
                     { this.props.disable.create ? null : createButton }
                 </div>
                 <div className={"list-bottom " + 'list-' + this.props.name} ref="list">
                     {this.state.isCreateShown ? taskCreateBox : null }
-                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tasks ? taskDescription : null}
-                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.tomorrow ? tomorrowDescription : null}
-                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.today ? todayDescription : null}
-                    {list.attributes.tasks.length === 0 && list.attributes.title === ListTitles.done ? doneDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === Constants.ListTitles.tasks ? taskDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === Constants.ListTitles.tomorrow ? tomorrowDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === Constants.ListTitles.today ? todayDescription : null}
+                    {list.attributes.tasks.length === 0 && list.attributes.title === Constants.ListTitles.done ? doneDescription : null}
                     {tasks.map((task) => {
                         return <Task uid={this.props.uid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />;
                     })}
@@ -536,188 +401,4 @@ class List extends React.Component {
     }
 }
 
-/**
- * Renders the board and sets the settings for the lists.
- */
-class BoardView extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.onMouseDown = this._onMouseDown.bind(this);
-        this.onMouseUp = this._onMouseUp.bind(this);
-        this.onTouchStart = this._onTouchStart.bind(this);
-        this.onTouchEnd = this._onTouchEnd.bind(this);
-    }
-
-    componentDidMount() {
-        this.mouseDownX = 0;
-        // Amount of distance before swiping
-        this.swipeDifference = 75;
-        // Current list in view
-        this.currentList = 0;
-
-        this.listLeft = [];
-        var lists = document.getElementsByClassName('list');
-        for (var i = 0; i < lists.length; i++) {
-            var bounds = lists[i].getBoundingClientRect();
-            this.listLeft.push(bounds.left);
-        }
-
-        //document.addEventListener('mousedown', this.onMouseDown);
-        //document.addEventListener('mouseup', this.onMouseUp);
-        document.addEventListener('touchstart', this.onTouchStart);
-        document.addEventListener('touchend', this.onTouchEnd);
-    }
-
-    componentWillUnmount() {
-        //document.removeEventListener('mousedown', this.onMouseDown);
-        //document.removeEventListener('mouseup', this.onMouseUp);
-        document.removeEventListener('touchstart', this.onTouchStart);
-        document.removeEventListener('touchend', this.onTouchEnd);
-    }
-
-    _onTouchStart(e) {
-        this.mouseDownX = e.touches[0].clientX;
-    }
-
-    _onTouchEnd(e) {
-        var diff = this.mouseDownX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > this.swipeDifference) {
-            this._onSwipeHorizontal(diff)
-        }
-    }
-
-    _onMouseDown(e) {
-        this.mouseDownX = e.clientX;
-    }
-
-    _onMouseUp(e) {
-        var diff = this.mouseDownX - e.clientX;
-        if (Math.abs(diff) > this.swipeDifference) {
-            this._onSwipeHorizontal(diff)
-        }
-    }
-
-    _onSwipeHorizontal(amount) {
-        // Ignore if can't scroll left or right
-        if (this.currentList === 0 && amount < 0 || this.currentList === this.listLeft.length - 1 && amount > 0) {
-            return;
-        }
-        var scrollAmount = 0;
-        var buffer = 20;
-        if (amount < 0) {
-            console.log('scroll left');
-            scrollAmount = this.listLeft[this.currentList - 1];
-            this.currentList -= 1;
-        } else {
-            console.log('scroll right');
-            scrollAmount = this.listLeft[this.currentList + 1];
-            this.currentList += 1;
-        }
-        console.log(scrollAmount);
-        var board = React.findDOMNode(this.refs.board);
-        board.style.overflow = 'hidden';
-        board.scrollLeft = scrollAmount - buffer;
-        window.setTimeout(function() {
-            board.scrollLeft = scrollAmount - buffer;
-            board.style.overflow = 'auto';
-        }, 10);
-        console.log(this.currentList);
-    }
-
-    render() {
-        var board = this.props.board;
-        var lists = board.attributes.lists;
-
-        var tasks = getListByTitle(lists, ListTitles.tasks);
-        var tomorrow = getListByTitle(lists, ListTitles.tomorrow);
-        var today = getListByTitle(lists, ListTitles.today);
-        var done = getListByTitle(lists, ListTitles.done);
-        return (
-            <div>
-                <div className="board" ref="board">
-                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={ListDisableOptions.tasks} />
-                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={ListDisableOptions.tomorrow} />
-                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={ListDisableOptions.today} />
-                    <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={ListDisableOptions.done} />
-                </div>
-            </div>
-        )
-    }
-}
-
-/**
- * Provides data for the board and all the lists and tasks.
- */
-class Board extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            board: null,
-            uid: AuthStore.getID(),
-            isStale: false
-        };
-        var data = UserStore.getData();
-        if (data) {
-            this.state.board = data.attributes.boards[0];
-        }
-
-        this.isRefreshing = false;
-        this.onFrame = this._onFrame.bind(this);
-        this.refreshTime = 10000;
-    }
-
-    _onFrame() {
-        if (!this.isRefreshing) return;
-
-        var self = this;
-        window.setTimeout(function() {
-            if (!Dispatcher.isDispatching()) {
-                if (self.state.isStale && self.state.data) {
-                    UserActions.retrieveData(self.state.uid, true);
-                } else {
-                    BoardActions.checkStaleness(self.state.board.id);
-                }
-            }
-            window.requestAnimationFrame(self.onFrame);
-        }, this.refreshTime);
-    }
-
-    componentDidMount() {
-        this.listener = this.onChange.bind(this);
-        UserStore.addChangeListener(this.listener);
-        BoardStore.addChangeListener(this.listener);
-
-        UserActions.retrieveData(this.state.uid, true);
-
-        this.isRefreshing = true;
-
-        window.requestAnimationFrame(this.onFrame);
-    }
-
-    componentWillUnmount() {
-        UserStore.removeChangeListener(this.listener);
-
-        this.isRefreshing = false;
-    }
-
-    onChange() {
-        var data = UserStore.getData();
-        var board = data.attributes.boards[0];
-        this.setState({
-            board: board,
-            uid: AuthStore.getID(),
-            isStale: BoardStore.isStale(board.id)
-        });
-    }
-
-    render() {
-        if (!this.state.board) return null;
-        return (
-            <BoardView uid={this.state.uid} board={this.state.board} />
-        )
-    }
-}
-
-export default Authenticator(Board);
+export default List;
