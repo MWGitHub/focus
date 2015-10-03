@@ -4,7 +4,6 @@ import Authenticator from './../../components/Authenticator';
 import BoardActions from '../../actions/BoardActions';
 import UserActions from '../../actions/UserActions';
 import AuthStore from '../../stores/AuthStore';
-import Validate from '../../utils/Validation';
 import moment from 'moment-timezone';
 import DraggableList from '../../utils/DraggableList';
 import Dispatcher from '../../utils/Dispatcher';
@@ -12,29 +11,7 @@ import BoardStore from '../../stores/BoardStore';
 import Task from './TaskComponent';
 import List from './ListComponent';
 import BoardUtil from '../../utils/WorkflowUtil';
-
-
-/**
- * List titles in the API.
- * @type {{tasks: string, tomorrow: string, today: string, done: string}}
- */
-var ListTitles = {
-    tasks: 'Tasks',
-    tomorrow: 'Tomorrow',
-    today: 'Today',
-    done: 'Done'
-};
-
-/**
- * Displayable title for the list.
- * @type {{tasks: string, tomorrow: string, today: string, done: string}}
- */
-var ListTitleDisplay = {
-    tasks: 'Tasks',
-    tomorrow: 'Tomorrow',
-    today: 'Today',
-    done: 'Recently Completed'
-};
+import Constants from './Constants';
 
 /**
  * Flags for disabled features in a list.
@@ -139,10 +116,10 @@ class BoardView extends React.Component {
         var board = this.props.board;
         var lists = board.attributes.lists;
 
-        var tasks = BoardUtil.getListByTitle(lists, ListTitles.tasks);
-        var tomorrow = BoardUtil.getListByTitle(lists, ListTitles.tomorrow);
-        var today = BoardUtil.getListByTitle(lists, ListTitles.today);
-        var done = BoardUtil.getListByTitle(lists, ListTitles.done);
+        var tasks = BoardUtil.getListByTitle(lists, Constants.ListTitles.tasks);
+        var tomorrow = BoardUtil.getListByTitle(lists, Constants.ListTitles.tomorrow);
+        var today = BoardUtil.getListByTitle(lists, Constants.ListTitles.today);
+        var done = BoardUtil.getListByTitle(lists, Constants.ListTitles.done);
         return (
             <div>
                 <div className="board" ref="board">

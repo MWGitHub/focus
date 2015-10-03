@@ -3,6 +3,7 @@ import BoardActions from '../../actions/BoardActions';
 import Constants from './Constants';
 import Task from './TaskComponent';
 import DraggableList from '../../utils/DraggableList';
+import Validate from '../../utils/Validation';
 
 /**
  * Renders the task creating box and handles task creation.
