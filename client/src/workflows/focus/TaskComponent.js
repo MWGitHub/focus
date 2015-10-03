@@ -40,7 +40,7 @@ class Task extends React.Component {
         if (this.props.list.attributes.title !== Constants.ListTitles.tomorrow) return;
 
         // Get the new list and position
-        var nextList = BoardUtil.WorkflowUtil.getListByTitle(this.props.lists, Constants.ListTitles.tasks);
+        var nextList = WorkflowUtil.getListByTitle(this.props.lists, Constants.ListTitles.tasks);
         var listId = nextList.id;
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
@@ -55,7 +55,7 @@ class Task extends React.Component {
         if (this.props.list.attributes.title !== Constants.ListTitles.tasks) return;
 
         // Get the new list and position
-        var nextList = BoardUtil.WorkflowUtil.getListByTitle(this.props.lists, Constants.ListTitles.tomorrow);
+        var nextList = WorkflowUtil.getListByTitle(this.props.lists, Constants.ListTitles.tomorrow);
         var listId = nextList.id;
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
