@@ -10,17 +10,17 @@ var User = Bookshelf.Model.extend({
 
     boards: function() {
         "use strict";
-        return this.hasMany(Board);
+        return this.hasMany(Board, 'user_id');
     },
 
     tasks: function() {
         "use strict";
-        return this.hasMany(Task);
+        return this.hasMany(Task, 'user_id');
     },
 
     lists: function() {
         "use strict";
-        return this.hasMany(List);
+        return this.hasMany(List, 'user_id');
     },
 
     /**
@@ -41,7 +41,7 @@ var User = Bookshelf.Model.extend({
 
     /**
      * Retrieves the data of the board.
-     * @param {Boolean?} isDeep true to retrieve children.
+     * @param {Boolean?} isDeep true to retrieve all children data.
      * @return {Promise} the promise with the data.
      */
     retrieveAsData: function(isDeep) {
@@ -49,7 +49,12 @@ var User = Bookshelf.Model.extend({
 
         var instance = this;
         return co(function* () {
+            var boards;
             if (!isDeep) {
+                boards = yield instance.boards().fetch({
+                    columns
+                });
+                console.log(boards);
                 return {
                     type: 'users',
                     id: instance.get('id'),
@@ -59,7 +64,7 @@ var User = Bookshelf.Model.extend({
                     }
                 };
             } else {
-                var boards = yield Board.where({user_id: instance.get('id')}).fetchAll();
+                boards = yield instance.boards().fetch();
                 var data = {
                     type: 'users',
                     id: instance.get('id'),

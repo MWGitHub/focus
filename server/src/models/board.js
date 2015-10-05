@@ -1,6 +1,7 @@
 var Bookshelf = require('../lib/bookshelf');
 var List = require('./list');
 var User = require('./user');
+var Project = require('./project');
 var co = require('co');
 
 var Board = Bookshelf.Model.extend({
@@ -15,6 +16,10 @@ var Board = Bookshelf.Model.extend({
     user: function() {
         "use strict";
         return this.belongsTo(User);
+    },
+
+    project: function() {
+        return this.belongsTo(Project);
     },
 
     /**
