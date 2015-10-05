@@ -4,6 +4,34 @@ import request from 'reqwest';
 import Actions from '../constants/Actions';
 
 var UserActions = {
+    /**
+     * Retrieves the data for the user.
+     * @param {Boolean} isDeep true to retrieve relation data.
+     */
+    retrieve: function(uid, isDeep) {
+        Dispatcher.dispatch({
+            actionType: Actions.retrieveUser,
+            state: Actions.State.loading
+        });
+        var data = {};
+        if (isDeep) data.isDeep = isDeep;
+        API.retrieveAuthDataFrom(API.routes.user + '/' + uid, data,
+            (data) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveUser,
+                    state: Actions.State.complete,
+                    data: data
+                });
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveUser,
+                    state: Actions.State.failed
+                });
+            }
+        )
+    },
+
     retrieveData: function(uid, isDeep) {
         Dispatcher.dispatch({
             actionType: Actions.retrieveUser,
