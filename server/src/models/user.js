@@ -2,11 +2,17 @@ var Bookshelf = require('../lib/bookshelf');
 var Board = require('./board');
 var Task = require('./task');
 var List = require('./list');
+var Project = require('./project');
 var co = require('co');
+var _ = require('lodash');
 
 var User = Bookshelf.Model.extend({
     tableName: 'users',
     hasTimestamps: ['created_at', 'updated_at'],
+
+    projects: function() {
+        return this.hasMany(Project, 'user_id');
+    },
 
     boards: function() {
         "use strict";
@@ -21,6 +27,10 @@ var User = Bookshelf.Model.extend({
     lists: function() {
         "use strict";
         return this.hasMany(List, 'user_id');
+    },
+
+    standaloneBoards: function() {
+        return this.boards().query('where', {project_id: null});
     },
 
     /**
@@ -49,35 +59,46 @@ var User = Bookshelf.Model.extend({
 
         var instance = this;
         return co(function* () {
-            var boards;
+            var boards = yield instance.standaloneBoards().fetch();
+            var projects = yield instance.projects().fetch();
             if (!isDeep) {
-                boards = yield instance.boards().fetch({
-                    columns
+                var bids = _.map(boards.models, function(n) {
+                    return n.id;
                 });
-                console.log(boards);
+                var pids = _.map(projects.models, function(n) {
+                    return n.id;
+                });
                 return {
                     type: 'users',
                     id: instance.get('id'),
                     attributes: {
                         username: instance.get('username'),
-                        timezone: instance.get('timezone')
+                        timezone: instance.get('timezone'),
+                        boards: bids,
+                        projects: pids
                     }
                 };
             } else {
-                boards = yield instance.boards().fetch();
                 var data = {
                     type: 'users',
                     id: instance.get('id'),
                     attributes: {
                         username: instance.get('username'),
                         timezone: instance.get('timezone'),
-                        boards: []
+                        boards: [],
+                        projects: []
                     }
                 };
-                for (var i = 0; i < boards.length; i++) {
+                var i;
+                for (i = 0; i < boards.length; i++) {
                     var board = boards.models[i];
                     var boardData = yield board.retrieveAsData(isDeep);
                     data.attributes.boards.push(boardData);
+                }
+                for (i = 0; i < projects.length; i++) {
+                    var project = projects.models[i];
+                    var projectData = yield project.retrieveAsData(isDeep);
+                    data.attributes.projects.push(projectData);
                 }
                 return data;
             }

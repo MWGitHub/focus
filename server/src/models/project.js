@@ -13,6 +13,50 @@ var Project = Bookshelf.Model.extend({
 
     boards: function() {
         this.hasMany(Board);
+    },
+
+    /**
+     * Retrieves the data of the project.
+     * @param {Boolean?} isDeep true to retrieve all children data.
+     * @return {Promise} the promise with the data.
+     */
+    retrieveAsData: function(isDeep) {
+        "use strict";
+
+        var instance = this;
+        return co(function* () {
+            var boards = yield instance.boards().fetch();
+            if (!isDeep) {
+                var bids = _.map(boards.models, function(n) {
+                    return n.id;
+                });
+                return {
+                    type: 'projects',
+                    id: instance.get('id'),
+                    attributes: {
+                        title: instance.get('title'),
+                        user_id: instance.get('user_id'),
+                        boards: bids
+                    }
+                };
+            } else {
+                var data = {
+                    type: 'projects',
+                    id: instance.get('id'),
+                    attributes: {
+                        title: instance.get('title'),
+                        user_id: instance.get('user_id'),
+                        boards: []
+                    }
+                };
+                for (var i = 0; i < boards.length; i++) {
+                    var board = boards.models[i];
+                    var boardData = yield board.retrieveAsData(isDeep);
+                    data.attributes.boards.push(boardData);
+                }
+                return data;
+            }
+        });
     }
 }, {
     schema: {
