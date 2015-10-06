@@ -7,7 +7,7 @@ var Board = require('./src/models/board');
 var List = require('./src/models/list');
 var Task = require('./src/models/task');
 var program = require('commander');
-var Auth = require('./src/lib/auth');
+var Auth = require('./src/auth/auth');
 var knex = require('./src/lib/bookshelf').knex;
 
 program.version('1.0.0');

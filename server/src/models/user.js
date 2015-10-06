@@ -51,7 +51,7 @@ var User = Bookshelf.Model.extend({
 
     /**
      * Retrieves the data of the board.
-     * @param {Boolean?} isDeep true to retrieve all children data.
+     * @param {Boolean?} isDeep true to retrieve all children data else retrieve up to children properties.
      * @return {Promise} the promise with the data.
      */
     retrieveAsData: function(isDeep) {
@@ -63,10 +63,20 @@ var User = Bookshelf.Model.extend({
             var projects = yield instance.projects().fetch();
             if (!isDeep) {
                 var bids = _.map(boards.models, function(n) {
-                    return n.id;
+                    return {
+                        id: n.id,
+                        attributes: {
+                            title: n.attributes.title
+                        }
+                    };
                 });
                 var pids = _.map(projects.models, function(n) {
-                    return n.id;
+                    return {
+                        id: n.id,
+                        attributes: {
+                            title: n.attributes.title
+                        }
+                    };
                 });
                 return {
                     type: 'users',

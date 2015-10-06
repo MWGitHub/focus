@@ -3,7 +3,8 @@ var Lab = require('lab');
 var User = require('../src/models/user');
 var List = require('../src/models/List');
 var Task = require('../src/models/task');
-var Auth = require('../src/lib/auth');
+var Auth = require('../src/auth/auth');
+var Session = require('../src/auth/session');
 var API = require('../src/lib/api');
 var helper = require('./helper');
 
@@ -44,9 +45,9 @@ describe('task', function() {
             var logins = [];
             for (var i = 0; i < users.length; i++) {
                 userIds.push(users[i].id);
-                var token = Auth.generateToken(users[i].id);
+                var token = Session.generateToken(users[i].id);
                 jwt.push(token);
-                logins.push(Auth.login(token));
+                logins.push(Session.login(token));
             }
 
             Promise.all(logins).then(function() {

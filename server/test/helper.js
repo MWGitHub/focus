@@ -1,6 +1,6 @@
 var User = require('../src/models/user');
 var API = require('../src/lib/api');
-var Auth = require('../src/lib/auth');
+var Auth = require('../src/auth/auth');
 var server = require('../index');
 
 module.exports = {

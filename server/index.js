@@ -5,7 +5,8 @@ var RedisClient = require('./src/lib/redis-client');
 var Config = require('./config.json');
 var Routes = require('./src/routes/routes');
 
-var Auth = require('./src/lib/auth');
+var Auth = require('./src/auth/auth');
+var Session = require('./src/auth/session');
 
 // Connect to the database
 var bookshelf = require('./src/lib/bookshelf');
@@ -47,6 +48,12 @@ server.register([
     },
     {
         register: Auth
+    },
+    {
+        register: Session,
+        options: {
+            key: Config.authkey
+        }
     }
 ], function(err) {
     "use strict";

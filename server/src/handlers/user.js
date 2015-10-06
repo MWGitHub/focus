@@ -1,9 +1,11 @@
 var User = require('../models/user');
-var Auth = require('../lib/auth');
+var Auth = require('../auth/auth');
+var Session = require('../auth/session');
 var Boom = require('boom');
 var Bcrypt = require('bcrypt');
 var API = require('../lib/api');
 var moment = require('moment-timezone');
+var co = require('co');
 
 var UserHandler = {};
 
@@ -11,6 +13,11 @@ UserHandler.StatusCodes = {
     NameTaken: 440
 };
 
+/**
+ * Registers a user and populates with default data.
+ * @param request
+ * @param reply
+ */
 UserHandler.register = function(request, reply) {
     "use strict";
 
@@ -51,13 +58,6 @@ UserHandler.register = function(request, reply) {
 };
 
 /**
- * Registers a user and populates with default data.
- * @param request
- * @param reply
- */
-
-
-/**
  * Log in as a user.
  * @param request
  * @param reply
@@ -69,15 +69,14 @@ UserHandler.login = function(request, reply) {
     var password = request.payload['password'];
 
     // Check to make sure the username exists
-    var token;
     User.forge({username: username}).fetch({require: true})
         .then(function (user) {
             Bcrypt.compare(password, user.get('password'), function (err, isValid) {
                 if (err) {
                     reply(Boom.badImplementation());
                 } else if (isValid) {
-                    token = Auth.generateToken(user.get('id'));
-                    Auth.login(token).then(function() {
+                    var token = Session.generateToken(user.get('id'));
+                    Session.login(token).then(function() {
                         return user.retrieveAsData(false);
                     })
                     .then(function(data) {
@@ -109,7 +108,7 @@ UserHandler.logout = function(request, reply) {
         if (request.auth.strategy === 'simple') {
             reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
         } else {
-            Auth.logout(request.auth.credentials.tid)
+            Session.logout(request.auth.credentials.tid)
                 .then(function () {
                     reply(API.makeStatusMessage('user-logout', true, 'Logged out'));
                 })

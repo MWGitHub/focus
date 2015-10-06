@@ -2,7 +2,8 @@ var assert = require('chai').assert;
 var Lab = require('lab');
 var User = require('../src/models/user');
 var UserHandler = require('../src/handlers/user');
-var Auth = require('../src/lib/auth');
+var Auth = require('../src/auth/auth');
+var Session = require('../src/auth/session');
 var moment = require('moment-timezone');
 var API = require('../src/lib/api');
 var helper = require('./helper');
@@ -293,8 +294,8 @@ describe('authentication', function() {
     });
 
     it('should fail when accessing authorized page with expired token', function (done) {
-        var token = Auth.generateToken(userInstances[0].get('id'));
-        Auth.login(token, 1).then(function () {
+        var token = Session.generateToken(userInstances[0].get('id'));
+        Session.login(token, 1).then(function () {
             setTimeout(function () {
                 server.inject({
                     method: 'GET',
