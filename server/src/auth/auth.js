@@ -22,8 +22,8 @@ function validateBasic(request, username, password, callback) {
 function validateJWT(decoded, request, callback) {
     "use strict";
 
-    Session.validate(decoded.tid).then(function() {
-        callback(null, true);
+    Session.validate(decoded.tid).then(function(v) {
+        callback(null, v);
     })
     .catch(function(e) {
         callback(e, false);

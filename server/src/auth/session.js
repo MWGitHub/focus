@@ -44,17 +44,17 @@ var session = {
 
     /**
      * Checks if a given token is in the store.
-     * @param {String} id the ID of the token to find.
-     * @returns {Promise} the promise with true if successful and throws an error if not.
+     * @param {String} tid the ID of the token to find.
+     * @returns {Promise} the promise with true if successful and false if not.
      */
-    validate: function(id) {
+    validate: function(tid) {
         return new Promise(function(resolve, reject) {
-            redisClient.get(tokenTable + id, function(err, reply) {
+            redisClient.get(tokenTable + tid, function(err, reply) {
                 if (err) reject(err);
                 if (reply) {
                     return resolve(true);
                 } else {
-                    return reject(new Error('failed to find token'));
+                    return resolve(false);
                 }
             });
         });
