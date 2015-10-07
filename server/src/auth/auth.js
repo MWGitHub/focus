@@ -2,7 +2,6 @@ var Bcrypt = require('bcrypt');
 var AuthBasic = require('hapi-auth-basic');
 var AuthJWT = require('hapi-auth-jwt2');
 var User = require('../models/user');
-var Config = require('../../config.json');
 var Session = require('./session');
 
 function validateBasic(request, username, password, callback) {
@@ -34,6 +33,9 @@ function validateJWT(decoded, request, callback) {
 var auth = {
     register: function(server, options, next) {
         "use strict";
+
+        if (!options.key) throw new Error('options.key required!');
+
         // Add the basic authentication
         server.register(AuthBasic, function(err) {
             server.auth.strategy('simple', 'basic', {
@@ -44,7 +46,7 @@ var auth = {
         server.register(AuthJWT, function(err) {
             server.auth.strategy('jwt', 'jwt', {
                 validateFunc: validateJWT,
-                key: Config.authkey,
+                key: options.key,
                 verifyOptions: {
                     algorithms: ['HS256']
                 },

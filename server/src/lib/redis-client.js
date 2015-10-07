@@ -1,32 +1,40 @@
 var redis = require('redis');
 var config = require('../../config.json');
 
-var client = {
-    client: null,
+var redisClient = {
+    register: function(server, options, next) {
+        var db = options.db || 0;
 
-    connect: function(cb) {
-        var instance = this;
-        return new Promise(function(resolve, reject) {
-            console.log('Connecting to redis');
-            instance.client = redis.createClient();
-            var client = instance.client;
-            client.select(config.redisDB, function() {
-                console.log('Using redis database %d', config.redisDB);
-            });
-            client.on('ready', function() {
-                console.log('Redis connection established');
-                if (cb) {
-                    resolve(cb(instance.client));
-                } else {
-                    resolve(instance.client);
-                }
-            });
-            client.on('error', function(err) {
-                console.error(err);
-                reject(err);
+        server.log('info', 'Connecting to redis');
+        this.client = redis.createClient();
+        var client = this.client;
+
+        client.on('ready', function() {
+            server.log('info', 'Redis connection established');
+
+            client.select(db, function() {
+                server.log('info', 'Using redis database ' + db);
+                next();
             });
         });
+
+        var isRegistering = true;
+        client.on('error', function(err) {
+            server.log('error', err.message);
+            if (isRegistering) {
+                client.end();
+                next();
+                isRegistering = false;
+            }
+        });
+
+        server.expose('client', client);
     }
 };
 
-module.exports = client;
+redisClient.register.attributes = {
+    name: 'redis-client',
+    version: '1.0.0'
+};
+
+module.exports = redisClient;

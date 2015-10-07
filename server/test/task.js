@@ -92,11 +92,11 @@ describe('task', function() {
             }
         }, function(response) {
             // Save the ID for later use
+            assert.equal(response.statusCode, 200);
             assert.equal(response.result.data.attributes.title, testTaskTitle);
             Task.forge({title: testTaskTitle, list_id: idList1User1}).fetch().then(function(task) {
                 taskUser1Id = task.get('id');
 
-                assert.equal(response.statusCode, 200);
                 done();
             });
         });

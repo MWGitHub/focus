@@ -8,6 +8,7 @@ var Routes = require('./routes/routes');
 
 var Auth = require('./auth/auth');
 var Session = require('./auth/session');
+var Stale = require('./lib/stale');
 
 // Connect to the database
 var bookshelf = require('./lib/bookshelf');
@@ -27,9 +28,6 @@ var Server = {
         return co(function* () {
             // Only allow one instance of the server to be running.
             if (instance.server) return instance.server;
-
-            // Start redis
-            yield RedisClient.connect();
 
             // Set the server options
             var options = {
@@ -56,18 +54,40 @@ var Server = {
                     }
                 },
                 {
-                    register: Auth
+                    register: RedisClient,
+                    options: {
+                        db: 0
+                    }
+                },
+                {
+                    register: Auth,
+                    options: {
+                        key: Config.authkey
+                    }
                 },
                 {
                     register: Session,
                     options: {
-                        redisClient: RedisClient.client,
+                        redis: {
+                            plugin: 'redis-client',
+                            key: 'client'
+                        },
                         key: Config.authkey
+                    }
+                },
+                {
+                    register: Stale,
+                    options: {
+                        redis: {
+                            plugin: 'redis-client',
+                            key: 'client'
+                        }
                     }
                 }
             ];
 
             // Create the server
+            console.log('Creating server...');
             instance.server = new Hapi.Server(options);
             var server = instance.server;
             server.connection({
@@ -100,6 +120,7 @@ var Server = {
             });
 
             // Start the server
+            server.log('info', 'Server starting...');
             yield new Promise(function(resolve, reject) {
                 // Start the server
                 server.start(function(err) {
@@ -107,7 +128,7 @@ var Server = {
                     if (err) {
                         reject(err);
                     } else {
-                        server.log('info', 'Starting running at: ' + server.info.uri);
+                        server.log('info', 'Started running at: ' + server.info.uri);
                         resolve(server);
                     }
                 });

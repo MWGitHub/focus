@@ -23,8 +23,15 @@ var session = {
     register: function(server, options, next) {
         "use strict";
 
-        redisClient = options.redisClient;
-        if (!redisClient) throw new Error('option.redis expects a redis client');
+        if (!options.redis) throw new Error('options.redis requires a redis client or the plugin name and key.');
+        if (options.redis.client) {
+            redisClient = options.redis.client;
+        } else {
+            if (!options.redis.plugin) throw new Error('options.redis requires a redis plugin name');
+            if (!options.redis.key) throw new Error('options.redis requires a plugin key');
+            redisClient = server.plugins[options.redis.plugin][options.redis.key];
+        }
+        if (!redisClient) throw new Error('redis client not found');
 
         key = options.key;
         if (!key) throw new Error('option.key is required');
