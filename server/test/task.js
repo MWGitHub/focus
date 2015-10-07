@@ -16,9 +16,10 @@ var after = lab.after;
 
 var testTaskTitle = 'testtask1';
 
-var server;
 describe('task', function() {
     "use strict";
+
+    var server;
 
     // List of user IDs.
     var userIds = [];
@@ -38,7 +39,7 @@ describe('task', function() {
     before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        Helper.startServer().then(function(s) {
+        Helper.initializeServer().then(function(s) {
             server = s;
             return Helper.removeAllTestUsers();
         })

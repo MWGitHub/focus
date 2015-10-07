@@ -20,15 +20,17 @@ var Server = {
     server: null,
 
     /**
-     * Start the server.
+     * Flag for if the server is running.
+     */
+    isRunning: false,
+
+    /**
+     * Initializes the server.
      * @returns {*|Promise}
      */
-    start: function() {
+    initialize: function() {
         var instance = this;
         return co(function* () {
-            // Only allow one instance of the server to be running.
-            if (instance.server) return instance.server;
-
             // Set the server options
             var options = {
                 connections: {
@@ -119,16 +121,15 @@ var Server = {
                 }
             });
 
-            // Start the server
-            server.log('info', 'Server starting...');
+            // Initialize the server
             yield new Promise(function(resolve, reject) {
                 // Start the server
-                server.start(function(err) {
+                server.initialize(function(err) {
                     "use strict";
                     if (err) {
                         reject(err);
                     } else {
-                        server.log('info', 'Started running at: ' + server.info.uri);
+                        server.log('info', 'Server initialized');
                         resolve(server);
                     }
                 });
@@ -137,6 +138,48 @@ var Server = {
             return server;
         }, function(err) {
             throw err;
+        });
+    },
+
+    /**
+     * Start the server.
+     * @returns {*|Promise}
+     */
+    start: function() {
+        var instance = this;
+        return this.initialize().then(function(server) {
+            // Only allow one instance of the server to be running.
+            if (instance.isRunning) return instance.server;
+
+            return new Promise(function(resolve, reject) {
+                server.start(function(err) {
+                    "use strict";
+                    if (err) {
+                        reject(err);
+                    } else {
+                        instance.isRunning = true;
+                        server.log('info', 'Started running at: ' + server.info.uri);
+                        resolve(server);
+                    }
+                });
+            });
+        });
+    },
+
+    stop: function() {
+        if (!this.server) return Promise.resolve(true);
+
+        var instance = this;
+        return new Promise(function(resolve, reject) {
+            instance.server.stop(function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    instance.isRunning = false;
+                    console.log('Server stopped');
+                    resolve();
+                }
+            });
         });
     }
 };

@@ -23,21 +23,26 @@ var session = {
     register: function(server, options, next) {
         "use strict";
 
-        if (!options.redis) throw new Error('options.redis requires a redis client or the plugin name and key.');
+        if (!options.redis) return next(new Error('options.redis requires a redis client or the plugin name and key.'));
         if (options.redis.client) {
             redisClient = options.redis.client;
         } else {
-            if (!options.redis.plugin) throw new Error('options.redis requires a redis plugin name');
-            if (!options.redis.key) throw new Error('options.redis requires a plugin key');
+            if (!options.redis.plugin) return next(new Error('options.redis requires a redis plugin name'));
+            if (!options.redis.key) return next(new Error('options.redis requires a plugin key'));
+            var plugin = server.plugins[options.redis.plugin];
+            if (!plugin) return next(new Error('options.redis.plugin does not exist'));
             redisClient = server.plugins[options.redis.plugin][options.redis.key];
         }
-        if (!redisClient) throw new Error('redis client not found');
+        if (!redisClient) return next(new Error('redis client not found'));
 
         key = options.key;
-        if (!key) throw new Error('option.key is required');
+        if (!key) return next(new Error('option.key is required'));
 
         tokenTable = options.table || tokenTable;
         expiration = options.expiration || expiration;
+
+        server.expose('table', tokenTable);
+        server.expose('expiration', expiration);
 
         next();
     },
@@ -50,7 +55,7 @@ var session = {
     validate: function(tid) {
         return new Promise(function(resolve, reject) {
             redisClient.get(tokenTable + tid, function(err, reply) {
-                if (err) reject(err);
+                if (err) return reject(err);
                 if (reply) {
                     return resolve(true);
                 } else {
@@ -75,12 +80,13 @@ var session = {
 
     /**
      * Begin a session.
-     * @param {String} token the token
-     * @param duration
+     * @param {String} token the token.
+     * @param {Number} duration the duration in seconds as an integer.
      * @returns {Promise}
      */
     login: function(token, duration) {
         var ttl = duration || expiration;
+        if (ttl % 1 !== 0) throw new Error('Duration must be an integer.');
         var parsed = this.decodeToken(token);
         return new Promise(function(resolve, reject) {
             redisClient.set(tokenTable + parsed.data.tid, parsed.data.id, function(err, res) {

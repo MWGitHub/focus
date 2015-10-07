@@ -11,15 +11,27 @@ var ttl = 60 * 60 * 24;
 
 var stale = {
     register: function(server, options, next) {
-        if (!options.redis) throw new Error('options.redis requires a redis client or the plugin name and key.');
+        if (!options.redis) {
+            next(new Error('options.redis requires a redis client or the plugin name and key.'));
+            return;
+        }
         if (options.redis.client) {
             redisClient = options.redis.client;
         } else {
-            if (!options.redis.plugin) throw new Error('options.redis requires a redis plugin name');
-            if (!options.redis.key) throw new Error('options.redis requires a plugin key');
+            if (!options.redis.plugin) {
+                next(new Error('options.redis requires a redis plugin name'));
+                return;
+            }
+            if (!options.redis.key) {
+                next(new Error('options.redis requires a plugin key'));
+                return;
+            }
             redisClient = server.plugins[options.redis.plugin][options.redis.key];
         }
-        if (!redisClient) throw new Error('redis client not found');
+        if (!redisClient) {
+            next(new Error('redis client not found'));
+            return;
+        }
 
         staleTable = options.table || staleTable;
         ttl = options.expiration || ttl;

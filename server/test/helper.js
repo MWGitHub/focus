@@ -15,9 +15,9 @@ module.exports = {
      * Starts the server.
      * @returns {Promise}
      */
-    startServer: function() {
+    initializeServer: function() {
         var instance = this;
-        return Server.start().then(function(server) {
+        return Server.initialize().then(function(server) {
             instance.server = server;
             return server;
         });

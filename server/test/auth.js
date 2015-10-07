@@ -27,14 +27,15 @@ function generateAuthHeader(username, password) {
     return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
 }
 
-var server;
 describe('registration', function() {
     "use strict";
+
+    var server;
 
     before(function(done) {
         console.log('\nBefore: Starting server and removing any previous test users');
         // Remove all test users if exists
-        Helper.startServer().then(function(s) {
+        Helper.initializeServer().then(function(s) {
             server = s;
             return Helper.removeAllTestUsers();
         })
@@ -183,13 +184,16 @@ describe('registration', function() {
 
 describe('authentication', function() {
     "use strict";
+
+    var server;
+
     var jwt = null;
     var userInstances;
 
     before(function (done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        Helper.startServer().then(function(s) {
+        Helper.initializeServer().then(function(s) {
             server = s;
             return Helper.removeAllTestUsers();
         })
@@ -322,13 +326,20 @@ describe('authentication', function() {
 
 describe('user modification', function() {
     "use strict";
+
+    var server;
+
     var jwt = null;
     var userInstances;
 
     before(function (done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        Helper.removeAllTestUsers().then(function () {
+        Helper.initializeServer().then(function(s) {
+            server = s;
+            return Helper.removeAllTestUsers();
+        })
+        .then(function () {
             return Helper.createAllTestUsers();
         }).then(function (users) {
             userInstances = users;
