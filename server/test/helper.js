@@ -1,13 +1,27 @@
 var User = require('../src/models/user');
 var API = require('../src/lib/api');
 var Auth = require('../src/auth/auth');
-var server = require('../index');
+var Server = require('../src/server');
 
 module.exports = {
     apiRoute: '/api/v1',
 
     testUsers: ['test_user1', 'test_user2', 'test_user3', 'test_user4'],
     password: 'testpw0',
+
+    server: null,
+
+    /**
+     * Starts the server.
+     * @returns {Promise}
+     */
+    startServer: function() {
+        var instance = this;
+        return Server.start().then(function(server) {
+            instance.server = server;
+            return server;
+        });
+    },
 
     //TODO: Add fixtures
     /**
@@ -73,6 +87,7 @@ module.exports = {
      * @returns {Promise} the promise with the response.
      */
     inject: function(data) {
+        var server = this.server;
         return new Promise(function(resolve, reject) {
             server.inject(data, function(response) {
                 resolve(response);

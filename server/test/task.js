@@ -6,7 +6,7 @@ var Task = require('../src/models/task');
 var Auth = require('../src/auth/auth');
 var Session = require('../src/auth/session');
 var API = require('../src/lib/api');
-var helper = require('./helper');
+var Helper = require('./helper');
 
 var lab = exports.lab = Lab.script();
 var describe = lab.describe;
@@ -14,10 +14,9 @@ var it = lab.it;
 var before = lab.before;
 var after = lab.after;
 
-var server = require('../index');
-
 var testTaskTitle = 'testtask1';
 
+var server;
 describe('task', function() {
     "use strict";
 
@@ -39,8 +38,12 @@ describe('task', function() {
     before(function(done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        helper.removeAllTestUsers().then(function() {
-            return helper.createAllTestUsers();
+        Helper.startServer().then(function(s) {
+            server = s;
+            return Helper.removeAllTestUsers();
+        })
+        .then(function() {
+            return Helper.createAllTestUsers();
         }).then(function(users) {
             var logins = [];
             for (var i = 0; i < users.length; i++) {
@@ -68,7 +71,7 @@ describe('task', function() {
     after(function(done) {
         console.log('\nAfter: Removing all test users');
 
-        helper.removeAllTestUsers().then(function() {
+        Helper.removeAllTestUsers().then(function() {
             //server.stop(done);
             done();
         });
@@ -77,7 +80,7 @@ describe('task', function() {
     it('should create a task', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -102,7 +105,7 @@ describe('task', function() {
     it('should create a task with the extra flag', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -126,7 +129,7 @@ describe('task', function() {
     it('should return not found for a nonexistent task', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -145,7 +148,7 @@ describe('task', function() {
     it('should return an error when creating and title is too long', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -164,7 +167,7 @@ describe('task', function() {
     it('should return an error when creating and title is not given', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -182,7 +185,7 @@ describe('task', function() {
     it('should return an error when creating and list is not given', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -200,7 +203,7 @@ describe('task', function() {
     it('should return an error when creating and position is not given', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -225,7 +228,7 @@ describe('task', function() {
     it('should return an error when creating a task for other user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks',
+            url: Helper.apiRoute + '/tasks',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
@@ -244,7 +247,7 @@ describe('task', function() {
     it('should retrieve a task', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id,
             headers: {
                 authorization: jwt[0]
             }
@@ -257,7 +260,7 @@ describe('task', function() {
     it('should retrieve from task, list, and board', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id,
             headers: {
                 authorization: jwt[0]
             }
@@ -269,7 +272,7 @@ describe('task', function() {
             var listId = data.attributes.list_id;
             server.inject({
                 method: 'GET',
-                url: helper.apiRoute + '/lists/' + listId,
+                url: Helper.apiRoute + '/lists/' + listId,
                 headers: {
                     authorization: jwt[0]
                 }
@@ -281,7 +284,7 @@ describe('task', function() {
                 var boardId = listData.attributes.board_id;
                 server.inject({
                     method: 'GET',
-                    url: helper.apiRoute + '/boards/' + boardId,
+                    url: Helper.apiRoute + '/boards/' + boardId,
                     headers: {
                         authorization: jwt[0]
                     }
@@ -291,7 +294,7 @@ describe('task', function() {
                     // Retrieve as wrong user from list
                     server.inject({
                         method: 'GET',
-                        url: helper.apiRoute + '/lists/' + listId,
+                        url: Helper.apiRoute + '/lists/' + listId,
                         headers: {
                             authorization: jwt[1]
                         }
@@ -301,7 +304,7 @@ describe('task', function() {
                         // Retrieve as wrong user from boards
                         server.inject({
                             method: 'GET',
-                            url: helper.apiRoute + '/boards/' + boardId,
+                            url: Helper.apiRoute + '/boards/' + boardId,
                             headers: {
                                 authorization: jwt[1]
                             }
@@ -318,7 +321,7 @@ describe('task', function() {
     it('should return an error when retrieving as another user', function(done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id,
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id,
             headers: {
                 authorization: jwt[1]
             }
@@ -331,7 +334,7 @@ describe('task', function() {
     it('should update position', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -351,7 +354,7 @@ describe('task', function() {
     it('should move to another list', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -372,7 +375,7 @@ describe('task', function() {
     it("should return an error when moving to other user's list", function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -390,7 +393,7 @@ describe('task', function() {
     it('should return an error when updating position as an unauthorized user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
@@ -408,7 +411,7 @@ describe('task', function() {
     it('should update title', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]
@@ -428,7 +431,7 @@ describe('task', function() {
     it('should return an error when updating title as the wrong user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/update',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
@@ -445,7 +448,7 @@ describe('task', function() {
     it('should return an error when deleting a task as the wrong user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
             headers: {
                 //authorization: generateAuthHeader(testUsers[1], password)
                 authorization: jwt[1]
@@ -459,7 +462,7 @@ describe('task', function() {
     it('should delete the task', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
+            url: Helper.apiRoute + '/tasks/' + taskUser1Id + '/delete',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt[0]

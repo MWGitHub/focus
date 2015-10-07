@@ -6,7 +6,7 @@ var Auth = require('../src/auth/auth');
 var Session = require('../src/auth/session');
 var moment = require('moment-timezone');
 var API = require('../src/lib/api');
-var helper = require('./helper');
+var Helper = require('./helper');
 var should = require('chai').should();
 
 var lab = exports.lab = Lab.script();
@@ -14,7 +14,6 @@ var describe = lab.describe;
 var it = lab.it;
 var before = lab.before;
 var after = lab.after;
-var server = require('../index');
 
 /**
  * Generate the authorization header string.
@@ -28,13 +27,18 @@ function generateAuthHeader(username, password) {
     return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
 }
 
+var server;
 describe('registration', function() {
     "use strict";
 
     before(function(done) {
-        console.log('\nBefore: Removing any previous test users');
+        console.log('\nBefore: Starting server and removing any previous test users');
         // Remove all test users if exists
-        helper.removeAllTestUsers().then(function() {
+        Helper.startServer().then(function(s) {
+            server = s;
+            return Helper.removeAllTestUsers();
+        })
+        .then(function() {
             done();
         });
     });
@@ -42,22 +46,22 @@ describe('registration', function() {
     after(function(done) {
         console.log('\nAfter: Removing all test users');
 
-        helper.removeAllTestUsers().then(function() {
+        Helper.removeAllTestUsers().then(function() {
             done();
         });
     });
 
     it('should register a user when POSTing to api/users', function(done) {
-        helper.inject({
+        Helper.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                username: helper.testUsers[0],
+                username: Helper.testUsers[0],
                 password: 'testpw0'
             }
         }).then(function(response) {
             response.statusCode.should.equal(200);
-            response.result.data.attributes.username.should.equal(helper.testUsers[0]);
+            response.result.data.attributes.username.should.equal(Helper.testUsers[0]);
             done();
         });
     });
@@ -65,9 +69,9 @@ describe('registration', function() {
     it('should return error status when given an invalid time zone', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                username: helper.testUsers[1],
+                username: Helper.testUsers[1],
                 password: 'testpw0',
                 timezone: 'nope'
             }
@@ -81,9 +85,9 @@ describe('registration', function() {
 
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                username: helper.testUsers[1],
+                username: Helper.testUsers[1],
                 password: 'testpw0',
                 timezone: moment.tz.names()[0]
             }
@@ -97,10 +101,10 @@ describe('registration', function() {
     it('should return an error status when registering an existing user', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                username: helper.testUsers[0],
-                password: helper.password
+                username: Helper.testUsers[0],
+                password: Helper.password
             }
         }, function(response) {
             response.statusCode.should.equal(UserHandler.StatusCodes.NameTaken);
@@ -111,9 +115,9 @@ describe('registration', function() {
     it('should return an error when missing password', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                username: helper.testUsers[1]
+                username: Helper.testUsers[1]
             }
         }, function (response) {
             response.statusCode.should.equal(400);
@@ -124,9 +128,9 @@ describe('registration', function() {
     it('should return an error when missing the username', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                password: helper.password
+                password: Helper.password
             }
         }, function(response) {
             response.statusCode.should.equal(400);
@@ -137,10 +141,10 @@ describe('registration', function() {
     it('should return an error when username is too short', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
                 username: 'gu',
-                password: helper.password
+                password: Helper.password
             }
         }, function(response) {
             response.statusCode.should.equal(400);
@@ -151,10 +155,10 @@ describe('registration', function() {
     it('should return an error when username is too long', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
                 username: '123456789012345678901',
-                password: helper.password
+                password: Helper.password
             }
         }, function(response) {
             response.statusCode.should.equal(400);
@@ -165,9 +169,9 @@ describe('registration', function() {
     it('should return an error when password is too short', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users',
+            url: Helper.apiRoute + '/users',
             payload: {
-                username: helper.testUsers[1],
+                username: Helper.testUsers[1],
                 password: 'test'
             }
         }, function(response) {
@@ -185,8 +189,12 @@ describe('authentication', function() {
     before(function (done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        helper.removeAllTestUsers().then(function () {
-            return helper.createAllTestUsers();
+        Helper.startServer().then(function(s) {
+            server = s;
+            return Helper.removeAllTestUsers();
+        })
+        .then(function () {
+            return Helper.createAllTestUsers();
         }).then(function (users) {
             userInstances = users;
             done();
@@ -196,7 +204,7 @@ describe('authentication', function() {
     after(function (done) {
         console.log('\nAfter: Removing all test users');
 
-        helper.removeAllTestUsers().then(function () {
+        Helper.removeAllTestUsers().then(function () {
             done();
         });
     });
@@ -204,9 +212,9 @@ describe('authentication', function() {
     it('should fail log in with wrong password', function (done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users/login',
+            url: Helper.apiRoute + '/users/login',
             payload: {
-                username: helper.testUsers[0],
+                username: Helper.testUsers[0],
                 password: 'wrong54'
             }
         }, function (response) {
@@ -218,10 +226,10 @@ describe('authentication', function() {
     it('should log in when correct', function (done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users/login',
+            url: Helper.apiRoute + '/users/login',
             payload: {
                 username: userInstances[0].get('username'),
-                password: helper.password
+                password: Helper.password
             }
         }, function (response) {
             jwt = response.result.data.token;
@@ -234,7 +242,7 @@ describe('authentication', function() {
     it('should be unauthorized when accessing authorized page without being logged in', function (done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id')
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id')
         }, function (response) {
             response.statusCode.should.equal(401);
             done();
@@ -244,7 +252,7 @@ describe('authentication', function() {
     it('should retrieve authorized page while logged in', function (done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id'),
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt
@@ -259,7 +267,7 @@ describe('authentication', function() {
     it('should log out when logged in', function (done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/users/logout',
+            url: Helper.apiRoute + '/users/logout',
             headers: {
                 //authorization: generateAuthHeader(testUsers[0], password)
                 authorization: jwt
@@ -273,7 +281,7 @@ describe('authentication', function() {
     it('should return not logged in when logging out without authentication', function (done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/users/logout'
+            url: Helper.apiRoute + '/users/logout'
         }, function (response) {
             response.result.meta.message.should.equal('Not logged in');
             done();
@@ -283,7 +291,7 @@ describe('authentication', function() {
     it('should fail when accessing authorized page while using revoked credentials', function (done) {
         server.inject({
             method: 'GET',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id'),
             headers: {
                 authorization: jwt
             }
@@ -299,7 +307,7 @@ describe('authentication', function() {
             setTimeout(function () {
                 server.inject({
                     method: 'GET',
-                    url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
+                    url: Helper.apiRoute + '/users/' + userInstances[0].get('id'),
                     headers: {
                         authorization: token
                     }
@@ -320,8 +328,8 @@ describe('user modification', function() {
     before(function (done) {
         console.log('\nBefore: Removing any previous test users and creating new test users');
         // Remove all test users if exists
-        helper.removeAllTestUsers().then(function () {
-            return helper.createAllTestUsers();
+        Helper.removeAllTestUsers().then(function () {
+            return Helper.createAllTestUsers();
         }).then(function (users) {
             userInstances = users;
             done();
@@ -331,7 +339,7 @@ describe('user modification', function() {
     after(function (done) {
         console.log('\nAfter: Removing all test users');
 
-        helper.removeAllTestUsers().then(function () {
+        Helper.removeAllTestUsers().then(function () {
             done();
         });
     });
@@ -339,10 +347,10 @@ describe('user modification', function() {
     it('should log in', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users/login',
+            url: Helper.apiRoute + '/users/login',
             payload: {
                 username: userInstances[0].get('username'),
-                password: helper.password
+                password: Helper.password
             }
         }, function(response) {
             jwt = response.result.data.token;
@@ -355,7 +363,7 @@ describe('user modification', function() {
     it('should fail when deleting user without correct authorization', function(done) {
         server.inject({
             method: 'DELETE',
-            url: helper.apiRoute + '/users/' + userInstances[1].get('id'),
+            url: Helper.apiRoute + '/users/' + userInstances[1].get('id'),
             headers: {
                 authorization: jwt
             }
@@ -368,7 +376,7 @@ describe('user modification', function() {
     it('should change password', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
             headers: {
                 authorization: jwt
             },
@@ -378,7 +386,7 @@ describe('user modification', function() {
         }, function(response) {
             server.inject({
                 method: 'POST',
-                url: helper.apiRoute + '/users/login',
+                url: Helper.apiRoute + '/users/login',
                 payload: {
                     username: userInstances[0].get('username'),
                     password: 'newpass'
@@ -395,7 +403,7 @@ describe('user modification', function() {
     it('should change timezone', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
             headers: {
                 authorization: jwt
             },
@@ -414,7 +422,7 @@ describe('user modification', function() {
     it('should fail when changing password with correct authorization', function(done) {
         server.inject({
             method: 'POST',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id') + '/update',
             headers: {
                 authorization: 'none'
             },
@@ -430,7 +438,7 @@ describe('user modification', function() {
     it('should delete itself', function(done) {
         server.inject({
             method: 'DELETE',
-            url: helper.apiRoute + '/users/' + userInstances[0].get('id'),
+            url: Helper.apiRoute + '/users/' + userInstances[0].get('id'),
             headers: {
                 authorization: jwt
             }

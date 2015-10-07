@@ -1,7 +1,8 @@
-var RedisClient = require('../lib/redis-client');
 var JWT = require('jsonwebtoken');
 var uuid = require('node-uuid');
 
+// Redis client to use for storing tokens
+var redisClient;
 // Namespace for the tokens
 var tokenTable = 'token:';
 // Sessions by default expire in 30 days
@@ -22,6 +23,9 @@ var session = {
     register: function(server, options, next) {
         "use strict";
 
+        redisClient = options.redisClient;
+        if (!redisClient) throw new Error('option.redis expects a redis client');
+
         key = options.key;
         if (!key) throw new Error('option.key is required');
 
@@ -38,7 +42,7 @@ var session = {
      */
     validate: function(id) {
         return new Promise(function(resolve, reject) {
-            RedisClient.client.get(tokenTable + id, function(err, reply) {
+            redisClient.get(tokenTable + id, function(err, reply) {
                 if (err) reject(err);
                 if (reply) {
                     return resolve(true);
@@ -72,8 +76,8 @@ var session = {
         var ttl = duration || expiration;
         var parsed = this.decodeToken(token);
         return new Promise(function(resolve, reject) {
-            RedisClient.client.set(tokenTable + parsed.data.tid, parsed.data.id, function(err, res) {
-                RedisClient.client.expire(tokenTable + parsed.data.tid, ttl);
+            redisClient.set(tokenTable + parsed.data.tid, parsed.data.id, function(err, res) {
+                redisClient.expire(tokenTable + parsed.data.tid, ttl);
                 err ? reject(err) : resolve(res);
             });
         });
@@ -85,7 +89,7 @@ var session = {
      */
     logout: function(id) {
         return new Promise(function(resolve, reject) {
-            RedisClient.client.del(tokenTable + id, function(err, res) {
+            redisClient.del(tokenTable + id, function(err, res) {
                 err ? reject(err) : resolve(res);
             });
         });
