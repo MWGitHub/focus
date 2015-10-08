@@ -37,9 +37,53 @@ class HomeLoggedIn extends React.Component {
     }
 
     render() {
+        if (!this.state.userData) {
+            return (
+                <div>
+                    <h2>Loading...</h2>
+                </div>
+            )
+        }
+
+        var boards = [].concat(this.state.userData.attributes.boards);
+        boards.sort(function(a, b) {
+            if (a.id < b.id) {
+                return -1;
+            } else if (a.id > b.id) {
+                return 1;
+            }
+            return 0;
+        });
+        var projects = [].concat(this.state.userData.attributes.projects);
+        projects.sort(function(a, b) {
+            if (a.id < b.id) {
+                return -1;
+            } else if (a.id > b.id) {
+                return 1;
+            }
+            return 0;
+        });
+        var both = boards.concat(projects);
         return (
             <div>
-                {this.state.userData}
+                <h1>Projects and Boards</h1>
+                {both.map(function(v) {
+                    var cls, link;
+                    if (v.type ==='boards') {
+                        cls = 'home-board';
+                        link = Routes.board;
+                    } else {
+                        cls = 'home-project';
+                        link = Routes.project;
+                    }
+                    return (
+                        <div className={'home-card ' + cls} key={v.type + v.id}>
+                            <Router.Link to={link} params={{id: v.id}}>
+                                <h2>{v.attributes.title}</h2>
+                            </Router.Link>
+                        </div>
+                    );
+                })}
             </div>
         );
     }

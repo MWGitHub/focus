@@ -20,6 +20,17 @@ class BoardStore extends BaseStore {
         BaseStore.subscribe(this._actions.bind(this));
     }
 
+    _updateStaleness(id) {
+        if (staleness[id]) {
+            staleness[id].isStale = false;
+        } else {
+            staleness[id] = {
+                isStale: false,
+                staleness: 0
+            };
+        }
+    }
+
     _actions(action) {
         if (action.state !== Actions.State.complete) return;
 
@@ -42,18 +53,12 @@ class BoardStore extends BaseStore {
                 var boards = action.data.data.attributes.boards;
                 for (var i = 0; i < boards.length; i++) {
                     var boardId = boards[i].id;
-                    if (staleness[boardId]) {
-                        staleness[boardId].isStale = false;
-                    } else {
-                        staleness[boardId] = {
-                            isStale: false,
-                            staleness: 0
-                        };
-                    }
+                    this._updateStaleness(boardId);
                 }
                 break;
             case Actions.retrieveBoard:
                 boardData[action.data.data.id] = action.data.data;
+                this._updateStaleness(action.data.data.id);
                 this.emitChange();
                 break;
             case Actions.retrieveList:

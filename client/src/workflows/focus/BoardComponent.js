@@ -123,10 +123,10 @@ class BoardView extends React.Component {
         return (
             <div>
                 <div className="board" ref="board">
-                    <List name="tasks" uid={this.props.uid} lists={lists} list={tasks} key={tasks.id} disable={ListDisableOptions.tasks} />
-                    <List name="tomorrow" uid={this.props.uid} lists={lists} list={tomorrow} key={tomorrow.id} disable={ListDisableOptions.tomorrow} />
-                    <List name="today" uid={this.props.uid} lists={lists} list={today} key={today.id} disable={ListDisableOptions.today} />
-                    <List name="done" uid={this.props.uid} lists={lists} list={done} key={done.id} disable={ListDisableOptions.done} />
+                    <List name="tasks" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={tasks} key={tasks.id} disable={ListDisableOptions.tasks} />
+                    <List name="tomorrow" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={tomorrow} key={tomorrow.id} disable={ListDisableOptions.tomorrow} />
+                    <List name="today" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={today} key={today.id} disable={ListDisableOptions.today} />
+                    <List name="done" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={done} key={done.id} disable={ListDisableOptions.done} />
                 </div>
             </div>
         )
@@ -140,15 +140,12 @@ class Board extends React.Component {
     constructor(props) {
         super(props);
 
+        var boardId = this.props.params.id;
         this.state = {
-            board: null,
+            board: BoardStore.getBoardData(boardId),
             uid: AuthStore.getID(),
             isStale: false
         };
-        var data = UserStore.getData();
-        if (data) {
-            this.state.board = data.attributes.boards[0];
-        }
 
         this.isRefreshing = false;
         this.onFrame = this._onFrame.bind(this);
@@ -162,7 +159,7 @@ class Board extends React.Component {
         window.setTimeout(function() {
             if (!Dispatcher.isDispatching()) {
                 if (self.state.isStale && self.state.data) {
-                    UserActions.retrieveData(self.state.uid, true);
+                    BoardActions.retrieveBoard(this.props.params.id, true);
                 } else {
                     BoardActions.checkStaleness(self.state.board.id);
                 }
@@ -176,7 +173,7 @@ class Board extends React.Component {
         UserStore.addChangeListener(this.listener);
         BoardStore.addChangeListener(this.listener);
 
-        UserActions.retrieveData(this.state.uid, true);
+        BoardActions.retrieveBoard(this.props.params.id, true);
 
         this.isRefreshing = true;
 
@@ -185,25 +182,31 @@ class Board extends React.Component {
 
     componentWillUnmount() {
         UserStore.removeChangeListener(this.listener);
+        BoardStore.removeChangeListener(this.listener);
 
         this.isRefreshing = false;
     }
 
     onChange() {
-        var data = UserStore.getData();
-        var board = data.attributes.boards[0];
+        var board = BoardStore.getBoardData(this.props.params.id);
         this.setState({
             board: board,
             uid: AuthStore.getID(),
-            isStale: BoardStore.isStale(board.id)
+            isStale: BoardStore.isStale(this.props.params.id)
         });
     }
 
     render() {
-        if (!this.state.board) return null;
+        if (!this.state.board) {
+            return (
+                <div>
+                    <h2>Loading...</h2>
+                </div>
+            );
+        }
         return (
             <BoardView uid={this.state.uid} board={this.state.board} />
-        )
+        );
     }
 }
 

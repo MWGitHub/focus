@@ -65,6 +65,7 @@ var User = Bookshelf.Model.extend({
                 var bids = _.map(boards.models, function(n) {
                     return {
                         id: n.id,
+                        type: 'boards',
                         attributes: {
                             title: n.attributes.title
                         }
@@ -73,6 +74,7 @@ var User = Bookshelf.Model.extend({
                 var pids = _.map(projects.models, function(n) {
                     return {
                         id: n.id,
+                        type: 'projects',
                         attributes: {
                             title: n.attributes.title
                         }

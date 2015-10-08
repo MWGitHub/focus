@@ -6,7 +6,10 @@ var Routes = {
     login: 'login',
     logout: 'logout',
     user: 'user',
-    board: 'board',
+    projects: 'projects',
+    project: 'projects/:id',
+    boards: 'boards',
+    board: 'boards/:id',
     settings: 'user/settings'
 };
 

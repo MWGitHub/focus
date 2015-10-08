@@ -28,7 +28,7 @@ var BoardActions = {
         )
     },
 
-    createTask: function(uid, list, title, position, extra) {
+    createTask: function(bid, list, title, position, extra) {
         Dispatcher.dispatch({
             actionType: Actions.createTask,
             state: Actions.State.loading
@@ -49,7 +49,7 @@ var BoardActions = {
                     list: list,
                     title: title
                 });
-                UserActions.retrieveData(uid, true);
+                this.retrieveBoard(bid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -60,7 +60,7 @@ var BoardActions = {
         )
     },
 
-    deleteTask: function(uid, id) {
+    deleteTask: function(bid, id) {
         Dispatcher.dispatch({
             actionType: Actions.deleteTask,
             state: Actions.State.loading
@@ -72,7 +72,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     id: id
                 });
-                UserActions.retrieveData(uid, true);
+                this.retrieveBoard(bid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -83,7 +83,7 @@ var BoardActions = {
         )
     },
 
-    moveTask: function(uid, id, list, position) {
+    moveTask: function(bid, id, list, position) {
         Dispatcher.dispatch({
             actionType: Actions.moveTask,
             state: Actions.State.loading
@@ -100,7 +100,7 @@ var BoardActions = {
                     id: id,
                     position: position
                 });
-                UserActions.retrieveData(uid, true);
+                this.retrieveBoard(bid, true);
             },
             (error) => {
                 Dispatcher.dispatch({

@@ -22,6 +22,9 @@ var routes = (
             <Route name={Routes.settings} path={Routes.settings} handler={Settings}/>
         </Route>
         <Route handler={Index.IndexMinimal}>
+            <Route name={Routes.projects} path={Routes.projects} handler={Board}/>
+            <Route name={Routes.project} path={Routes.project} handler={Board}/>
+            <Route name={Routes.boards} path={Routes.boards} handler={Board}/>
             <Route name={Routes.board} path={Routes.board} handler={Board}/>
         </Route>
     </Route>
