@@ -52,7 +52,7 @@ class TaskCreateBox extends React.Component {
             // Set position to mid value if there are no tasks otherwise set it to the next lowest.
             var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position / 2;
 
-            BoardActions.createTask(this.props.uid, list.id, title, position, this.props.extra, this._updateTaskError.bind(this));
+            BoardActions.createTask(this.props.bid, list.id, title, position, this.props.extra, this._updateTaskError.bind(this));
         }
     }
 

@@ -1,7 +1,8 @@
 /**
- * Routes names the app uses.
+ * Route names and paths the app uses.
  */
 var Routes = {
+    home: 'home',
     register: 'register',
     login: 'login',
     logout: 'logout',

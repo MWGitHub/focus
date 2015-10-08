@@ -13,7 +13,7 @@ import config from '../config.json';
 
 var Route = Router.Route;
 var routes = (
-    <Route handler={Index.Base} path={config.root + '/'}>
+    <Route name={Routes.home} handler={Index.Base} path={config.root + '/'}>
         <Route handler={Index.IndexFull}>
             <Router.DefaultRoute handler={Index.Home} />
             <Route name={Routes.register} path={Routes.register} handler={Register}/>

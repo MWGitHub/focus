@@ -83,7 +83,7 @@ class List extends React.Component {
             var createTaskButton = React.findDOMNode(this.refs.createTaskButton);
             var list = React.findDOMNode(this.refs.list);
             //if (!createBox.contains(e.target) && !createTaskButton.contains(e.target)) {
-            if (!list.contains(e.target)) {
+            if (!list.contains(e.target) && !createTaskButton.contains(e.target)) {
                 this.setState({
                     isCreateShown: false
                 });
