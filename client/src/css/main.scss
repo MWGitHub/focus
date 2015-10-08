@@ -7,10 +7,7 @@
 @import "addons/no-select";
 @import "footer";
 @import "addons/word-wrap";
-
-/*
- * Variables
- */
+@import "addons/selector-style";
 
 
 /*
@@ -205,8 +202,29 @@ div.form-page {
   }
 }
 
-// Project and Boards View
+// Home
+div.group {
+  @include outer-container(100%);
+  padding: 1em;
+}
 
+div.home-card {
+  @extend %no-select;
+  @include span-columns(3);
+  @include border-radius($base-border-radius);
+  text-align: center;
+  background-color: $base-home-card-color;
+
+  span {
+    display: block;
+    width: 100%;
+    padding: 0.5em;
+    font-size: 1.2em;
+    @include selector-color-style($contrast-font-color, shade($contrast-font-color, 5%));
+  }
+
+  @include selector-background-color-style($base-home-card-color, shade($base-home-card-color, 5%));
+}
 
 
 // Board style

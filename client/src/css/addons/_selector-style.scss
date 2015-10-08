@@ -1,0 +1,33 @@
+@import "../bourbon/bourbon";
+
+@mixin selector-color-style($color, $hover-color) {
+  color: $color;
+
+  &:link, &:visited {
+    color: $color;
+  }
+
+  &:hover {
+    color: $hover-color;
+  }
+
+  &:active {
+    color: shade($hover-color, 5%);
+  }
+}
+
+@mixin selector-background-color-style($color, $hover-color) {
+  background-color: $color;
+
+  &:link, &:visited {
+    background-color: $color;
+  }
+
+  &:hover {
+    background-color: $hover-color;
+  }
+
+  &:active {
+    background-color: shade($hover-color, 5%);
+  }
+}

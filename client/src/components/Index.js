@@ -65,8 +65,8 @@ class HomeLoggedIn extends React.Component {
         });
         var both = boards.concat(projects);
         return (
-            <div>
-                <h1>Projects and Boards</h1>
+            <div className="group">
+                <h1 className="page-title">Projects and Boards</h1>
                 {both.map(function(v) {
                     var cls, link;
                     if (v.type ==='boards') {
@@ -77,11 +77,11 @@ class HomeLoggedIn extends React.Component {
                         link = Routes.project;
                     }
                     return (
-                        <div className={'home-card ' + cls} key={v.type + v.id}>
-                            <Router.Link to={link} params={{id: v.id}}>
-                                <h2>{v.attributes.title}</h2>
-                            </Router.Link>
-                        </div>
+                            <div className={'home-card ' + cls} key={v.type + v.id}>
+                                <Router.Link to={link} params={{id: v.id}}>
+                                    <span>{v.attributes.title}</span>
+                                </Router.Link>
+                            </div>
                     );
                 })}
             </div>
