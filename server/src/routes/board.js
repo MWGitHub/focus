@@ -8,7 +8,10 @@ var routes = [
         path: API.route + '/boards/{id}',
         handler: BoardAPI.retrieve,
         config: {
-            auth: 'jwt',
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin', 'member', 'viewer']
+            },
             cors: true,
             validate: {
                 params: {

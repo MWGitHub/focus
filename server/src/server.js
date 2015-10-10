@@ -7,6 +7,7 @@ var Config = require('../config.json');
 var Routes = require('./routes/routes');
 
 var Auth = require('./auth/auth');
+var Permission = require('./auth/permission');
 var Session = require('./auth/session');
 var Stale = require('./lib/stale');
 
@@ -66,6 +67,9 @@ var Server = {
                     options: {
                         key: Config.authkey
                     }
+                },
+                {
+                    register: Permission
                 },
                 {
                     register: Session,

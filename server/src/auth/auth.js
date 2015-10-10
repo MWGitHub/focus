@@ -3,6 +3,12 @@ var AuthBasic = require('hapi-auth-basic');
 var AuthJWT = require('hapi-auth-jwt2');
 var User = require('../models/user');
 var Session = require('./session');
+var co = require('co');
+
+function getScope(uid, request) {
+    console.log(request.config);
+    return Promise.resolve(['admin', 'member', 'viewer']);
+}
 
 function validateBasic(request, username, password, callback) {
     "use strict";
@@ -10,7 +16,7 @@ function validateBasic(request, username, password, callback) {
     User.forge({username: username}).fetch()
         .then(function(user) {
             if (!user) {
-                return callback(null, false);
+                callback(null, false);
             } else {
                 Bcrypt.compare(password, user.get('password'), function(err, isValid) {
                     callback(err, isValid, {id: user.get('id'), username: user.get('username')});
@@ -22,12 +28,29 @@ function validateBasic(request, username, password, callback) {
 function validateJWT(decoded, request, callback) {
     "use strict";
 
-    Session.validate(decoded.tid).then(function(v) {
-        callback(null, v);
-    })
-    .catch(function(e) {
-        callback(e, false);
+    co(function* () {
+        var valid = yield Session.validate(decoded.tid);
+        if (!valid) {
+            return callback(null, false);
+        }
+
+        if (request.route.settings.auth.scope) {
+            var scope = yield getScope(decoded.uid, request);
+            console.log(scope);
+            var credentials = {
+                id: decoded.id,
+                tid: decoded.tid,
+                scope: scope
+            };
+            callback(null, valid, credentials);
+        } else {
+            return callback(null, valid);
+        }
+    }, function(err) {
+        console.log(err);
+        return callback(e, false);
     });
+
 }
 
 var auth = {

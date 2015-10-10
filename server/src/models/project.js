@@ -2,6 +2,7 @@ var Bookshelf = require('../lib/bookshelf');
 var co = require('co');
 var User = require('./user');
 var Board = require('./board');
+var Permission = require('../auth/permission-model');
 
 var Project = Bookshelf.Model.extend({
     tableName: 'projects',
@@ -13,6 +14,10 @@ var Project = Bookshelf.Model.extend({
 
     boards: function() {
         this.hasMany(Board);
+    },
+
+    permissions: function() {
+        return this.hasMany(Permission);
     },
 
     /**
@@ -62,7 +67,8 @@ var Project = Bookshelf.Model.extend({
     schema: {
         id: {type: 'increments', notNullable: true, primary: true},
         title: {type: 'string', length: 150, notNullable: true},
-        user_id: {type: 'integer', notNullable: true}
+        user_id: {type: 'integer', notNullable: true},
+        is_public: {type: 'boolean', notNullable: true}
     }
 });
 
