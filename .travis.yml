@@ -27,4 +27,4 @@ before_script:
   - psql -c 'create database dev_focus;' -U postgres
   - ./node_modules/.bin/knex migrate:latest
   
-script: cd server && npm test
+script: npm test
