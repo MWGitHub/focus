@@ -1,7 +1,12 @@
 language: node_js
 node_js:
   - 4
-sudo: true
+  
+env:
+  global:
+    - NODE_ENV=development
+    - CXX=g++-4.8
+
 addons:
   postgresql: "9.4"
   apt:
@@ -14,18 +19,12 @@ addons:
 services:
   - redis-server
 
-env:
-  global:
-    - NODE_ENV=development
-    - CXX=g++-4.8
-    
 before_script:
   - cd server
-  - sudo npm i -g node-gyp && node-gyp clean
   - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
   - psql -c 'create database dev_focus;' -U postgres
   - ./node_modules/.bin/knex migrate:latest
   
-script: cd server && npm test
+script: npm test
