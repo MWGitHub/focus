@@ -5,8 +5,8 @@ var uuid = require('node-uuid');
 var redisClient;
 // Namespace for the tokens
 var tokenTable = 'token:';
-// Sessions by default expire in 30 days
-var expiration = 60 * 60 * 24 * 30;
+// Sessions by default expire in one year
+var expiration = 365 * 60 * 60 * 24 * 30;
 // Secret key for signing tokens
 var key;
 

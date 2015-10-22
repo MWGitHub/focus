@@ -73,6 +73,29 @@ program
     });
 
 program
+    .command('change-user-password <username> <password>')
+    .description('Change a user\'s password.')
+    .action(function(username, password) {
+        var user;
+        console.log('Changing password for user.');
+        User.forge({username: username}).fetch({required: true}).then(function(v) {
+            user = v;
+            return Auth.hash(password);
+        })
+        .then(function(hash) {
+            return user.save({'password': hash}, {patch: true});
+        })
+        .then(function() {
+            console.log('User password has been updated');
+            process.exit(0);
+        })
+        .catch(function(e) {
+            console.error('User does not exist.');
+            process.exit(1);
+        });
+    });
+
+program
     .command('delete-user <username>')
     .description('Deletes a user and all related data.')
     .action(function(username) {
