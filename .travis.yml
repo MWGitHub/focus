@@ -9,8 +9,16 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
+      - gcc-4.8
 
+services:
+  - redis-server
 
+env:
+  global:
+    - NODE_ENV=development
+    - CXX=g++-4.8
+    
 before_script:
   - cd server
   - sudo npm i -g node-gyp && node-gyp clean
@@ -19,10 +27,5 @@ before_script:
   - mv knexfile-sample.js knexfile.js
   - psql -c 'create database dev_focus;' -U postgres
   - ./node_modules/.bin/knex migrate:latest
-
-services:
-  - redis-server
-
-env:
-  - NODE_ENV=development
-  - CXX=g++-4.8
+  
+script: cd server && npm test
