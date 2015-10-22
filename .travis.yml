@@ -32,4 +32,4 @@ before_script:
 script: npm run test-travis
 
 after_script:
-  - codeclimate-test-reporter < lcov.info
+  - ./node_modules/.bin/codeclimate-test-reporter < lcov.info

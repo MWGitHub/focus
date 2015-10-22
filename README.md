@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/MWGitHub/focus-core.svg?branch=master)](https://travis-ci.org/MWGitHub/focus-core)
+[![Code Climate](https://codeclimate.com/github/MWGitHub/focus-core/badges/gpa.svg)](https://codeclimate.com/github/MWGitHub/focus-core)
+[![Test Coverage](https://codeclimate.com/github/MWGitHub/focus-core/badges/coverage.svg)](https://codeclimate.com/github/MWGitHub/focus-core/coverage)
+
 # Focus (Temporary name)
 
 Focus is a website that allows users to manage their tasks. It differs from other task lists by setting rules on when
