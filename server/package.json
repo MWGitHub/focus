@@ -4,7 +4,8 @@
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/lab -c"
+    "test": "node_modules/.bin/lab -c",
+    "test-travis": "node_modules/.bin/lab -c -r lcov -o lcov.info"
   },
   "author": "MW",
   "dependencies": {
