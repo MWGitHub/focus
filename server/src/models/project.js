@@ -21,6 +21,22 @@ var Project = Bookshelf.Model.extend({
     },
 
     /**
+     * Destroys all related objects before destroying itself.
+     * @return {Promise} the promise for destroying.
+     */
+    destroyDeep: function() {
+        "use strict";
+
+        var instance = this;
+
+        return co(function* () {
+            var boards = yield Board.where({project_id: instance.get('id')}).fetchAll();
+            yield boards.invokeThen('destroyDeep');
+            return yield instance.destroy();
+        });
+    },
+
+    /**
      * Retrieves the data of the project.
      * @param {Boolean?} isDeep true to retrieve all children data.
      * @return {Promise} the promise with the data.

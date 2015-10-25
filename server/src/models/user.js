@@ -1,8 +1,8 @@
 var Bookshelf = require('../lib/bookshelf');
-var Board = require('./board');
-var Task = require('./task');
-var List = require('./list');
 var Project = require('./project');
+var Board = require('./board');
+var List = require('./list');
+var Task = require('./task');
 var co = require('co');
 var _ = require('lodash');
 
@@ -29,10 +29,6 @@ var User = Bookshelf.Model.extend({
         return this.hasMany(List, 'user_id');
     },
 
-    standaloneBoards: function() {
-        return this.boards().query('where', {project_id: null});
-    },
-
     /**
      * Destroys all related objects before destroying itself.
      * @return {Promise} the promise for destroying.
@@ -43,8 +39,8 @@ var User = Bookshelf.Model.extend({
         var instance = this;
 
         return co(function* () {
-            var boards = yield Board.where({user_id: instance.get('id')}).fetchAll();
-            yield boards.invokeThen('destroyDeep');
+            var projects = yield Project.where({user_id: instance.get('id')}).fetchAll();
+            yield projects.invokeThen('destroyDeep');
             return yield instance.destroy();
         });
     },
@@ -59,18 +55,8 @@ var User = Bookshelf.Model.extend({
 
         var instance = this;
         return co(function* () {
-            var boards = yield instance.standaloneBoards().fetch();
             var projects = yield instance.projects().fetch();
             if (!isDeep) {
-                var bids = _.map(boards.models, function(n) {
-                    return {
-                        id: n.id,
-                        type: 'boards',
-                        attributes: {
-                            title: n.attributes.title
-                        }
-                    };
-                });
                 var pids = _.map(projects.models, function(n) {
                     return {
                         id: n.id,
@@ -86,7 +72,6 @@ var User = Bookshelf.Model.extend({
                     attributes: {
                         username: instance.get('username'),
                         timezone: instance.get('timezone'),
-                        boards: bids,
                         projects: pids
                     }
                 };
@@ -97,17 +82,10 @@ var User = Bookshelf.Model.extend({
                     attributes: {
                         username: instance.get('username'),
                         timezone: instance.get('timezone'),
-                        boards: [],
                         projects: []
                     }
                 };
-                var i;
-                for (i = 0; i < boards.length; i++) {
-                    var board = boards.models[i];
-                    var boardData = yield board.retrieveAsData(isDeep);
-                    data.attributes.boards.push(boardData);
-                }
-                for (i = 0; i < projects.length; i++) {
+                for (var i = 0; i < projects.length; i++) {
                     var project = projects.models[i];
                     var projectData = yield project.retrieveAsData(isDeep);
                     data.attributes.projects.push(projectData);

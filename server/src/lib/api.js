@@ -1,5 +1,6 @@
 // Helper functions for generating requests and routes.
 var User = require('../models/user');
+var Project = require('../models/project');
 var Board = require('../models/board');
 var List = require('../models/list');
 var Task = require('../models/task');
@@ -59,10 +60,17 @@ module.exports.populateUser = function(user) {
     "use strict";
 
     var uid = user.get('id');
-    return Board.forge({
+    return Project.forge({
         title: 'Main',
         user_id: uid
     }).save()
+    .then(function(project) {
+        return Board.forge({
+            title: 'Main',
+            user_id: uid,
+            project_id: project.get('id')
+        }).save();
+    })
     .then(function(board) {
         // Create the lists
         var id = board.get('id');

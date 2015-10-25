@@ -87,7 +87,8 @@ var Board = Bookshelf.Model.extend({
         id: {type: 'increments', notNullable: true, primary: true},
         title: {type: 'string', length: 150, notNullable: true},
         user_id: {type: 'integer', notNullable: true},
-        is_public: {type: 'boolean', notNullable: true}
+        project_id: {type: 'integer', notNullable: true},
+        is_public: {type: 'boolean', notNullable: true},
     }
 });
 

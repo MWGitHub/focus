@@ -15,10 +15,6 @@ var ProjectPermission = Bookshelf.Model.extend({
 
     project: function() {
         return this.belongsTo(Project);
-    },
-
-    getRole: function() {
-
     }
 }, {
     schema: {
@@ -40,37 +36,6 @@ var ProjectPermission = Bookshelf.Model.extend({
     }
 });
 
-var BoardPermission = Bookshelf.Model.extend({
-    tableName: 'board_permissions',
-
-    user: function() {
-        return this.belongsTo(User);
-    },
-
-    board: function() {
-        return this.belongsTo(Board);
-    }
-}, {
-    schema: {
-        id: {type: 'increments', notNullable: true, primary: true},
-        role: {type: 'string', notNullable: true},
-        board_id: {type: 'integer', notNullable: true},
-        user_id: {type: 'integer', notNullable: true}
-    },
-    /**
-     * Roles give the following permissions:
-     *  admin: delete/update board, CRUD lists, CRUD tasks
-     *  member: CRUD lists, CRUD tasks
-     *  viewer: read only permissions
-     */
-    roles: {
-        admin: 'admin',
-        member: 'member',
-        viewer: 'viewer'
-    }
-});
-
 module.exports = {
-    ProjectPermission: ProjectPermission,
-    BoardPermission: BoardPermission
+    ProjectPermission: ProjectPermission
 };

@@ -58,17 +58,20 @@ program
                 console.error('User %s already exists, new user not created.', username);
                 process.exit(1);
             } else {
-                Auth.hash(password, function(error, hash) {
-                    User.forge({username: username, password: hash}).save().then(function(user) {
-                        "use strict";
-
-                        API.populateUser(user).then(function() {
-                            console.log('Finished populating boards and lists for ' + username);
-                            process.exit(0);
-                        });
+                Auth.hash(password).then(function(hash) {
+                    return User.forge({username: username, password: hash}).save();
+                })
+                .then(function(user) {
+                    return API.populateUser(user).then(function () {
+                        console.log('Finished populating boards and lists for ' + username);
+                        process.exit(0);
                     });
                 });
             }
+        })
+        .catch(function(e) {
+            console.log(e);
+            process.exit(1);
         });
     });
 
@@ -106,6 +109,10 @@ program
             user.destroyDeep().then(function() {
                 console.log('User has been deleted.');
                 process.exit(0);
+            })
+            .catch(function(e) {
+                console.log(e);
+                process.exit(1);
             });
         });
     });

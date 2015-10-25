@@ -5,6 +5,7 @@ exports.up = function(knex, Promise) {
         table.increments('id').notNullable().primary();
         table.string('title', 150).notNullable();
         table.integer('user_id').notNullable().references('users.id');
+        table.timestamps();
     });
 };
 
