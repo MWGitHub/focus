@@ -6,7 +6,8 @@ import Actions from '../constants/Actions';
 var UserActions = {
     /**
      * Retrieves the data for the user.
-     * @param {Boolean} isDeep true to retrieve relation data.
+     * @param {number} uid the user id.
+     * @param {Boolean=} isDeep true to retrieve relation data.
      */
     retrieve: function(uid, isDeep) {
         Dispatcher.dispatch({

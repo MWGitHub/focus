@@ -4,6 +4,7 @@ import Routes from '../constants/Routes';
 import AuthStore from '../stores/AuthStore';
 import UserStore from '../stores/UserStore';
 import Config from '../../config.json';
+import UserActions from '../actions/UserActions';
 
 class AuthNav extends React.Component {
     constructor(props) {
@@ -103,6 +104,10 @@ class Header extends React.Component {
         this.listener = this._onChange.bind(this);
         AuthStore.addChangeListener(this.listener);
         UserStore.addChangeListener(this.listener);
+
+        if (AuthStore.isLoggedIn()) {
+            UserActions.retrieve(AuthStore.getID());
+        }
     }
 
     componentWillUnmount() {
@@ -111,7 +116,6 @@ class Header extends React.Component {
     }
 
     render() {
-        "use strict";
         return (
             <header id="header" className="container">
                 <div className="header-left">
