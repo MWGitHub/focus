@@ -10,6 +10,7 @@ import StorageKeys from '../constants/StorageKeys';
 var staleness = {};
 
 // Hashes with ID as key and data as value
+var projectData = {};
 var boardData = {};
 var listData = {};
 var taskData = {};
@@ -50,15 +51,19 @@ class BoardStore extends BaseStore {
                 this.emitChange();
                 break;
             case Actions.retrieveUser:
-                var boards = action.data.data.attributes.boards;
-                for (var i = 0; i < boards.length; i++) {
-                    var boardId = boards[i].id;
-                    this._updateStaleness(boardId);
+                var projects = action.data.data.attributes.projects;
+                for (var i = 0; i < projects.length; i++) {
+                    var projectID = projects[i].id;
+                    this._updateStaleness(projectID);
                 }
+                break;
+            case Actions.retrieveProject:
+                projectData[action.data.data.id] = action.data.data;
+                this._updateStaleness(action.data.data.id);
+                this.emitChange();
                 break;
             case Actions.retrieveBoard:
                 boardData[action.data.data.id] = action.data.data;
-                this._updateStaleness(action.data.data.id);
                 this.emitChange();
                 break;
             case Actions.retrieveList:
@@ -79,6 +84,10 @@ class BoardStore extends BaseStore {
     isStale(id) {
         if (!staleness[id]) return true;
         return staleness[id].isStale;
+    }
+
+    getProjectData(id) {
+        return projectData[id];
     }
 
     getBoardData(id) {

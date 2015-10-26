@@ -15,7 +15,7 @@ class Task extends React.Component {
     deleteTask(e) {
         e.preventDefault();
 
-        BoardActions.deleteTask(this.props.bid, this.props.task.id);
+        BoardActions.deleteTask(this.props.pid, this.props.task.id);
     }
 
     complete(e) {
@@ -30,7 +30,7 @@ class Task extends React.Component {
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER : tasks[0].attributes.position - 1;
 
-        BoardActions.moveTask(this.props.bid, this.props.task.id, listId, position);
+        BoardActions.moveTask(this.props.pid, this.props.task.id, listId, position);
     }
 
     moveTaskLeft(e) {
@@ -45,7 +45,7 @@ class Task extends React.Component {
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
 
-        BoardActions.moveTask(this.props.bid, this.props.task.id, listId, position);
+        BoardActions.moveTask(this.props.pid, this.props.task.id, listId, position);
     }
 
     moveTaskRight(e) {
@@ -60,7 +60,7 @@ class Task extends React.Component {
         var tasks = nextList.attributes.tasks;
         var position = tasks.length === 0 ? Number.MAX_SAFE_INTEGER / 2 : tasks[0].attributes.position / 2;
 
-        BoardActions.moveTask(this.props.bid, this.props.task.id, listId, position);
+        BoardActions.moveTask(this.props.pid, this.props.task.id, listId, position);
     }
 
     render() {

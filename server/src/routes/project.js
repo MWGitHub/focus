@@ -1,15 +1,16 @@
-var BoardAPI = require('../handlers/board');
+var ProjectAPI = require('../handlers/project');
 var Joi = require('joi');
 var API = require('../lib/api');
 
 var routes = [
     {
         method: 'GET',
-        path: API.route + '/boards/{id}',
-        handler: BoardAPI.retrieve,
+        path: API.route + '/projects/{id}',
+        handler: ProjectAPI.retrieve,
         config: {
             auth: {
-                strategy: 'jwt'
+                strategy: 'jwt',
+                scope: ['admin', 'member', 'viewer']
             },
             cors: true,
             validate: {

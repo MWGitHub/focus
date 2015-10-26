@@ -171,7 +171,7 @@ class List extends React.Component {
 
         targetTask.attributes.position = targetPos;
 
-        BoardActions.moveTask(this.props.bid, targetID, this.props.list.id, targetPos);
+        BoardActions.moveTask(this.props.pid, targetID, this.props.list.id, targetPos);
     }
 
     _onWindowSizeChange() {
@@ -258,7 +258,7 @@ class List extends React.Component {
         );
         var extra = list.attributes.title === Constants.ListTitles.today;
         var taskCreateBox = (
-            <TaskCreateBox uid={this.props.uid} bid={this.props.bid} list={list} tasks={tasks} extra={extra} closeCallback={this.createDialogClosed.bind(this)} ref="createBox" />
+            <TaskCreateBox uid={this.props.uid} pid={this.props.pid} list={list} tasks={tasks} extra={extra} closeCallback={this.createDialogClosed.bind(this)} ref="createBox" />
         );
 
         var taskDescription = (
@@ -337,7 +337,7 @@ class List extends React.Component {
                     {list.attributes.tasks.length === 0 && list.attributes.title === Constants.ListTitles.today ? todayDescription : null}
                     {list.attributes.tasks.length === 0 && list.attributes.title === Constants.ListTitles.done ? doneDescription : null}
                     {tasks.map((task) => {
-                        return <Task uid={this.props.uid} bid={this.props.bid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />;
+                        return <Task uid={this.props.uid} pid={this.props.pid} lists={this.props.lists} list={list} task={task} key={task.id} disable={this.props.disable} />;
                     })}
                 </div>
                 <div className={"list-cap"}></div>

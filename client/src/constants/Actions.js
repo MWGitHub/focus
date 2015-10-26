@@ -13,6 +13,7 @@ var Actions = {
     updateUser: 'updateUser',
     ageUser: 'ageUser',
 
+    retrieveProject: 'retrieveProject',
     retrieveBoard: 'retrieveBoard',
     retrieveList: 'retrieveList',
     retrieveTask: 'retrieveTask',

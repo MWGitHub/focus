@@ -45,15 +45,6 @@ class HomeLoggedIn extends React.Component {
             )
         }
 
-        var boards = [].concat(this.state.userData.attributes.boards);
-        boards.sort(function(a, b) {
-            if (a.id < b.id) {
-                return -1;
-            } else if (a.id > b.id) {
-                return 1;
-            }
-            return 0;
-        });
         var projects = [].concat(this.state.userData.attributes.projects);
         projects.sort(function(a, b) {
             if (a.id < b.id) {
@@ -63,25 +54,16 @@ class HomeLoggedIn extends React.Component {
             }
             return 0;
         });
-        var both = boards.concat(projects);
         return (
             <div className="group">
                 <h1 className="page-title">Projects and Boards</h1>
-                {both.map(function(v) {
-                    var cls, link;
-                    if (v.type ==='boards') {
-                        cls = 'home-board';
-                        link = Routes.board;
-                    } else {
-                        cls = 'home-project';
-                        link = Routes.project;
-                    }
+                {projects.map(function(v) {
                     return (
-                            <div className={'home-card ' + cls} key={v.type + v.id}>
-                                <Router.Link to={link} params={{id: v.id}}>
-                                    <span>{v.attributes.title}</span>
-                                </Router.Link>
-                            </div>
+                        <div className={'home-card home-project'} key={v.type + v.id}>
+                            <Router.Link to={Routes.project} params={{id: v.id}}>
+                                <span>{v.attributes.title}</span>
+                            </Router.Link>
+                        </div>
                     );
                 })}
             </div>

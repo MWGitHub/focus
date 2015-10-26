@@ -6,6 +6,7 @@ import Login from './components/Login';
 import Index from './components/Index';
 import Routes from './constants/Routes';
 import Logout from './components/LogOut';
+import Project from './components/Project';
 import Board from './workflows/focus/BoardComponent';
 import Settings from './components/Settings';
 import AuthStore from './stores/AuthStore';
@@ -22,8 +23,8 @@ var routes = (
             <Route name={Routes.settings} path={Routes.settings} handler={Settings}/>
         </Route>
         <Route handler={Index.IndexMinimal}>
-            <Route name={Routes.projects} path={Routes.projects} handler={Board}/>
-            <Route name={Routes.project} path={Routes.project} handler={Board}/>
+            <Route name={Routes.projects} path={Routes.projects} handler={Project}/>
+            <Route name={Routes.project} path={Routes.project} handler={Project}/>
             <Route name={Routes.boards} path={Routes.boards} handler={Board}/>
             <Route name={Routes.board} path={Routes.board} handler={Board}/>
         </Route>

@@ -176,7 +176,7 @@ class Settings extends React.Component {
         this.listener = this.onChange.bind(this);
         UserStore.addChangeListener(this.listener);
 
-        UserActions.retrieveData(this.state.uid, true);
+        UserActions.retrieveData(this.state.uid, false);
     }
 
     onChange() {

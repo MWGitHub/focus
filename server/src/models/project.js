@@ -3,6 +3,7 @@ var co = require('co');
 var User = require('./user');
 var Board = require('./board');
 var Permission = require('../auth/permission-model');
+var _ = require('lodash');
 
 var Project = Bookshelf.Model.extend({
     tableName: 'projects',
@@ -13,7 +14,7 @@ var Project = Bookshelf.Model.extend({
     },
 
     boards: function() {
-        this.hasMany(Board);
+        return this.hasMany(Board);
     },
 
     permissions: function() {
@@ -77,6 +78,8 @@ var Project = Bookshelf.Model.extend({
                 }
                 return data;
             }
+        }, function(e) {
+            console.log(e);
         });
     }
 }, {

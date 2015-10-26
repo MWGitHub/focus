@@ -123,10 +123,10 @@ class BoardView extends React.Component {
         return (
             <div>
                 <div className="board" ref="board">
-                    <List name="tasks" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={tasks} key={tasks.id} disable={ListDisableOptions.tasks} />
-                    <List name="tomorrow" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={tomorrow} key={tomorrow.id} disable={ListDisableOptions.tomorrow} />
-                    <List name="today" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={today} key={today.id} disable={ListDisableOptions.today} />
-                    <List name="done" uid={this.props.uid} bid={this.props.board.id} lists={lists} list={done} key={done.id} disable={ListDisableOptions.done} />
+                    <List name="tasks" uid={this.props.uid} pid={this.props.pid} lists={lists} list={tasks} key={tasks.id} disable={ListDisableOptions.tasks} />
+                    <List name="tomorrow" uid={this.props.uid} pid={this.props.pid} lists={lists} list={tomorrow} key={tomorrow.id} disable={ListDisableOptions.tomorrow} />
+                    <List name="today" uid={this.props.uid} pid={this.props.pid} lists={lists} list={today} key={today.id} disable={ListDisableOptions.today} />
+                    <List name="done" uid={this.props.uid} pid={this.props.pid} lists={lists} list={done} key={done.id} disable={ListDisableOptions.done} />
                 </div>
             </div>
         )
@@ -140,11 +140,8 @@ class Board extends React.Component {
     constructor(props) {
         super(props);
 
-        var boardId = this.props.params.id;
         this.state = {
-            board: BoardStore.getBoardData(boardId),
-            uid: AuthStore.getID(),
-            isStale: false
+            uid: AuthStore.getID()
         };
 
         this.isRefreshing = false;
@@ -156,12 +153,13 @@ class Board extends React.Component {
         if (!this.isRefreshing) return;
 
         var self = this;
+        var boardID = this.props.params ? this.props.params.id : this.props.bid;
         window.setTimeout(function() {
             if (!Dispatcher.isDispatching()) {
                 if (self.state.isStale && self.state.data) {
-                    BoardActions.retrieveBoard(this.props.params.id, true);
+                    BoardActions.retrieveBoard(boardID, true);
                 } else {
-                    BoardActions.checkStaleness(self.state.board.id);
+                    BoardActions.checkStaleness(boardID);
                 }
             }
             window.requestAnimationFrame(self.onFrame);
@@ -173,11 +171,9 @@ class Board extends React.Component {
         UserStore.addChangeListener(this.listener);
         BoardStore.addChangeListener(this.listener);
 
-        BoardActions.retrieveBoard(this.props.params.id, true);
-
         this.isRefreshing = true;
 
-        window.requestAnimationFrame(this.onFrame);
+        //window.requestAnimationFrame(this.onFrame);
     }
 
     componentWillUnmount() {
@@ -188,24 +184,14 @@ class Board extends React.Component {
     }
 
     onChange() {
-        var board = BoardStore.getBoardData(this.props.params.id);
         this.setState({
-            board: board,
-            uid: AuthStore.getID(),
-            isStale: BoardStore.isStale(this.props.params.id)
+            uid: AuthStore.getID()
         });
     }
 
     render() {
-        if (!this.state.board) {
-            return (
-                <div>
-                    <h2>Loading...</h2>
-                </div>
-            );
-        }
         return (
-            <BoardView uid={this.state.uid} board={this.state.board} />
+            <BoardView pid={this.props.pid} uid={this.state.uid} board={this.props.board} />
         );
     }
 }

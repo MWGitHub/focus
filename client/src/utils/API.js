@@ -34,8 +34,8 @@ var API = {
         ageUser: baseURL + '/users/age',
         updateUser: baseURL + '/users/{id}/update',
 
+        projectRetrieve: baseURL + '/projects/{id}',
         boardRetrieve: baseURL + '/boards/{id}',
-
         listRetrieve: baseURL + '/lists/{id}',
 
         taskCreate: baseURL + '/tasks',

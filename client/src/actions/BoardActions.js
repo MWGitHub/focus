@@ -28,7 +28,7 @@ var BoardActions = {
         )
     },
 
-    createTask: function(bid, list, title, position, extra) {
+    createTask: function(pid, list, title, position, extra) {
         Dispatcher.dispatch({
             actionType: Actions.createTask,
             state: Actions.State.loading
@@ -49,7 +49,7 @@ var BoardActions = {
                     list: list,
                     title: title
                 });
-                this.retrieveBoard(bid, true);
+                this.retrieveProject(pid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -60,7 +60,7 @@ var BoardActions = {
         )
     },
 
-    deleteTask: function(bid, id) {
+    deleteTask: function(pid, id) {
         Dispatcher.dispatch({
             actionType: Actions.deleteTask,
             state: Actions.State.loading
@@ -72,7 +72,7 @@ var BoardActions = {
                     state: Actions.State.complete,
                     id: id
                 });
-                this.retrieveBoard(bid, true);
+                this.retrieveProject(pid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -83,7 +83,7 @@ var BoardActions = {
         )
     },
 
-    moveTask: function(bid, id, list, position) {
+    moveTask: function(pid, id, list, position) {
         Dispatcher.dispatch({
             actionType: Actions.moveTask,
             state: Actions.State.loading
@@ -100,7 +100,7 @@ var BoardActions = {
                     id: id,
                     position: position
                 });
-                this.retrieveBoard(bid, true);
+                this.retrieveProject(pid, true);
             },
             (error) => {
                 Dispatcher.dispatch({
@@ -128,6 +128,31 @@ var BoardActions = {
             (error) => {
                 Dispatcher.dispatch({
                     actionType: Actions.checkStaleness,
+                    state: Actions.State.failed
+                })
+            });
+    },
+
+    retrieveProject: function(id, isDeep) {
+        Dispatcher.dispatch({
+            actionType: Actions.retrieveProject,
+            state: Actions.State.loading
+        });
+        var data = {};
+        if (isDeep) {
+            data.isDeep = isDeep;
+        }
+        API.retrieveAuthDataFrom(API.parseRoute(API.routes.projectRetrieve, {id: id}), data,
+            (resp) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveProject,
+                    state: Actions.State.complete,
+                    data: resp
+                });
+            },
+            (error) => {
+                Dispatcher.dispatch({
+                    actionType: Actions.retrieveProject,
                     state: Actions.State.failed
                 })
             });
