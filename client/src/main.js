@@ -1,3 +1,5 @@
+import Imports from './imports';
+
 import React from 'react';
 import Router from 'react-router';
 import RouterUtil from './utils/RouterUtil';

@@ -6,6 +6,7 @@ import RouterUtil from '../utils/RouterUtil';
 import LoginActions from '../actions/LoginActions';
 import Validation from '../utils/Validation';
 import jstz from '../../vendor/js/jstz';
+import MDL from '../utils/MDL';
 
 class RegisterForm extends React.Component {
     constructor(props) {
@@ -78,6 +79,9 @@ class RegisterForm extends React.Component {
         for (var i = 0; i < inputs.length; i++) {
             inputs[i].addEventListener('change', this.onInputChange);
         }
+
+        MDL.upgradeDOM();
+        MDL.activateWaves('button', 'waves-block');
     }
 
     componentWillUnmount() {
@@ -124,6 +128,35 @@ class RegisterForm extends React.Component {
 
         "use strict";
         return (
+            <div className="signup-container">
+                <div className="container">
+                    <h1 id="signup-title">Sign Up</h1>
+                    { this.state.showGenericError ? <p className="error">An error has occurred, registration failed.</p> : null }
+                </div>
+                <div className="container">
+                    <a id="alt-signfb" className="button waves-button waves-light" href="#">Facebook</a>
+                    <a id="alt-signg" className="button waves-button waves-light" href="#">Google</a>
+                </div>
+                <form className="form" onSubmit={this.handleSubmit.bind(this)}>
+                    <div className={'mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-item' + (usernameMessage ? ' error' : '')}>
+                        <input id="register-username" className="mdl-textfield__input" type="text" ref="username" autofocus required />
+                        <label htmlFor="register-username" className="mdl-textfield__label custom-color">Username</label>
+                        <span className="mdl-textfield__error">{usernameMessage}</span>
+                    </div>
+                    <div className={'mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-item' + (passwordMessage ? ' error' : '')}>
+                        <input id="register-password" className='mdl-textfield__input' type="password" ref="password" required />
+                        <label className='mdl-textfield__label' htmlFor="register-password">Password</label>
+                        <span className="mdl-textfield__error">{passwordMessage}</span>
+                    </div>
+                    <div className={'mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-item' + (passwordCheckMessage ? ' error' : '')}>
+                        <input id="register-password-check" className='mdl-textfield__input' type="password" ref="passwordcheck" required />
+                        <label className='mdl-textfield__label' htmlFor="register-password-check">Password again</label>
+                        <span className="mdl-textfield__error">{passwordCheckMessage}</span>
+                    </div>
+                    <input className='button waves-button waves-light' type="submit" value="Create Account" />
+                </form>
+            </div>
+            /*
             <div>
                 { this.state.showGenericError ? <p className="error">An error has occurred, registration failed.</p> : null }
                 <form className="form" onSubmit={this.handleSubmit.bind(this)}>
@@ -144,6 +177,7 @@ class RegisterForm extends React.Component {
                     <input type="submit" value="Submit" />
                 </form>
             </div>
+            */
         )
     }
 }
@@ -183,10 +217,7 @@ class RegisterBox extends React.Component {
         "use strict";
 
         return (
-            <div className="form-page">
-                <h2>Create an Account</h2>
-                <RegisterForm />
-            </div>
+            <RegisterForm />
         )
     }
 }

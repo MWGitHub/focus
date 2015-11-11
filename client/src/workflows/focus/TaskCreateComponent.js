@@ -78,7 +78,9 @@ class TaskCreateBox extends React.Component {
 }
 
 TaskCreateBox.propTypes = {
-
+    pid: React.PropTypes.number.isRequired,
+    list: React.PropTypes.object.isRequired,
+    tasks: React.PropTypes.array.isRequired
 };
 
 export default TaskCreateBox;
