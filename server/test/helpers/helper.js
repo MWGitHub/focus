@@ -1,7 +1,7 @@
-var User = require('../src/models/user');
-var API = require('../src/lib/api');
-var Auth = require('../src/auth/auth');
-var Server = require('../src/server');
+var User = require('../../src/models/user');
+var API = require('../../src/lib/api');
+var Auth = require('../../src/auth/auth');
+var Server = require('../../src/server');
 
 module.exports = {
     apiRoute: '/api/v1',

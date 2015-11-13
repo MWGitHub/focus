@@ -9,7 +9,7 @@ var Project = Bookshelf.Model.extend({
     tableName: 'projects',
     hasTimestamps: ['created_at', 'updated_at'],
 
-    user: function() {
+    owner: function() {
         this.belongsTo(User);
     },
 
@@ -18,7 +18,7 @@ var Project = Bookshelf.Model.extend({
     },
 
     permissions: function() {
-        return this.hasMany(Permission);
+        return this.hasMany(Permission.ProjectPermission);
     },
 
     /**
@@ -57,7 +57,7 @@ var Project = Bookshelf.Model.extend({
                     id: instance.get('id'),
                     attributes: {
                         title: instance.get('title'),
-                        user_id: instance.get('user_id'),
+                        owner: instance.get('owner'),
                         boards: bids
                     }
                 };
@@ -67,7 +67,7 @@ var Project = Bookshelf.Model.extend({
                     id: instance.get('id'),
                     attributes: {
                         title: instance.get('title'),
-                        user_id: instance.get('user_id'),
+                        owner: instance.get('owner'),
                         boards: []
                     }
                 };
@@ -85,8 +85,8 @@ var Project = Bookshelf.Model.extend({
 }, {
     schema: {
         id: {type: 'increments', notNullable: true, primary: true},
+        owner: {type: 'integer', notNullable: true, reference: 'user'},
         title: {type: 'string', length: 150, notNullable: true},
-        user_id: {type: 'integer', notNullable: true},
         is_public: {type: 'boolean', notNullable: true}
     }
 });
