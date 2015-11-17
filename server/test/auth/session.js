@@ -1,4 +1,4 @@
-var Session = require('../src/auth/session');
+var Session = require('../../src/auth/session');
 
 var Lab = require('lab');
 var lab = exports.lab = Lab.script();
@@ -10,7 +10,7 @@ var assert = require('chai').assert;
 var Hapi = require('hapi');
 var redis = require('redis');
 
-var RedisClient = require('../src/lib/redis-client');
+var RedisClient = require('../../src/lib/redis-client');
 
 describe('session registration', function() {
     var validRedis = {

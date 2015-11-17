@@ -1,6 +1,5 @@
 var Bookshelf = require('../lib/bookshelf');
 var co = require('co');
-var User = require('./user');
 var Board = require('./board');
 var Permission = require('../auth/permission-model');
 var _ = require('lodash');
@@ -8,10 +7,6 @@ var _ = require('lodash');
 var Project = Bookshelf.Model.extend({
     tableName: 'projects',
     hasTimestamps: ['created_at', 'updated_at'],
-
-    owner: function() {
-        this.belongsTo(User);
-    },
 
     boards: function() {
         return this.hasMany(Board);
@@ -85,7 +80,6 @@ var Project = Bookshelf.Model.extend({
 }, {
     schema: {
         id: {type: 'increments', notNullable: true, primary: true},
-        owner: {type: 'integer', notNullable: true, reference: 'user'},
         title: {type: 'string', length: 150, notNullable: true},
         is_public: {type: 'boolean', notNullable: true}
     }

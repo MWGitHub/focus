@@ -1,8 +1,5 @@
 var Bookshelf = require('../lib/bookshelf');
 var Project = require('./project');
-var Board = require('./board');
-var List = require('./list');
-var Task = require('./task');
 var co = require('co');
 var _ = require('lodash');
 
@@ -10,23 +7,12 @@ var User = Bookshelf.Model.extend({
     tableName: 'users',
     hasTimestamps: ['created_at', 'updated_at'],
 
+    initialize: function() {
+        this.on('destroying', this.destroyDeep, this);
+    },
+
     projects: function() {
         return this.hasMany(Project, 'user_id');
-    },
-
-    boards: function() {
-        "use strict";
-        return this.hasMany(Board, 'user_id');
-    },
-
-    tasks: function() {
-        "use strict";
-        return this.hasMany(Task, 'user_id');
-    },
-
-    lists: function() {
-        "use strict";
-        return this.hasMany(List, 'user_id');
     },
 
     /**

@@ -28,6 +28,7 @@ var redisClient = {
             }
         });
 
+        // Allow other plugins and logic to retrieve the client
         server.expose('client', client);
     }
 };
