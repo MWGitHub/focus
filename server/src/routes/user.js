@@ -13,7 +13,8 @@ var routes = [
                 payload: {
                     username: Joi.string().min(3).max(20).token().required(),
                     password: Joi.string().min(6).max(100).required(),
-                    timezone: Joi.string().valid(moment.tz.names())
+                    timezone: Joi.string().valid(moment.tz.names()),
+                    email: Joi.string().email()
                 }
             },
             cors: true
@@ -83,27 +84,14 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/users/age',
-        handler: UserAPI.age,
-        config: {
-            validate: {
-                payload: {
-                    force: Joi.boolean()
-                }
-            },
-            auth: 'jwt',
-            cors: true
-        }
-    },
-    {
-        method: 'POST',
         path: API.route + '/users/{id}/update',
         handler: UserAPI.update,
         config: {
             validate: {
                 payload: {
                     password: Joi.string().min(6).max(100),
-                    timezone: Joi.string().valid(moment.tz.names())
+                    timezone: Joi.string().valid(moment.tz.names()),
+                    email: Joi.string().email()
                 }
             },
             auth: 'jwt',

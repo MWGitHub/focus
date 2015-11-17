@@ -216,15 +216,22 @@ UserHandler.age = function(request, reply) {
 UserHandler.update = function(request, reply) {
     var password = request.payload['password'];
     var timezone = request.payload['timezone'];
+    var email = request.payload['email'];
     var options = {};
-    if (timezone) {
-        options.timezone = timezone;
-    }
 
     var user;
     User.forge({id: request.auth.credentials.id}).fetch({require: true})
-    .then(function(result) {
+        .then(function(result) {
             user = result;
+            // Check if parameters changed
+            if (timezone && user.get('timezone') !== timezone) {
+                options.timezone = timezone;
+            }
+            if (email && user.get('email') !== email) {
+                options.email = email;
+                options.verified = false;
+            }
+
             // Hash the password if changed
             if (password) {
                 return Auth.hash(password);

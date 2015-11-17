@@ -1,5 +1,6 @@
 var Bookshelf = require('../lib/bookshelf');
 var Project = require('./project');
+var Permission = require('../auth/permission-model');
 var co = require('co');
 var _ = require('lodash');
 
@@ -8,25 +9,37 @@ var User = Bookshelf.Model.extend({
     hasTimestamps: ['created_at', 'updated_at'],
 
     initialize: function() {
-        this.on('destroying', this.destroyDeep, this);
+        this.on('destroying', this._destroyDeep, this);
     },
 
     projects: function() {
         return this.hasMany(Project, 'user_id');
     },
 
+    permissions: function() {
+        return this.hasMany(Permission.ProjectPermission, 'user_id');
+    },
+
     /**
-     * Destroys all related objects before destroying itself.
-     * @return {Promise} the promise for destroying.
+     * Destroys all related objects
+     * @param model
+     * @param attrs
+     * @param options
+     * @returns {*|Promise}
+     * @private
      */
-    destroyDeep: function() {
+    _destroyDeep: function(model, attrs, options) {
         "use strict";
 
         var instance = this;
 
         return co(function* () {
-            var projects = yield Project.where({user_id: instance.get('id')}).fetchAll();
-            yield projects.invokeThen('destroyDeep');
+            // Destroy all permissions
+            var permissions = yield instance.permissions().fetch();
+            yield permissions.invokeThen('destroy');
+            // Destroy all projects owned by the user
+            var projects = yield instance.projects().fetch();
+            yield projects.invokeThen('destroy');
             return yield instance.destroy();
         });
     },
@@ -87,8 +100,10 @@ var User = Bookshelf.Model.extend({
         password: {type: 'string', length: 60, notNullable: true},
         // Time zone is used to determine when midnight is for the user
         timezone: {type: 'string', length: 150, notNullable: true},
-        // format 'YYYY-MM-DD HH:mm:ss.SSSZZ'
-        lastupdate: {type: 'datetime'}
+        // Optional e-mail for the user
+        email: {type: 'string'},
+        // True if the e-mail has been verified
+        verified: {type: 'boolean'}
     }
 });
 

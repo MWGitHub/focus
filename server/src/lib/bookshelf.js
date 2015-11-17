@@ -10,6 +10,9 @@ if (environment && environment === 'production') {
 } else if (environment && environment === 'staging') {
     console.log('Running the database in staging mode');
     config = Knexfile.staging;
+} else if (environment && environment === 'test') {
+    console.log('Running the database in test mode');
+    config = Knexfile.test;
 } else {
     console.log('Running the database in development mode');
     config = Knexfile.development;

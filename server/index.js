@@ -1,3 +1,5 @@
 var Server = require('./src/server');
+var Config = require('./config.json');
 
-Server.start().then();
+var server = new Server(Config);
+server.start().then();

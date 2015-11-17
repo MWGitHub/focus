@@ -1,9 +1,10 @@
+"use strict";
+
 var Hapi = require('hapi');
 var Good = require('good');
 var Boom = require('boom');
 var co = require('co');
 var RedisClient = require('./lib/redis-client');
-var Config = require('../config.json');
 var Routes = require('./routes/routes');
 
 var Auth = require('./auth/auth');
@@ -14,23 +15,35 @@ var Stale = require('./lib/stale');
 // Connect to the database
 var bookshelf = require('./lib/bookshelf');
 
-var Server = {
+class Server {
     /**
-     * The server instance.
+     * Creates the server.
+     * @param config the configuration file to use for the server.
      */
-    server: null,
+    constructor(config) {
+        /**
+         * The server instance.
+         */
+        this._server = null;
 
-    /**
-     * Flag for if the server is running.
-     */
-    isRunning: false,
+        /**
+         * Flag for if the server is running.
+         */
+        this._isRunning = false;
+
+        /**
+         * Configuration file to use for the server.
+         */
+        this._config = config;
+    }
 
     /**
      * Initializes the server.
      * @returns {*|Promise}
      */
-    initialize: function() {
+    initialize() {
         var instance = this;
+        var config = this._config;
         return co(function* () {
             // Set the server options
             var options = {
@@ -65,7 +78,7 @@ var Server = {
                 {
                     register: Auth,
                     options: {
-                        key: Config.authkey
+                        key: config.authkey
                     }
                 },
                 {
@@ -78,7 +91,7 @@ var Server = {
                             plugin: 'redis-client',
                             key: 'client'
                         },
-                        key: Config.authkey
+                        key: config.authkey
                     }
                 },
                 {
@@ -94,11 +107,11 @@ var Server = {
 
             // Create the server
             console.log('Creating server...');
-            instance.server = new Hapi.Server(options);
-            var server = instance.server;
+            instance._server = new Hapi.Server(options);
+            var server = instance._server;
             server.connection({
-                host: Config.host,
-                port: Config.port
+                host: config.host,
+                port: config.port
             });
 
             // Register plugins
@@ -143,35 +156,38 @@ var Server = {
         }, function(err) {
             throw err;
         });
-    },
+    }
 
     /**
      * Start the server.
      * @returns {*|Promise}
      */
-    start: function() {
+    start() {
         var instance = this;
         return this.initialize().then(function(server) {
             // Only allow one instance of the server to be running.
-            if (instance.isRunning) return instance.server;
+            if (instance._isRunning) return instance._server;
 
             return new Promise(function(resolve, reject) {
                 server.start(function(err) {
-                    "use strict";
                     if (err) {
                         reject(err);
                     } else {
-                        instance.isRunning = true;
+                        instance._isRunning = true;
                         server.log('info', 'Started running at: ' + server.info.uri);
                         resolve(server);
                     }
                 });
             });
         });
-    },
+    }
 
-    stop: function() {
-        if (!this.server) return Promise.resolve(true);
+    /**
+     * Stop the server.
+     * @returns {*|Promise}
+     */
+    stop() {
+        if (!this._server) return Promise.resolve(true);
 
         var instance = this;
         return new Promise(function(resolve, reject) {
@@ -179,13 +195,22 @@ var Server = {
                 if (err) {
                     reject(err);
                 } else {
-                    instance.isRunning = false;
+                    instance._server = null;
+                    instance._isRunning = false;
                     console.log('Server stopped');
                     resolve();
                 }
             });
         });
     }
-};
+
+    get server() {
+        return this._server;
+    }
+
+    get isRunning() {
+        return this._isRunning;
+    }
+}
 
 module.exports = Server;
