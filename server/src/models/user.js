@@ -79,12 +79,16 @@ var User = Bookshelf.Model.extend({
     },
 
     /**
-     *
+     * Find a user by username or email.
      * @param {string?} username the username to search, omits username if none given.
-     * @param {string?} email the verified email to search, omits email if none given.
+     * @param {string?} email the email to search, omits email if none given.
      * @returns {Promise} promise with the user if found or null if none found.
      */
     findUser: function(username, email) {
+        if (!username && !email) {
+            return null;
+        }
+
         var knex = Bookshelf.knex;
         var query = '';
         var params = [];
@@ -93,15 +97,10 @@ var User = Bookshelf.Model.extend({
             params.push(username);
         }
         if (email) {
-            var needsClose = false;
             if (query) {
-                query += ' or (';
-                needsClose = true;
+                query += ' or ';
             }
-            query += 'email = ? and verified = true';
-            if (needsClose) {
-                query += ')';
-            }
+            query += 'email = ?';
             params.push(email);
         }
         return knex.select('*').from('users').whereRaw(query, params).limit(1).then(function(users) {

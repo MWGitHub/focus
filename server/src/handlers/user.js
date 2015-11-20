@@ -30,7 +30,6 @@ UserHandler.register = function(request, reply) {
     User.findUser(username, email)
         .then(function(user) {
             if (user) {
-                console.log(user);
                 throw(Boom.wrap(new Error(), UserHandler.StatusCodes.NameTaken, "Username or email already taken"));
             }
         })
@@ -56,7 +55,6 @@ UserHandler.register = function(request, reply) {
             reply(API.makeData(data));
         })
         .catch(function(e) {
-            console.log(e);
             reply(Boom.wrap(e, 400));
         });
 };
