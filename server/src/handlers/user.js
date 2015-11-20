@@ -24,35 +24,39 @@ UserHandler.register = function(request, reply) {
     var username = request.payload['username'].toLowerCase();
     var password = request.payload['password'];
     var timezone = request.payload['timezone'] || API.defaultTimeZone;
+    var email = request.payload['email'];
 
-    // Check to make sure the username does not already exist
-    User.forge({username: username}).fetch()
+    // Check to make sure the username or verified email does not already exist
+    User.findUser(username, email)
         .then(function(user) {
-            if (user) throw new Error();
-        })
-        .catch(function(e) {
-            throw(Boom.wrap(e, UserHandler.StatusCodes.NameTaken, "Username already taken"));
+            if (user) {
+                console.log(user);
+                throw(Boom.wrap(new Error(), UserHandler.StatusCodes.NameTaken, "Username or email already taken"));
+            }
         })
         .then(function() {
             return Auth.hash(password);
         })
         .then(function(hash) {
-            return User.forge({
+            var data = {
                 username: username,
                 password: hash,
                 timezone: timezone
-            }).save()
+            };
+            if (email) {
+                data.email = email;
+            }
+
+            return User.forge(data).save()
         })
         .then(function(user) {
-            return API.populateUser(user);
-        })
-        .then(function(user) {
-            return user.retrieveAsData(false);
+            return user.retrieve(false);
         })
         .then(function(data) {
             reply(API.makeData(data));
         })
         .catch(function(e) {
+            console.log(e);
             reply(Boom.wrap(e, 400));
         });
 };

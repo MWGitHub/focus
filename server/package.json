@@ -4,7 +4,7 @@
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/lab -c",
+    "test": "NODE_ENV=test node_modules/.bin/mocha",
     "test-travis": "node_modules/.bin/lab -c -r lcov -o lcov.info"
   },
   "author": "MW",
@@ -36,6 +36,7 @@
   "devDependencies": {
     "chai": "*",
     "codeclimate-test-reporter": "^0.1.1",
-    "lab": "*"
+    "lab": "*",
+    "mocha": "^2.3.4"
   }
 }

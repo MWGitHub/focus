@@ -1,5 +1,4 @@
 var Bookshelf = require('../lib/bookshelf');
-var Project = require('./project');
 var Permission = require('../auth/permission-model');
 var co = require('co');
 var _ = require('lodash');
@@ -10,10 +9,6 @@ var User = Bookshelf.Model.extend({
 
     initialize: function() {
         this.on('destroying', this._destroyDeep, this);
-    },
-
-    projects: function() {
-        return this.hasMany(Project, 'user_id');
     },
 
     permissions: function() {
@@ -37,60 +32,37 @@ var User = Bookshelf.Model.extend({
             // Destroy all permissions
             var permissions = yield instance.permissions().fetch();
             yield permissions.invokeThen('destroy');
-            // Destroy all projects owned by the user
-            var projects = yield instance.projects().fetch();
-            yield projects.invokeThen('destroy');
-            return yield instance.destroy();
         });
     },
 
     /**
      * Retrieves the data of the board.
-     * @param {Boolean?} isDeep true to retrieve all children data else retrieve up to children properties.
+     * @param {Boolean?} isDeep true to retrieve all children data else retrieve keys to the children.
+     * @param {Array.<String>?} columns the columns to retrieve or all if none specified.
      * @return {Promise} the promise with the data.
      */
-    retrieveAsData: function(isDeep) {
+    retrieve: function(isDeep, columns) {
         "use strict";
 
         var instance = this;
         return co(function* () {
-            var projects = yield instance.projects().fetch();
-            if (!isDeep) {
-                var pids = _.map(projects.models, function(n) {
-                    return {
-                        id: n.id,
-                        type: 'projects',
-                        attributes: {
-                            title: n.attributes.title
-                        }
-                    };
-                });
-                return {
-                    type: 'users',
-                    id: instance.get('id'),
-                    attributes: {
-                        username: instance.get('username'),
-                        timezone: instance.get('timezone'),
-                        projects: pids
-                    }
-                };
+            var output = {
+                type: 'users',
+                id: instance.get('id'),
+                attributes: {}
+            };
+            if (!columns) {
+                output.attributes.username = instance.get('username');
+                output.attributes.timezone = instance.get('timezone');
+                output.attributes.email = instance.get('email');
+                output.attributes.verified = instance.get('verified');
             } else {
-                var data = {
-                    type: 'users',
-                    id: instance.get('id'),
-                    attributes: {
-                        username: instance.get('username'),
-                        timezone: instance.get('timezone'),
-                        projects: []
-                    }
-                };
-                for (var i = 0; i < projects.length; i++) {
-                    var project = projects.models[i];
-                    var projectData = yield project.retrieveAsData(isDeep);
-                    data.attributes.projects.push(projectData);
+                for (var i = 0; i < columns.length; i++) {
+                    var column = columns[i];
+                    output.attributes[column] = instance.get(column);
                 }
-                return data;
             }
+            return output;
         });
     }
 }, {
@@ -104,6 +76,37 @@ var User = Bookshelf.Model.extend({
         email: {type: 'string'},
         // True if the e-mail has been verified
         verified: {type: 'boolean'}
+    },
+
+    /**
+     *
+     * @param {string?} username the username to search, omits username if none given.
+     * @param {string?} email the verified email to search, omits email if none given.
+     * @returns {Promise} promise with the user if found or null if none found.
+     */
+    findUser: function(username, email) {
+        var knex = Bookshelf.knex;
+        var query = '';
+        var params = [];
+        if (username) {
+            query += 'username = ?';
+            params.push(username);
+        }
+        if (email) {
+            var needsClose = false;
+            if (query) {
+                query += ' or (';
+                needsClose = true;
+            }
+            query += 'email = ? and verified = true';
+            if (needsClose) {
+                query += ')';
+            }
+            params.push(email);
+        }
+        return knex.select('*').from('users').whereRaw(query, params).limit(1).then(function(users) {
+            return users[0];
+        });
     }
 });
 
