@@ -1,12 +1,13 @@
-"use strict"
+"use strict";
 
-var Bookshelf = require('../../src/lib/bookshelf');
+var Database = require('../../src/lib/database');
 var User = require('../../src/models/user');
 var API = require('../../src/lib/api');
 var Auth = require('../../src/auth/auth');
 var Server = require('../../src/server');
 var co = require('co');
 var Config = require('../../config.json');
+var Knexfile = require('../../knexfile');
 
 /**
  * Helper instance that holds server state until after is run.
@@ -17,19 +18,18 @@ class Helper {
         this.server = null;
     }
 
-
     /**
      * Sets up the server.
      * @returns {*|Promise}
      */
     startup() {
-        this.server = new Server(Config);
+        this.server = new Server(Config, Knexfile);
         var instance = this;
         return co(function* () {
             process.env.NODE_ENV = 'test';
 
-            yield Bookshelf.knex.migrate.latest();
-            yield Bookshelf.knex.seed.run();
+            yield Database.knex.migrate.latest();
+            yield Database.knex.seed.run();
 
             yield instance.server.initialize();
             return instance.server;
@@ -44,12 +44,12 @@ class Helper {
         var instance = this;
         return co(function* () {
             // Delete all data
-            yield Bookshelf.knex('project_permissions').del();
-            yield Bookshelf.knex('tasks').del();
-            yield Bookshelf.knex('lists').del();
-            yield Bookshelf.knex('boards').del();
-            yield Bookshelf.knex('projects').del();
-            yield Bookshelf.knex('users').del();
+            yield Database.knex('project_permissions').del();
+            yield Database.knex('tasks').del();
+            yield Database.knex('lists').del();
+            yield Database.knex('boards').del();
+            yield Database.knex('projects').del();
+            yield Database.knex('users').del();
 
             if (instance.server) {
                 yield instance.server.stop();

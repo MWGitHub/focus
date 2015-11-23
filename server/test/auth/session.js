@@ -1,11 +1,4 @@
 var Session = require('../../src/auth/session');
-
-var Lab = require('lab');
-var lab = exports.lab = Lab.script();
-var describe = lab.describe;
-var it = lab.it;
-var before = lab.before;
-var after = lab.after;
 var assert = require('chai').assert;
 var Hapi = require('hapi');
 var redis = require('redis');

@@ -1,7 +1,7 @@
 /**
  * Represents a task.
  */
-var Bookshelf = require('../lib/bookshelf');
+var Bookshelf = require('../lib/database').bookshelf;
 var List = require('./list');
 
 var Task = Bookshelf.Model.extend({

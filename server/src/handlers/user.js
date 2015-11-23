@@ -9,8 +9,27 @@ var co = require('co');
 
 var UserHandler = {};
 
+/**
+ * Status codes for responses.
+ * @type {{NameTaken: number}}
+ */
 UserHandler.StatusCodes = {
     NameTaken: 440
+};
+
+/**
+ * Columns to retrieve.
+ * @type {{owner: *[], guest: *[]}}
+ */
+var retrievals = {
+    owner: [
+        {name: 'username'},
+        {name: 'timezone'},
+        {name: 'email'}
+    ],
+    guest: [
+        {name: 'username'}
+    ]
 };
 
 /**
@@ -21,10 +40,13 @@ UserHandler.StatusCodes = {
 UserHandler.register = function(request, reply) {
     "use strict";
 
-    var username = request.payload['username'].toLowerCase();
+    var username = request.payload['username'];
     var password = request.payload['password'];
     var timezone = request.payload['timezone'] || API.defaultTimeZone;
     var email = request.payload['email'];
+    if (email) {
+        email = email.toLowerCase();
+    }
 
     // Check to make sure the username or verified email does not already exist
     User.findUser(username, email)
@@ -49,7 +71,7 @@ UserHandler.register = function(request, reply) {
             return User.forge(data).save()
         })
         .then(function(user) {
-            return user.retrieve(false);
+            return user.retrieve(retrievals.owner);
         })
         .then(function(data) {
             reply(API.makeData(data));
@@ -67,25 +89,29 @@ UserHandler.register = function(request, reply) {
 UserHandler.login = function(request, reply) {
     "use strict";
 
-    var username = request.payload['username'].toLowerCase();
+    var login = request.payload['login'].toLowerCase();
     var password = request.payload['password'];
 
     // Check to make sure the username exists
-    User.forge({username: username}).fetch({require: true})
+    User.findUser(login, login)
         .then(function (user) {
+            if (!user) {
+                throw Boom.unauthorized();
+            }
             Bcrypt.compare(password, user.get('password'), function (err, isValid) {
                 if (err) {
                     reply(Boom.badImplementation());
                 } else if (isValid) {
                     var token = Session.generateToken(user.get('id'));
                     Session.login(token).then(function() {
-                        return user.retrieveAsData(false);
+                        return user.retrieve(retrievals.owner);
                     })
                     .then(function(data) {
                         data.token = token;
                         reply(API.makeData(data));
                     })
                     .catch(function (err) {
+                        console.log(err);
                         reply(Boom.unauthorized());
                     });
                 } else {
@@ -106,6 +132,7 @@ UserHandler.login = function(request, reply) {
 UserHandler.logout = function(request, reply) {
     "use strict";
 
+    console.log(request.auth);
     if (request.auth.isAuthenticated) {
         if (request.auth.strategy === 'simple') {
             reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);

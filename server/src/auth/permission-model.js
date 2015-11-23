@@ -1,7 +1,7 @@
 /**
  * Permission models for models that require them.
  */
-var Bookshelf = require('../lib/bookshelf');
+var Bookshelf = require('../lib/database').bookshelf;
 var User = require('../models/user');
 var Project = require('../models/project');
 var Board = require('../models/board');

@@ -1,4 +1,4 @@
-var Bookshelf = require('../lib/bookshelf');
+var Bookshelf = require('../lib/database').bookshelf;
 var co = require('co');
 var Board = require('./board');
 var Permission = require('../auth/permission-model');

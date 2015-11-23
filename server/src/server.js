@@ -11,9 +11,8 @@ var Auth = require('./auth/auth');
 var Permission = require('./auth/permission');
 var Session = require('./auth/session');
 var Stale = require('./lib/stale');
-
-// Connect to the database
-var bookshelf = require('./lib/bookshelf');
+var logger = require('./lib/logger');
+var database = require('./lib/database');
 
 class Server {
     /**
@@ -58,18 +57,6 @@ class Server {
             // Set the server plugins
             var plugins = [
                 {
-                    register: Good,
-                    options: {
-                        reporters: [{
-                            reporter: require('good-console'),
-                            events: {
-                                response: '*',
-                                log: '*'
-                            }
-                        }]
-                    }
-                },
-                {
                     register: RedisClient,
                     options: {
                         db: 0
@@ -104,9 +91,23 @@ class Server {
                     }
                 }
             ];
+            if (config.logLevel == 'debug') {
+                plugins.unshift({
+                    register: Good,
+                    options: {
+                        reporters: [{
+                            reporter: require('good-console'),
+                            events: {
+                                response: '*',
+                                log: '*'
+                            }
+                        }]
+                    }
+                });
+            }
 
             // Create the server
-            console.log('Creating server...');
+            logger.info('Creating server...');
             instance._server = new Hapi.Server(options);
             var server = instance._server;
             server.connection({
@@ -117,7 +118,6 @@ class Server {
             // Register plugins
             yield new Promise(function(resolve, reject) {
                 server.register(plugins, function(err) {
-                    "use strict";
                     if (err) {
                         reject(err);
                     } else {
@@ -142,11 +142,10 @@ class Server {
             yield new Promise(function(resolve, reject) {
                 // Start the server
                 server.initialize(function(err) {
-                    "use strict";
                     if (err) {
                         reject(err);
                     } else {
-                        server.log('info', 'Server initialized');
+                        logger.info('Server initialized');
                         resolve(server);
                     }
                 });
@@ -174,7 +173,7 @@ class Server {
                         reject(err);
                     } else {
                         instance._isRunning = true;
-                        server.log('info', 'Started running at: ' + server.info.uri);
+                        logger.info('Started running at: ' + server.info.uri);
                         resolve(server);
                     }
                 });
@@ -197,7 +196,7 @@ class Server {
                 } else {
                     instance._server = null;
                     instance._isRunning = false;
-                    console.log('Server stopped');
+                    logger.info('Server stopped');
                     resolve();
                 }
             });

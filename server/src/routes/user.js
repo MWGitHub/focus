@@ -20,7 +20,6 @@ var routes = [
             cors: true
         }
     },
-    // TODO: Perhaps change the route to /auth/login and logout
     {
         method: 'POST',
         path: API.route + '/users/login',
@@ -28,7 +27,7 @@ var routes = [
         config: {
             validate: {
                 payload: {
-                    username: Joi.string().min(3).max(20).token().required(),
+                    login: Joi.string().max(255),
                     password: Joi.string().min(6).max(100).required()
                 }
             },

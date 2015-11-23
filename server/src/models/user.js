@@ -1,4 +1,4 @@
-var Bookshelf = require('../lib/bookshelf');
+var Bookshelf = require('../lib/database').bookshelf;
 var Permission = require('../auth/permission-model');
 var co = require('co');
 var _ = require('lodash');
@@ -37,11 +37,10 @@ var User = Bookshelf.Model.extend({
 
     /**
      * Retrieves the data of the board.
-     * @param {Boolean?} isDeep true to retrieve all children data else retrieve keys to the children.
-     * @param {Array.<String>?} columns the columns to retrieve or all if none specified.
+     * @param {{name: string, isDeep: boolean}[]?} columns the columns to retrieve or all if none specified.
      * @return {Promise} the promise with the data.
      */
-    retrieve: function(isDeep, columns) {
+    retrieve: function(columns) {
         "use strict";
 
         var instance = this;
@@ -59,7 +58,9 @@ var User = Bookshelf.Model.extend({
             } else {
                 for (var i = 0; i < columns.length; i++) {
                     var column = columns[i];
-                    output.attributes[column] = instance.get(column);
+                    if (instance.has(column.name)) {
+                        output.attributes[column.name] = instance.get(column.name);
+                    }
                 }
             }
             return output;
@@ -73,7 +74,7 @@ var User = Bookshelf.Model.extend({
         // Time zone is used to determine when midnight is for the user
         timezone: {type: 'string', length: 150, notNullable: true},
         // Optional e-mail for the user
-        email: {type: 'string'},
+        email: {type: 'string', unique: true},
         // True if the e-mail has been verified
         verified: {type: 'boolean'}
     },
@@ -89,23 +90,23 @@ var User = Bookshelf.Model.extend({
             return null;
         }
 
-        var knex = Bookshelf.knex;
-        var query = '';
-        var params = [];
+        var query = {};
         if (username) {
-            query += 'username = ?';
-            params.push(username);
+            query.where = {
+                username: username.toLowerCase()
+            };
+        } else {
+            query.where = {
+                email: email.toLowerCase()
+            };
         }
-        if (email) {
-            if (query) {
-                query += ' or ';
-            }
-            query += 'email = ?';
-            params.push(email);
+        if (username && email) {
+            query.orWhere = {
+                email: email.toLowerCase()
+            };
         }
-        return knex.select('*').from('users').whereRaw(query, params).limit(1).then(function(users) {
-            return users[0];
-        });
+
+        return User.query(query).fetch();
     }
 });
 

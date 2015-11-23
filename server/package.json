@@ -12,6 +12,7 @@
     "bcrypt": "*",
     "bookshelf": "*",
     "boom": "*",
+    "bunyan": "^1.5.1",
     "co": "*",
     "commander": "*",
     "eslint-plugin-hapi": "*",
