@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - 4
+  - 5
   
 env:
   global:
@@ -15,8 +15,8 @@ addons:
     packages:
       - g++-4.8
       - gcc-4.8
-  code_climate:
-      repo_token: 9c3621172d85147f3bf0fd4ff684ee77d281be37429f7f6f50922e478f377d20
+  #code_climate:
+  #    repo_token: 9c3621172d85147f3bf0fd4ff684ee77d281be37429f7f6f50922e478f377d20
 
 services:
   - redis-server
@@ -26,7 +26,7 @@ before_script:
   - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
-  - psql -c 'create database focus_test;' -U postgres
+  - psql -c 'create database dev_focus;' -U postgres
   - ./node_modules/.bin/knex migrate:latest
   
 script: npm run test-travis
