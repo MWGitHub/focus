@@ -8,6 +8,7 @@ var Server = require('../../src/server');
 var co = require('co');
 var Config = require('../../config.json');
 var Knexfile = require('../../knexfile');
+var moment = require('moment-timezone');
 
 /**
  * Helper instance that holds server state until after is run.
@@ -16,6 +17,17 @@ class Helper {
     constructor() {
         this.apiRoute = Config.apiRoute;
         this.server = null;
+
+        this.userSeeds = [];
+        for (var i = 0; i < 5; i++) {
+            this.userSeeds.push({
+                id: i,
+                username: 'seed' + i,
+                email: 'seed' + i + '@example.com',
+                password: 'seed' + i + 'pw',
+                timezone: moment.tz.names()[i]
+            });
+        }
     }
 
     /**
@@ -66,6 +78,23 @@ class Helper {
      */
     generateSimpleAuthHeader(username, password) {
         return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
+    }
+
+    /**
+     * Logs a user in.
+     * @param {string} login the user name or email.
+     * @param {string} password the password of the user.
+     * @returns {Promise} the promise with the token response or error if not found.
+     */
+    login(login, password) {
+        return this.inject({
+            method: 'POST',
+            url: this.apiRoute + '/users/login',
+            payload: {
+                login: login,
+                password: password
+            }
+        });
     }
 
     /**

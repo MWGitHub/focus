@@ -1,14 +1,27 @@
+var auth = require('../../../src/auth/auth');
+var moment = require('moment-timezone');
+var co = require('co');
+
+function createUser(knex, id, name, email, password, timezone) {
+    return auth.hash(password).then(function(hash) {
+        return knex('users').insert({
+            id: id,
+            username: name,
+            password: hash,
+            email: email,
+            timezone: timezone
+        });
+    });
+}
 
 exports.seed = function(knex, Promise) {
-    return Promise.join(
-        /*
-         // Deletes ALL existing entries
-         knex('users').del(),
+    return co(function* () {
+        // Deletes ALL existing entries
+        yield knex('users').del();
 
-         // Inserts seed entries
-         knex('table_name').insert({id: 1, colName: 'rowValue'}),
-         knex('table_name').insert({id: 2, colName: 'rowValue2'}),
-         knex('table_name').insert({id: 3, colName: 'rowValue3'}),
-         */
-    );
+        // Inserts seed entries
+        for (var i = 0; i < 5; i++) {
+            yield createUser(knex, i, 'seed' + i, 'seed' + i + '@example.com', 'seed' + i + 'pw', moment.tz.names()[i]);
+        }
+    });
 };

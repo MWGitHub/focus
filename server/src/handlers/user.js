@@ -132,7 +132,6 @@ UserHandler.login = function(request, reply) {
 UserHandler.logout = function(request, reply) {
     "use strict";
 
-    console.log(request.auth);
     if (request.auth.isAuthenticated) {
         if (request.auth.strategy === 'simple') {
             reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
@@ -190,31 +189,15 @@ UserHandler.retrieve = function(request, reply) {
     "use strict";
 
     var id = request.params.id;
-    var isDeep = !!request.query['isDeep'];
-    // Do not allow non owning user to retrieve user data
-    // TODO: Add partial retrieval of user page when not owner
-    if (!request.auth.isAuthenticated || id !== request.auth.credentials.id) {
-        reply(Boom.unauthorized());
-        return;
-    }
+    var isUser = request.auth.isAuthenticated && request.auth.credentials.id === id;
 
-    var user;
-    User.forge({id: id}).fetch({require: true})
-        // Update the user if needed
-        .then(function (v) {
-            user = v;
-            return API.updateUserTasks(user);
-        })
-        // Retrieve the user data
-        .then(function () {
-            return user.retrieveAsData(isDeep);
-        })
-        .then(function (data) {
-            reply(API.makeData(data));
-        })
-        .catch(function (err) {
-            reply(Boom.notFound());
-        });
+    co(function* () {
+        var user = yield User.forge({id: id}).fetch({require: true});
+        var data = yield isUser ? user.retrieve(retrievals.owner) : user.retrieve(retrievals.guest);
+        reply(API.makeData(data));
+    }).catch(function(err) {
+        reply(Boom.notFound());
+    });
 };
 
 /**

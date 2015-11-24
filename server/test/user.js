@@ -4,7 +4,6 @@ var co = require('co');
 var moment = require('moment-timezone');
 var _ = require('lodash');
 
-
 describe('user', function() {
     var statusCodes = {
         valid: 200,
@@ -275,11 +274,10 @@ describe('user', function() {
             response = yield helper.inject(loginPayload);
             var token = response.result.data.token;
 
-            response = yield helper.inject(payload);
             payload.headers = {
                 authorization: token
             };
-            console.log(payload);
+            response = yield helper.inject(payload);
             assert.equal(response.result.meta.message, 'Logged out');
 
             done();
@@ -289,8 +287,35 @@ describe('user', function() {
     });
 
     it('should retrieve the user', function(done) {
-        assert(false);
-        done();
+        co(function* () {
+            // Retrieve as a guest
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/users/0'
+            };
+
+            var response = yield helper.inject(payload);
+            assert.equal(response.result.data.id, 0);
+            assert.equal(response.result.data.attributes.username, 'seed0');
+            assert.equal(response.result.data.attributes.email, null);
+
+            // Retrieve when logged in as the owner
+            var user = helper.userSeeds[0];
+            response = yield helper.login(user.username, user.password);
+            var token = response.result.data.token;
+
+            payload.headers = {
+                authorization: token
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.result.data.id, 0);
+            assert.equal(response.result.data.attributes.username, 'seed0');
+            assert.equal(response.result.data.attributes.email, 'seed0@example.com');
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        });
     });
 
     it('should update the user', function(done) {
