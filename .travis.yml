@@ -26,10 +26,10 @@ before_script:
   - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
-  - psql -c 'create database dev_focus;' -U postgres
+  - psql -c 'create database focus_test;' -U postgres
   - ./node_modules/.bin/knex migrate:latest
   
 script: npm run test-travis
 
-after_script:
-  - ./node_modules/.bin/codeclimate-test-reporter < lcov.info
+#after_script:
+#  - ./node_modules/.bin/codeclimate-test-reporter < lcov.info
