@@ -47,20 +47,6 @@ var routes = [
         }
     },
     {
-        method: 'DELETE',
-        path: API.route + '/users/{id}',
-        handler: UserAPI.remove,
-        config: {
-            auth: 'jwt',
-            cors: true,
-            validate: {
-                params: {
-                    id: Joi.number().integer().required()
-                }
-            }
-        }
-    },
-    {
         method: 'GET',
         path: API.route + '/users/{id}',
         handler: UserAPI.retrieve,
@@ -94,6 +80,20 @@ var routes = [
             },
             auth: 'jwt',
             cors: true
+        }
+    },
+    {
+        method: 'DELETE',
+        path: API.route + '/users/{id}',
+        handler: UserAPI.remove,
+        config: {
+            auth: 'jwt',
+            cors: true,
+            validate: {
+                params: {
+                    id: Joi.number().integer().required()
+                }
+            }
         }
     }
 ];

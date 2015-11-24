@@ -1,6 +1,6 @@
 {
   "name": "focus",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {

@@ -1,3 +1,5 @@
+"use strict";
+
 var User = require('../models/user');
 var Auth = require('../auth/auth');
 var Session = require('../auth/session');
@@ -38,8 +40,6 @@ var retrievals = {
  * @param reply
  */
 UserHandler.register = function(request, reply) {
-    "use strict";
-
     var username = request.payload['username'];
     var password = request.payload['password'];
     var timezone = request.payload['timezone'] || API.defaultTimeZone;
@@ -87,8 +87,6 @@ UserHandler.register = function(request, reply) {
  * @param reply
  */
 UserHandler.login = function(request, reply) {
-    "use strict";
-
     var login = request.payload['login'].toLowerCase();
     var password = request.payload['password'];
 
@@ -130,8 +128,6 @@ UserHandler.login = function(request, reply) {
  * @param reply
  */
 UserHandler.logout = function(request, reply) {
-    "use strict";
-
     if (request.auth.isAuthenticated) {
         if (request.auth.strategy === 'simple') {
             reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
@@ -150,44 +146,11 @@ UserHandler.logout = function(request, reply) {
 };
 
 /**
- * Removes the given user.
- * @param request
- * @param reply
- */
-UserHandler.remove = function(request, reply) {
-    "use strict";
-
-    var id = request.params.id;
-    // Cannot delete when not owner
-    // TODO: Support admin deletion
-    if (request.auth.credentials.id !== id) {
-        reply(Boom.unauthorized());
-        return;
-    }
-    User.forge({id: id}).fetch({require: true})
-        .then(function (user) {
-            return user.destroyDeep();
-        })
-        .then(function () {
-            if (request.auth.strategy === 'simple') {
-                reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
-            } else {
-                reply(API.makeStatusMessage('user-delete', true, 'User deleted'));
-            }
-        })
-        .catch(function (e) {
-            reply(Boom.notFound());
-        });
-};
-
-/**
  * Retrieve info about the use.
  * @param request
  * @param reply
  */
 UserHandler.retrieve = function(request, reply) {
-    "use strict";
-
     var id = request.params.id;
     var isUser = request.auth.isAuthenticated && request.auth.credentials.id === id;
 
@@ -200,39 +163,20 @@ UserHandler.retrieve = function(request, reply) {
     });
 };
 
-/**
- * Ages the user.
- * @param request
- * @param reply
- */
-UserHandler.age = function(request, reply) {
-    var force = request.payload['force'];
-    var user;
-    User.forge({id: request.auth.credentials.id}).fetch({require: true})
-        // Update the user if needed
-        .then(function(u) {
-            user = u;
-            return API.updateUserTasks(user, force);
-        })
-        .then(function() {
-            return user.retrieveAsData(false);
-        })
-        .then(function(data) {
-            reply(API.makeData(data));
-        })
-        .catch(function(err) {
-            reply(Boom.notFound());
-        });
-};
-
 UserHandler.update = function(request, reply) {
+    var id = request.params.id;
     var password = request.payload['password'];
     var timezone = request.payload['timezone'];
     var email = request.payload['email'];
     var options = {};
 
+    if (parseInt(id) !== request.auth.credentials.id) {
+        reply(Boom.unauthorized());
+        return;
+    }
+
     var user;
-    User.forge({id: request.auth.credentials.id}).fetch({require: true})
+    User.forge({id: id}).fetch({require: true})
         .then(function(result) {
             user = result;
             // Check if parameters changed
@@ -260,12 +204,40 @@ UserHandler.update = function(request, reply) {
             return user.set(options).save();
         })
         .then(function() {
-            return user.retrieveAsData(false);
+            return user.retrieve(retrievals.owner);
         })
         .then(function(data) {
             reply(API.makeData(data));
         })
         .catch(function (err) {
+            reply(Boom.notFound());
+        });
+};
+
+/**
+ * Removes the given user.
+ * @param request
+ * @param reply
+ */
+UserHandler.remove = function(request, reply) {
+    var id = request.params.id;
+    // Cannot delete when not owner
+    if (request.auth.credentials.id !== id) {
+        reply(Boom.unauthorized());
+        return;
+    }
+    User.forge({id: id}).fetch({require: true})
+        .then(function (user) {
+            return user.destroy();
+        })
+        .then(function () {
+            if (request.auth.strategy === 'simple') {
+                reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
+            } else {
+                reply(API.makeStatusMessage('user-delete', true, 'User deleted'));
+            }
+        })
+        .catch(function (e) {
             reply(Boom.notFound());
         });
 };

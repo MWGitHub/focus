@@ -236,6 +236,20 @@ describe('user', function() {
         });
     });
 
+    it('should not log in with invalid credentials', function(done) {
+        co(function* () {
+            var response = yield helper.login(helper.userSeeds[0].username, 'invalid');
+            assert.equal(response.statusCode, 401);
+
+            response = yield helper.login(helper.userSeeds[0].username, helper.userSeeds[0].password);
+            assert.equal(response.statusCode, 200);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
     it('should log the user out', function(done) {
         co(function* () {
             // Create user
@@ -319,12 +333,211 @@ describe('user', function() {
     });
 
     it('should update the user', function(done) {
-        assert(false);
-        done();
+        co(function* () {
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            // Change time zone
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/users/' + user.id + '/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {}
+            };
+
+            var clone = _.cloneDeep(payload);
+            clone.payload.timezone = moment.tz.names()[10];
+            var response = yield helper.inject(clone);
+            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[10]);
+            assert.equal(response.result.data.attributes.email, user.email);
+
+            // Change the email
+            clone = _.cloneDeep(payload);
+            clone.payload.email = 'another@example.com';
+            response = yield helper.inject(clone);
+            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[10]);
+            assert.equal(response.result.data.attributes.email, 'another@example.com');
+
+            // Change the password
+            clone = _.cloneDeep(payload);
+            clone.payload.password = 'another';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, 200);
+            yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/users/logout',
+                headers: {
+                    authorization: token
+                }
+            });
+            response = yield helper.login(user.username, user.password);
+            assert.equal(response.statusCode, 401);
+            response = yield helper.login(user.username, 'another');
+            assert.equal(response.statusCode, 200);
+
+            // Change everything at the same time
+            user = helper.userSeeds[1];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/users/' + user.id + '/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    timezone: moment.tz.names()[20],
+                    password: 'something',
+                    email: 'new@example.com'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.result.data.attributes.timezone, moment.tz.names()[20]);
+            assert.equal(response.result.data.attributes.email, 'new@example.com');
+            yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/users/logout',
+                herders: {
+                    authorization: token
+                }
+            });
+            response = yield helper.login(user.username, user.password);
+            assert.equal(response.statusCode, 401);
+            response = yield helper.login(user.username, 'something');
+            assert.equal(response.statusCode, 200);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        });
+    });
+
+    it('should not allow invalid update inputs', function(done) {
+        co(function* () {
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/users/' + user.id + '/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {}
+            };
+
+            // Invalid email
+            var clone = _.cloneDeep(payload);
+            clone.payload.email = 'invalid';
+            var response = yield helper.inject(clone);
+            assert.equal(response.statusCode, 400);
+
+            // Invalid password
+            clone = _.cloneDeep(payload);
+            clone.payload.password = 'a';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, 400);
+
+            // Valid email and invalid password
+            clone = _.cloneDeep(payload);
+            clone.payload.email = 'valid@example.com';
+            clone.payload.password = 'a';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, 400);
+
+            // Invalid email, valid password
+            clone = _.cloneDeep(payload);
+            clone.payload.email = 'invalid';
+            clone.payload.password = 'aasdfbawerawer';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, 400);
+
+            // Invalid timezone
+            clone = _.cloneDeep(payload);
+            clone.payload.timezone = 'invalid';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, 400);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        });
+    });
+
+    it('should not update the user without permissions', function(done) {
+        co(function* () {
+            var updatedUser = helper.userSeeds[0];
+            var authUser = helper.userSeeds[1];
+            var token = (yield helper.login(authUser.username, authUser.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/users/' + updatedUser.id + '/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {}
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, 401);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        });
     });
 
     it('should delete the user', function(done) {
-        assert(false);
-        done();
+        co(function* () {
+            var user = helper.userSeeds[0];
+
+            // Confirm user can be retrieved
+            var getPayload = {
+                method: 'GET',
+                url: helper.apiRoute + '/users/' + user.id
+            };
+            var response = yield helper.inject(getPayload);
+            assert.equal(response.statusCode, 200);
+
+            // Delete the user
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'DELETE',
+                url: helper.apiRoute + '/users/' + user.id,
+                headers: {
+                    authorization: token
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, 200);
+
+            // Confirm user is deleted
+            response = yield helper.inject(getPayload);
+            assert.equal(response.statusCode, 404);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        });
+    });
+
+    it('should not delete the user without permissions', function(done) {
+        co(function* () {
+            var deletedUser = helper.userSeeds[0];
+            var authUser = helper.userSeeds[1];
+            var token = (yield helper.login(authUser.username, authUser.password)).result.data.token;
+            var payload = {
+                method: 'DELETE',
+                url: helper.apiRoute + '/users/' + deletedUser.id,
+                headers: {
+                    authorization: token
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, 401);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        });
     });
 });

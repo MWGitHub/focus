@@ -15,9 +15,28 @@ var moment = require('moment-timezone');
  */
 class Helper {
     constructor() {
+        /**
+         * Server API route.
+         * @type {string}
+         */
         this.apiRoute = Config.apiRoute;
+
+        /**
+         * Server to inject into.
+         * @type {Server}
+         */
         this.server = null;
 
+        /**
+         * Seeded users in the database
+         * @type {{
+         *  id: number,
+         *  username: string,
+         *  email: string,
+         *  password: string,
+         *  timezone: string
+         * }[]}
+         */
         this.userSeeds = [];
         for (var i = 0; i < 5; i++) {
             this.userSeeds.push({
