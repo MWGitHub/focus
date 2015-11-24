@@ -6,7 +6,7 @@ var Auth = require('../src/auth/auth');
 var Session = require('../src/auth/session');
 var moment = require('moment-timezone');
 var API = require('../src/lib/api');
-var Helper = require('./helper');
+var Helper = require('./helpers/helper');
 var should = require('chai').should();
 
 var lab = exports.lab = Lab.script();

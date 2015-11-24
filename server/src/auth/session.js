@@ -1,3 +1,6 @@
+/**
+ * Creates, deletes, and validates sessions using redis as the storage.
+ */
 var JWT = require('jsonwebtoken');
 var uuid = require('node-uuid');
 
@@ -25,8 +28,10 @@ var session = {
 
         if (!options.redis) return next(new Error('options.redis requires a redis client or the plugin name and key.'));
         if (options.redis.client) {
+            // Redis client given
             redisClient = options.redis.client;
         } else {
+            // Try to find a redis client from the given plugin name and key
             if (!options.redis.plugin) return next(new Error('options.redis requires a redis plugin name'));
             if (!options.redis.key) return next(new Error('options.redis requires a plugin key'));
             var plugin = server.plugins[options.redis.plugin];

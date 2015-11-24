@@ -40,9 +40,7 @@ var handler = {
 
             var data = {
                 list_id: list.get('id'),
-                user_id: uid,
                 title: title,
-                age: 0,
                 position: position
             };
             if (extra) {

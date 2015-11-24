@@ -1,13 +1,17 @@
 @import "../../node_modules/normalize.css/normalize";
-
 @import "../../node_modules/font-awesome/scss/font-awesome";
+@import "../../node_modules/node-waves/src/scss/waves";
+@import "../../node_modules/material-design-lite/src/material-design-lite";
+
 @import "bourbon/bourbon";
 @import "neat/neat";
 @import "base/base";
 @import "addons/no-select";
-@import "footer";
 @import "addons/word-wrap";
 @import "addons/selector-style";
+
+@import "footer";
+@import "signup";
 
 
 /*

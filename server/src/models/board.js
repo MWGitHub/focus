@@ -1,4 +1,4 @@
-var Bookshelf = require('../lib/bookshelf');
+var Bookshelf = require('../lib/database').bookshelf;
 var List = require('./list');
 var User = require('./user');
 var Project = require('./project');

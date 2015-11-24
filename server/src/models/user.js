@@ -1,8 +1,5 @@
-var Bookshelf = require('../lib/bookshelf');
-var Project = require('./project');
-var Board = require('./board');
-var List = require('./list');
-var Task = require('./task');
+var Bookshelf = require('../lib/database').bookshelf;
+var Permission = require('../auth/permission-model');
 var co = require('co');
 var _ = require('lodash');
 
@@ -10,88 +7,63 @@ var User = Bookshelf.Model.extend({
     tableName: 'users',
     hasTimestamps: ['created_at', 'updated_at'],
 
-    projects: function() {
-        return this.hasMany(Project, 'user_id');
+    initialize: function() {
+        this.on('destroying', this._destroyDeep, this);
     },
 
-    boards: function() {
-        "use strict";
-        return this.hasMany(Board, 'user_id');
-    },
-
-    tasks: function() {
-        "use strict";
-        return this.hasMany(Task, 'user_id');
-    },
-
-    lists: function() {
-        "use strict";
-        return this.hasMany(List, 'user_id');
+    permissions: function() {
+        return this.hasMany(Permission.ProjectPermission, 'user_id');
     },
 
     /**
-     * Destroys all related objects before destroying itself.
-     * @return {Promise} the promise for destroying.
+     * Destroys all related objects
+     * @param model
+     * @param attrs
+     * @param options
+     * @returns {*|Promise}
+     * @private
      */
-    destroyDeep: function() {
+    _destroyDeep: function(model, attrs, options) {
         "use strict";
 
         var instance = this;
 
         return co(function* () {
-            var projects = yield Project.where({user_id: instance.get('id')}).fetchAll();
-            yield projects.invokeThen('destroyDeep');
-            return yield instance.destroy();
+            // Destroy all permissions
+            var permissions = yield instance.permissions().fetch();
+            yield permissions.invokeThen('destroy');
         });
     },
 
     /**
      * Retrieves the data of the board.
-     * @param {Boolean?} isDeep true to retrieve all children data else retrieve up to children properties.
+     * @param {{name: string, isDeep: boolean}[]?} columns the columns to retrieve or all if none specified.
      * @return {Promise} the promise with the data.
      */
-    retrieveAsData: function(isDeep) {
+    retrieve: function(columns) {
         "use strict";
 
         var instance = this;
         return co(function* () {
-            var projects = yield instance.projects().fetch();
-            if (!isDeep) {
-                var pids = _.map(projects.models, function(n) {
-                    return {
-                        id: n.id,
-                        type: 'projects',
-                        attributes: {
-                            title: n.attributes.title
-                        }
-                    };
-                });
-                return {
-                    type: 'users',
-                    id: instance.get('id'),
-                    attributes: {
-                        username: instance.get('username'),
-                        timezone: instance.get('timezone'),
-                        projects: pids
-                    }
-                };
+            var output = {
+                type: 'users',
+                id: instance.get('id'),
+                attributes: {}
+            };
+            if (!columns) {
+                output.attributes.username = instance.get('username');
+                output.attributes.timezone = instance.get('timezone');
+                output.attributes.email = instance.get('email');
+                output.attributes.verified = instance.get('verified');
             } else {
-                var data = {
-                    type: 'users',
-                    id: instance.get('id'),
-                    attributes: {
-                        username: instance.get('username'),
-                        timezone: instance.get('timezone'),
-                        projects: []
+                for (var i = 0; i < columns.length; i++) {
+                    var column = columns[i];
+                    if (instance.has(column.name)) {
+                        output.attributes[column.name] = instance.get(column.name);
                     }
-                };
-                for (var i = 0; i < projects.length; i++) {
-                    var project = projects.models[i];
-                    var projectData = yield project.retrieveAsData(isDeep);
-                    data.attributes.projects.push(projectData);
                 }
-                return data;
             }
+            return output;
         });
     }
 }, {
@@ -101,8 +73,40 @@ var User = Bookshelf.Model.extend({
         password: {type: 'string', length: 60, notNullable: true},
         // Time zone is used to determine when midnight is for the user
         timezone: {type: 'string', length: 150, notNullable: true},
-        // format 'YYYY-MM-DD HH:mm:ss.SSSZZ'
-        lastupdate: {type: 'datetime'}
+        // Optional e-mail for the user
+        email: {type: 'string', unique: true},
+        // True if the e-mail has been verified
+        verified: {type: 'boolean'}
+    },
+
+    /**
+     * Find a user by username or email.
+     * @param {string?} username the username to search, omits username if none given.
+     * @param {string?} email the email to search, omits email if none given.
+     * @returns {Promise} promise with the user if found or null if none found.
+     */
+    findUser: function(username, email) {
+        if (!username && !email) {
+            return null;
+        }
+
+        var query = {};
+        if (username) {
+            query.where = {
+                username: username.toLowerCase()
+            };
+        } else {
+            query.where = {
+                email: email.toLowerCase()
+            };
+        }
+        if (username && email) {
+            query.orWhere = {
+                email: email.toLowerCase()
+            };
+        }
+
+        return User.query(query).fetch();
     }
 });
 

@@ -8,7 +8,7 @@ var List = require('./src/models/list');
 var Task = require('./src/models/task');
 var program = require('commander');
 var Auth = require('./src/auth/auth');
-var knex = require('./src/lib/bookshelf').knex;
+var knex = require('./src/lib/database').knex;
 
 program.version('1.0.0');
 

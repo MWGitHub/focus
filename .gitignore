@@ -21,3 +21,5 @@ playground
 working
 .sonar
 coverage
+bundle.js
+lab

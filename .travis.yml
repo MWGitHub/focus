@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - 4
+  - 5
   
 env:
   global:
@@ -15,8 +15,8 @@ addons:
     packages:
       - g++-4.8
       - gcc-4.8
-  code_climate:
-      repo_token: 9c3621172d85147f3bf0fd4ff684ee77d281be37429f7f6f50922e478f377d20
+  #code_climate:
+  #    repo_token: 9c3621172d85147f3bf0fd4ff684ee77d281be37429f7f6f50922e478f377d20
 
 services:
   - redis-server
@@ -31,5 +31,5 @@ before_script:
   
 script: npm run test-travis
 
-after_script:
-  - ./node_modules/.bin/codeclimate-test-reporter < lcov.info
+#after_script:
+#  - ./node_modules/.bin/codeclimate-test-reporter < lcov.info

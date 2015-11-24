@@ -1,6 +1,5 @@
-var Bookshelf = require('../lib/bookshelf');
+var Bookshelf = require('../lib/database').bookshelf;
 var co = require('co');
-var User = require('./user');
 var Board = require('./board');
 var Permission = require('../auth/permission-model');
 var _ = require('lodash');
@@ -9,16 +8,12 @@ var Project = Bookshelf.Model.extend({
     tableName: 'projects',
     hasTimestamps: ['created_at', 'updated_at'],
 
-    user: function() {
-        this.belongsTo(User);
-    },
-
     boards: function() {
         return this.hasMany(Board);
     },
 
     permissions: function() {
-        return this.hasMany(Permission);
+        return this.hasMany(Permission.ProjectPermission);
     },
 
     /**
@@ -57,7 +52,7 @@ var Project = Bookshelf.Model.extend({
                     id: instance.get('id'),
                     attributes: {
                         title: instance.get('title'),
-                        user_id: instance.get('user_id'),
+                        owner: instance.get('owner'),
                         boards: bids
                     }
                 };
@@ -67,7 +62,7 @@ var Project = Bookshelf.Model.extend({
                     id: instance.get('id'),
                     attributes: {
                         title: instance.get('title'),
-                        user_id: instance.get('user_id'),
+                        owner: instance.get('owner'),
                         boards: []
                     }
                 };
@@ -86,7 +81,6 @@ var Project = Bookshelf.Model.extend({
     schema: {
         id: {type: 'increments', notNullable: true, primary: true},
         title: {type: 'string', length: 150, notNullable: true},
-        user_id: {type: 'integer', notNullable: true},
         is_public: {type: 'boolean', notNullable: true}
     }
 });

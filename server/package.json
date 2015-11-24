@@ -1,17 +1,18 @@
 {
   "name": "focus",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/lab -c",
-    "test-travis": "node_modules/.bin/lab -c -r lcov -o lcov.info"
+    "test": "NODE_ENV=test node_modules/.bin/mocha",
+    "test-travis": "NODE_ENV=test node_modules/.bin/mocha"
   },
   "author": "MW",
   "dependencies": {
     "bcrypt": "*",
     "bookshelf": "*",
     "boom": "*",
+    "bunyan": "^1.5.1",
     "co": "*",
     "commander": "*",
     "eslint-plugin-hapi": "*",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "chai": "*",
     "codeclimate-test-reporter": "^0.1.1",
-    "lab": "*"
+    "lab": "*",
+    "mocha": "^2.3.4"
   }
 }

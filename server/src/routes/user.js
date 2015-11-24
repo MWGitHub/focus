@@ -13,13 +13,13 @@ var routes = [
                 payload: {
                     username: Joi.string().min(3).max(20).token().required(),
                     password: Joi.string().min(6).max(100).required(),
-                    timezone: Joi.string().valid(moment.tz.names())
+                    timezone: Joi.string().valid(moment.tz.names()),
+                    email: Joi.string().email()
                 }
             },
             cors: true
         }
     },
-    // TODO: Perhaps change the route to /auth/login and logout
     {
         method: 'POST',
         path: API.route + '/users/login',
@@ -27,7 +27,7 @@ var routes = [
         config: {
             validate: {
                 payload: {
-                    username: Joi.string().min(3).max(20).token().required(),
+                    login: Joi.string().max(255),
                     password: Joi.string().min(6).max(100).required()
                 }
             },
@@ -47,20 +47,6 @@ var routes = [
         }
     },
     {
-        method: 'DELETE',
-        path: API.route + '/users/{id}',
-        handler: UserAPI.remove,
-        config: {
-            auth: 'jwt',
-            cors: true,
-            validate: {
-                params: {
-                    id: Joi.number().integer().required()
-                }
-            }
-        }
-    },
-    {
         method: 'GET',
         path: API.route + '/users/{id}',
         handler: UserAPI.retrieve,
@@ -75,24 +61,9 @@ var routes = [
                     id: Joi.number().integer().required()
                 },
                 query: {
-                    token: Joi.string(),
-                    isDeep: Joi.boolean()
+                    token: Joi.string()
                 }
             }
-        }
-    },
-    {
-        method: 'POST',
-        path: API.route + '/users/age',
-        handler: UserAPI.age,
-        config: {
-            validate: {
-                payload: {
-                    force: Joi.boolean()
-                }
-            },
-            auth: 'jwt',
-            cors: true
         }
     },
     {
@@ -103,11 +74,26 @@ var routes = [
             validate: {
                 payload: {
                     password: Joi.string().min(6).max(100),
-                    timezone: Joi.string().valid(moment.tz.names())
+                    timezone: Joi.string().valid(moment.tz.names()),
+                    email: Joi.string().email()
                 }
             },
             auth: 'jwt',
             cors: true
+        }
+    },
+    {
+        method: 'DELETE',
+        path: API.route + '/users/{id}',
+        handler: UserAPI.remove,
+        config: {
+            auth: 'jwt',
+            cors: true,
+            validate: {
+                params: {
+                    id: Joi.number().integer().required()
+                }
+            }
         }
     }
 ];
