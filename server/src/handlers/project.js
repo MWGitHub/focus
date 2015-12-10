@@ -1,12 +1,47 @@
+"use strict";
+
 var Project = require('../models/project');
 var API = require('../lib/api');
-var User = require('../models/user');
 var Boom = require('boom');
 var co = require('co');
+var Permission = require('../auth/permission-model');
+
+/**
+ * Columns to retrieve.
+ */
+var retrievals = {
+    all: [
+        {name: 'title'},
+        {name: 'is_public'}
+    ]
+};
 
 var handler = {
     create: function(request, reply) {
-        "use strict";
+        var title = request.payload['title'];
+        var isPublic = request.payload['is_public'] ? request.payload['is_public'] : false;
+        var id = request.auth.credentials.id;
+
+        return co(function* () {
+            // Create the project
+            var project = yield Project.forge({
+                title: title,
+                is_public: isPublic
+            }).save();
+
+            // Set the creator as the admin of the project
+            var permission = yield Permission.ProjectPermission.forge({
+                project_id: project.id,
+                user_id: id,
+                role: Permission.ProjectPermission.roles.admin
+            }).save();
+
+            var output = project.retrieve(retrievals.all);
+            reply(API.makeData(output));
+        }).catch(function(e) {
+            console.log(e);
+            reply(Boom.wrap(e));
+        });
     },
 
     deleteSelf: function(request, reply) {

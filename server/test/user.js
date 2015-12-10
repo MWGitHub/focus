@@ -5,12 +5,6 @@ var moment = require('moment-timezone');
 var _ = require('lodash');
 
 describe('user', function() {
-    var statusCodes = {
-        valid: 200,
-        error: 400,
-        taken: 440
-    };
-
     var testUser = {
         username: 'test',
         password: 'testpw',
@@ -53,7 +47,7 @@ describe('user', function() {
             // Make sure email is changed to lower case
             var response = yield helper.inject(payload);
             var attributes = response.result.data.attributes;
-            assert.equal(response.statusCode, statusCodes.valid);
+            assert.equal(response.statusCode, Helper.Status.valid);
             assert.notEqual(attributes.username, testUser.username);
             assert.equal(attributes.username, testUser.username.toUpperCase());
             assert.equal(attributes.email, testUser.email);
@@ -65,7 +59,7 @@ describe('user', function() {
             payload.payload.username = 'test2';
             response = yield helper.inject(payload);
             attributes = response.result.data.attributes;
-            assert.equal(response.statusCode, statusCodes.valid);
+            assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(attributes.username, 'test2');
             assert.notOk(attributes.email);
             assert.equal(attributes.timezone, testUser.timezone);
@@ -76,7 +70,7 @@ describe('user', function() {
             payload.payload.username = 'test3';
             response = yield helper.inject(payload);
             attributes = response.result.data.attributes;
-            assert.equal(response.statusCode, statusCodes.valid);
+            assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(attributes.username, 'test3');
             assert.notOk(attributes.email);
             assert.ok(attributes.timezone, testUser.timezone);
@@ -105,50 +99,50 @@ describe('user', function() {
             var clone = _.cloneDeep(payload);
             clone.payload.username = 'a';
             var response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             clone = _.cloneDeep(payload);
             clone.payload.username = '123456789012345678901234567890';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             clone = _.cloneDeep(payload);
             clone.payload.username = '12345-123!@#$%^&*';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Check for invalid passwords
             clone = _.cloneDeep(payload);
             clone.payload.password = 'a';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             clone = _.cloneDeep(payload);
             clone.payload.password = _.pad('', 100000, 'a');
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Check for invalid emails
             clone = _.cloneDeep(payload);
             clone.payload.email = 'a';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             clone = _.cloneDeep(payload);
             clone.payload.email = 'example.com';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             clone = _.cloneDeep(payload);
             clone.payload.email = '@test.org';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Check for valid timezones
             clone = _.cloneDeep(payload);
             clone.payload.timezone = 'a';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.error);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             done();
         }).catch(function(e) {
@@ -172,19 +166,19 @@ describe('user', function() {
             // Check if username is a duplicate
             yield helper.inject(payload);
             var response = yield helper.inject(payload);
-            assert.equal(response.statusCode, statusCodes.taken);
+            assert.equal(response.statusCode, Helper.Status.taken);
 
             // Do not allow names of different cases
             var clone = _.cloneDeep(payload);
             clone.payload.username = testUser.username.toUpperCase();
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, statusCodes.taken);
+            assert.equal(response.statusCode, Helper.Status.taken);
 
             // Check if email is a duplicate
             clone = _.cloneDeep(payload);
             clone.payload.username = 'something';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, statusCodes.taken);
+            assert.equal(response.statusCode, Helper.Status.taken);
 
             done();
         }).catch(function(e) {
@@ -207,7 +201,7 @@ describe('user', function() {
 
             // Check that the given password is no longer the same
             var response = yield helper.inject(payload);
-            assert.equal(response.statusCode, statusCodes.valid);
+            assert.equal(response.statusCode, Helper.Status.valid);
             var data = response.result.data.attributes;
             assert.notEqual(data.password, payload.payload.password);
 
@@ -222,12 +216,12 @@ describe('user', function() {
             };
 
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, statusCodes.valid);
+            assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.username, testUser.username);
 
             payload.payload.login = testUser.email;
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, statusCodes.valid);
+            assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.username, testUser.username);
 
             done();
@@ -239,10 +233,10 @@ describe('user', function() {
     it('should not log in with invalid credentials', function(done) {
         co(function* () {
             var response = yield helper.login(helper.userSeeds[0].username, 'invalid');
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
 
             response = yield helper.login(helper.userSeeds[0].username, helper.userSeeds[0].password);
-            assert.equal(response.statusCode, 200);
+            assert.equal(response.statusCode, Helper.Status.valid);
 
             done();
         }).catch(function(e) {
@@ -364,7 +358,7 @@ describe('user', function() {
             clone = _.cloneDeep(payload);
             clone.payload.password = 'another';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, 200);
+            assert.equal(response.statusCode, Helper.Status.valid);
             yield helper.inject({
                 method: 'GET',
                 url: helper.apiRoute + '/users/logout',
@@ -373,9 +367,9 @@ describe('user', function() {
                 }
             });
             response = yield helper.login(user.username, user.password);
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
             response = yield helper.login(user.username, 'another');
-            assert.equal(response.statusCode, 200);
+            assert.equal(response.statusCode, Helper.Status.valid);
 
             // Change everything at the same time
             user = helper.userSeeds[1];
@@ -403,9 +397,9 @@ describe('user', function() {
                 }
             });
             response = yield helper.login(user.username, user.password);
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
             response = yield helper.login(user.username, 'something');
-            assert.equal(response.statusCode, 200);
+            assert.equal(response.statusCode, Helper.Status.valid);
 
             done();
         }).catch(function(e) {
@@ -430,33 +424,33 @@ describe('user', function() {
             var clone = _.cloneDeep(payload);
             clone.payload.email = 'invalid';
             var response = yield helper.inject(clone);
-            assert.equal(response.statusCode, 400);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Invalid password
             clone = _.cloneDeep(payload);
             clone.payload.password = 'a';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, 400);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Valid email and invalid password
             clone = _.cloneDeep(payload);
             clone.payload.email = 'valid@example.com';
             clone.payload.password = 'a';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, 400);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Invalid email, valid password
             clone = _.cloneDeep(payload);
             clone.payload.email = 'invalid';
             clone.payload.password = 'aasdfbawerawer';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, 400);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             // Invalid timezone
             clone = _.cloneDeep(payload);
             clone.payload.timezone = 'invalid';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, 400);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             done();
         }).catch(function(e) {
@@ -478,7 +472,7 @@ describe('user', function() {
                 payload: {}
             };
             var response = yield helper.inject(payload);
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
 
             done();
         }).catch(function(e) {
@@ -496,7 +490,7 @@ describe('user', function() {
                 url: helper.apiRoute + '/users/' + user.id
             };
             var response = yield helper.inject(getPayload);
-            assert.equal(response.statusCode, 200);
+            assert.equal(response.statusCode, Helper.Status.valid);
 
             // Delete the user
             var token = (yield helper.login(user.username, user.password)).result.data.token;
@@ -508,11 +502,11 @@ describe('user', function() {
                 }
             };
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, 200);
+            assert.equal(response.statusCode, Helper.Status.valid);
 
             // Confirm user is deleted
             response = yield helper.inject(getPayload);
-            assert.equal(response.statusCode, 404);
+            assert.equal(response.statusCode, Helper.Status.notFound);
 
             done();
         }).catch(function(e) {
@@ -533,7 +527,7 @@ describe('user', function() {
                 }
             };
             var response = yield helper.inject(payload);
-            assert.equal(response.statusCode, 401);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
 
             done();
         }).catch(function(e) {

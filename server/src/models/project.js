@@ -1,3 +1,5 @@
+"use strict";
+
 var Bookshelf = require('../lib/database').bookshelf;
 var co = require('co');
 var Board = require('./board');
@@ -7,6 +9,10 @@ var _ = require('lodash');
 var Project = Bookshelf.Model.extend({
     tableName: 'projects',
     hasTimestamps: ['created_at', 'updated_at'],
+
+    initialize: function() {
+        this.on('destroying', this._destroyDeep, this);
+    },
 
     boards: function() {
         return this.hasMany(Board);
@@ -20,59 +26,48 @@ var Project = Bookshelf.Model.extend({
      * Destroys all related objects before destroying itself.
      * @return {Promise} the promise for destroying.
      */
-    destroyDeep: function() {
-        "use strict";
-
+    _destroyDeep: function() {
         var instance = this;
 
         return co(function* () {
-            var boards = yield Board.where({project_id: instance.get('id')}).fetchAll();
-            yield boards.invokeThen('destroyDeep');
+            // Destroy all permissions
+            var permissions = yield instance.permissions().fetch();
+            yield permissions.invokeThen('destroy');
+
+            // Destroy all connected boards
+            var boards = yield instance.boards().fetch();
+            yield boards.invokeThen('destroy');
+
+            // Destroy the itself
             return yield instance.destroy();
         });
     },
 
     /**
      * Retrieves the data of the project.
-     * @param {Boolean?} isDeep true to retrieve all children data.
+     * @param {{name: string, isDeep: boolean}[]?} columns the columns to retrieve or all if none specified.
      * @return {Promise} the promise with the data.
      */
-    retrieveAsData: function(isDeep) {
-        "use strict";
-
+    retrieve: function(columns) {
         var instance = this;
         return co(function* () {
-            var boards = yield instance.boards().fetch();
-            if (!isDeep) {
-                var bids = _.map(boards.models, function(n) {
-                    return n.id;
-                });
-                return {
-                    type: 'projects',
-                    id: instance.get('id'),
-                    attributes: {
-                        title: instance.get('title'),
-                        owner: instance.get('owner'),
-                        boards: bids
-                    }
-                };
+            var output = {
+                type: 'projects',
+                id: instance.get('id'),
+                attributes: {}
+            };
+            if (!columns) {
+                output.attributes.title = instance.get('title');
+                output.attributes.is_public = instance.get('is_public');
             } else {
-                var data = {
-                    type: 'projects',
-                    id: instance.get('id'),
-                    attributes: {
-                        title: instance.get('title'),
-                        owner: instance.get('owner'),
-                        boards: []
+                for (var i = 0; i < columns.length; i++) {
+                    var column = columns[i];
+                    if (instance.has(column.name)) {
+                        output.attributes[column.name] = instance.get(column.name);
                     }
-                };
-                for (var i = 0; i < boards.length; i++) {
-                    var board = boards.models[i];
-                    var boardData = yield board.retrieveAsData(isDeep);
-                    data.attributes.boards.push(boardData);
                 }
-                return data;
             }
+            return output;
         }, function(e) {
             console.log(e);
         });

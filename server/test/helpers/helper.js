@@ -62,8 +62,15 @@ class Helper {
             yield Database.knex.migrate.latest();
             yield Database.knex.seed.run();
 
+            // Set database sequence to not collide with seed ids
+            yield Database.knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 10000');
+            yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 10000');
+            yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
+
             yield instance.server.initialize();
             return instance.server;
+        }).catch(function(e) {
+            console.error(e);
         });
     }
 
@@ -86,6 +93,8 @@ class Helper {
                 yield instance.server.stop();
                 instance.server = null;
             }
+        }).catch(function(e) {
+            console.error(e);
         });
     }
 
@@ -130,5 +139,13 @@ class Helper {
         });
     }
 }
+
+Helper.Status = {
+    valid: 200,
+    error: 400,
+    unauthorized: 401,
+    notFound: 404,
+    taken: 440
+};
 
 module.exports = Helper;

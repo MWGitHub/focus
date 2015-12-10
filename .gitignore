@@ -23,3 +23,4 @@ working
 coverage
 bundle.js
 lab
+.DS_Store

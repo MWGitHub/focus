@@ -4,6 +4,21 @@ var API = require('../lib/api');
 
 var routes = [
     {
+        method: 'POST',
+        path: API.route + '/projects',
+        handler: ProjectAPI.create,
+        config: {
+            auth: 'jwt',
+            cors: true,
+            validate: {
+                payload: {
+                    title: Joi.string().min(1).max(60).required(),
+                    is_public: Joi.boolean()
+                }
+            }
+        }
+    },
+    {
         method: 'GET',
         path: API.route + '/projects/{id}',
         handler: ProjectAPI.retrieve,
