@@ -38,13 +38,31 @@ class Helper {
          * }[]}
          */
         this.userSeeds = [];
-        for (var i = 0; i < 5; i++) {
+        var i;
+        for (i = 0; i < 5; i++) {
             this.userSeeds.push({
                 id: i,
                 username: 'seed' + i,
                 email: 'seed' + i + '@example.com',
                 password: 'seed' + i + 'pw',
                 timezone: moment.tz.names()[i]
+            });
+        }
+
+        /**
+         * Seeded projects in the database
+         * @type {{
+         *  id: number,
+         *  title: string,
+         *  is_public: boolean
+         * }}
+         */
+        this.projectSeeds = [];
+        for (i = 0; i < 5; i++) {
+            this.projectSeeds.push({
+                id: i,
+                title: 'title' + i,
+                is_public: i % 2 === 1
             });
         }
     }
@@ -60,6 +78,12 @@ class Helper {
             process.env.NODE_ENV = 'test';
 
             yield Database.knex.migrate.latest();
+
+            // Set database sequence to not collide with seed ids
+            yield Database.knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+            yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
+            yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 1');
+
             yield Database.knex.seed.run();
 
             // Set database sequence to not collide with seed ids

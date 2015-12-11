@@ -1,0 +1,13 @@
+{
+  "ecmaFeatures": {
+    "arrowFunctions": true,
+    "generators": true,
+    "jsx": true
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true,
+    "es6": true
+  }
+}

@@ -4,7 +4,6 @@
 var Bookshelf = require('../lib/database').bookshelf;
 var User = require('../models/user');
 var Project = require('../models/project');
-var Board = require('../models/board');
 
 var ProjectPermission = Bookshelf.Model.extend({
     tableName: 'project_permissions',

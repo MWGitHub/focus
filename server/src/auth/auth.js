@@ -3,11 +3,34 @@ var AuthBasic = require('hapi-auth-basic');
 var AuthJWT = require('hapi-auth-jwt2');
 var User = require('../models/user');
 var Session = require('./session');
+var knex = require('../lib/database').knex;
 var co = require('co');
 
+/**
+ * Retrieve the user's scope for the given request.
+ * @param uid
+ * @param request
+ * @returns {Promise.<string[]>}
+ */
 function getScope(uid, request) {
-    console.log(request.config);
-    return Promise.resolve(['admin', 'member', 'viewer']);
+    return co(function* () {
+        // ID of the object being checked
+        var id = request.params.id;
+        // Use the type to retrieve the project id if needed
+        var type = request.route.settings.plugins.permission.type;
+
+        // console.log('uid: ' + uid + '   id: ' + id + '      type: ' + type);
+        var role = yield knex('project_permissions').where({
+            user_id: uid,
+            project_id: id
+        }).select('role');
+
+        if (role.length > 0) {
+            return [role[0].role];
+        } else {
+            return [];
+        }
+    });
 }
 
 function validateBasic(request, username, password, callback) {
@@ -35,19 +58,20 @@ function validateJWT(decoded, request, callback) {
         }
 
         if (request.route.settings.auth.scope) {
-            var scope = yield getScope(decoded.uid, request);
-            console.log(scope);
+            var scope = yield getScope(decoded.id, request);
+            // console.log('scope');
+            // console.log(scope);
             var credentials = {
                 id: decoded.id,
                 tid: decoded.tid,
                 scope: scope
             };
+            // console.log(credentials);
             callback(null, valid, credentials);
         } else {
             return callback(null, valid);
         }
     }, function(err) {
-        console.log(err);
         return callback(e, false);
     });
 

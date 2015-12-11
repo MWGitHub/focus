@@ -19,6 +19,29 @@ var routes = [
         }
     },
     {
+        method: 'POST',
+        path: API.route + '/projects/{id}/update',
+        handler: ProjectAPI.update,
+        config: {
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin']
+            },
+            cors: true,
+            validate: {
+                payload: {
+                    title: Joi.string().min(1).max(60),
+                    is_public: Joi.boolean()
+                }
+            },
+            plugins: {
+                permission: {
+                    type: 'project'
+                }
+            }
+        }
+    },
+    {
         method: 'GET',
         path: API.route + '/projects/{id}',
         handler: ProjectAPI.retrieve,
