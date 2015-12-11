@@ -168,6 +168,7 @@ Helper.Status = {
     valid: 200,
     error: 400,
     unauthorized: 401,
+    forbidden: 403,
     notFound: 404,
     taken: 440
 };

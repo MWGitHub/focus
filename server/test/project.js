@@ -229,7 +229,71 @@ describe('project', function() {
 
     it('should disallow updating project title of non-admins', function(done) {
         co(function* () {
-            assert(false);
+            var user = helper.userSeeds[1];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/1/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                }
+            };
+
+            // Members should not be able to change public project properties
+            var clone = _.cloneDeep(payload);
+            clone.payload.title = 'another';
+            var response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Members should not be able to change private project properties
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/2/update';
+            clone.payload.title = 'another';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // No relation should not be able to change private project properties
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/0/update';
+            clone.payload.title = 'another';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // No relation should not be able to change public project properties
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/4/update';
+            clone.payload.title = 'another';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to change private project properties
+            user = helper.userSeeds[2];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/2/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                }
+            };
+
+            clone = _.cloneDeep(payload);
+            clone.payload.title = 'another';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to change public project properties
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/3/update';
+            clone.payload.title = 'another';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             done();
         }).catch(function(e) {
             done(e);
