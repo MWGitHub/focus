@@ -1,38 +1,39 @@
+"use strict";
+
 var Bcrypt = require('bcrypt');
-var AuthBasic = require('hapi-auth-basic');
 var AuthJWT = require('hapi-auth-jwt2');
-var User = require('../models/user');
 var Session = require('./session');
-var Permission = require('./permission');
 var co = require('co');
 
-function validateJWT(decoded, request, callback) {
-    "use strict";
+function validateJWT(scopeFunction) {
+    return function(decoded, request, callback) {
+        co(function* () {
+            var valid = yield Session.validate(decoded.tid);
+            if (!valid) {
+                return callback(null, false);
+            }
 
-    co(function* () {
-        var valid = yield Session.validate(decoded.tid);
-        if (!valid) {
-            return callback(null, false);
-        }
-
-        if (request.route.settings.auth.scope) {
-            var scope = yield Permission.getScope(decoded.id, request);
-            // console.log('scope');
-            // console.log(scope);
-            var credentials = {
-                id: decoded.id,
-                tid: decoded.tid,
-                scope: scope
-            };
-            // console.log(credentials);
-            callback(null, valid, credentials);
-        } else {
-            return callback(null, valid);
-        }
-    }, function(err) {
-        return callback(e, false);
-    });
-
+            if (request.route.settings.auth.scope) {
+                var scope = [];
+                if (scopeFunction) {
+                    scope = yield scopeFunction(decoded.id, request);
+                }
+                // console.log('scope');
+                // console.log(scope);
+                var credentials = {
+                    id: decoded.id,
+                    tid: decoded.tid,
+                    scope: scope
+                };
+                // console.log(credentials);
+                callback(null, valid, credentials);
+            } else {
+                return callback(null, valid);
+            }
+        }, function(err) {
+            return callback(e, false);
+        });
+    };
 }
 
 var auth = {
@@ -41,9 +42,22 @@ var auth = {
 
         if (!options.key) throw new Error('options.key required!');
 
+        // Add permission checking if given.
+        var scopeFunction = null;
+        if (options.permission) {
+            var permissionPlugin = server.plugins[options.permission.plugin];
+            if (!permissionPlugin) {
+                throw new Error('Cannot find permission plugin');
+            }
+            scopeFunction = permissionPlugin[options.permission.scope];
+            if (!scopeFunction) {
+                throw new Error('Cannot find permission scope');
+            }
+        }
+
         server.register(AuthJWT, function(err) {
             server.auth.strategy('jwt', 'jwt', {
-                validateFunc: validateJWT,
+                validateFunc: validateJWT(scopeFunction),
                 key: options.key,
                 verifyOptions: {
                     algorithms: ['HS256']

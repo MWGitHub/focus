@@ -1,11 +1,7 @@
 var co = require('co');
 var knex = require('../lib/database').knex;
 
-var permission = {
-    register: function(server, options, next) {
-        next();
-    },
-
+var internals = {
     /**
      * Retrieve the user's scope for the given request.
      * @param uid
@@ -46,6 +42,14 @@ var permission = {
                 }
             }
         })
+    }
+};
+
+var permission = {
+    register: function(server, options, next) {
+        server.expose('scopeFunction', internals.getScope);
+
+        next();
     }
 };
 permission.register.attributes = {

@@ -63,13 +63,17 @@ class Server {
                     }
                 },
                 {
-                    register: Auth,
-                    options: {
-                        key: config.authkey
-                    }
+                    register: Permission
                 },
                 {
-                    register: Permission
+                    register: Auth,
+                    options: {
+                        permission: {
+                            plugin: 'permission',
+                            scope: 'scopeFunction'
+                        },
+                        key: config.authkey
+                    }
                 },
                 {
                     register: Session,
