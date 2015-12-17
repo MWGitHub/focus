@@ -6,21 +6,6 @@ var Session = require('./session');
 var Permission = require('./permission');
 var co = require('co');
 
-function validateBasic(request, username, password, callback) {
-    "use strict";
-
-    User.forge({username: username}).fetch()
-        .then(function(user) {
-            if (!user) {
-                callback(null, false);
-            } else {
-                Bcrypt.compare(password, user.get('password'), function(err, isValid) {
-                    callback(err, isValid, {id: user.get('id'), username: user.get('username')});
-                });
-            }
-        });
-}
-
 function validateJWT(decoded, request, callback) {
     "use strict";
 
@@ -55,13 +40,6 @@ var auth = {
         "use strict";
 
         if (!options.key) throw new Error('options.key required!');
-
-        // Add the basic authentication
-        server.register(AuthBasic, function(err) {
-            server.auth.strategy('simple', 'basic', {
-                validateFunc: validateBasic
-            });
-        });
 
         server.register(AuthJWT, function(err) {
             server.auth.strategy('jwt', 'jwt', {
