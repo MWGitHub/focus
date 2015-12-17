@@ -495,8 +495,8 @@ describe('user', function() {
             // Delete the user
             var token = (yield helper.login(user.username, user.password)).result.data.token;
             var payload = {
-                method: 'DELETE',
-                url: helper.apiRoute + '/users/' + user.id,
+                method: 'POST',
+                url: helper.apiRoute + '/users/' + user.id + '/delete',
                 headers: {
                     authorization: token
                 }
@@ -520,8 +520,8 @@ describe('user', function() {
             var authUser = helper.userSeeds[1];
             var token = (yield helper.login(authUser.username, authUser.password)).result.data.token;
             var payload = {
-                method: 'DELETE',
-                url: helper.apiRoute + '/users/' + deletedUser.id,
+                method: 'POST',
+                url: helper.apiRoute + '/users/' + deletedUser.id + '/delete',
                 headers: {
                     authorization: token
                 }

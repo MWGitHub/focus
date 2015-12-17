@@ -325,13 +325,13 @@ describe('project', function() {
             assert.equal(response.result.data.attributes.title, 'title3');
 
             // Anyone should be able to view public projects
-            clone = _.cloneDeep(payload);
-            delete clone.headers;
-            clone.url = helper.apiRoute + '/projects/3?token=' + token;
-            response = yield helper.inject(clone);
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1'
+            });
             assert.equal(response.statusCode, Helper.Status.valid);
-            assert.equal(response.result.data.id, 3);
-            assert.equal(response.result.data.attributes.title, 'title3');
+            assert.equal(response.result.data.id, 1);
+            assert.equal(response.result.data.attributes.title, 'title1');
 
             // Members should be able to view projects
             user = helper.userSeeds[1];
@@ -389,7 +389,25 @@ describe('project', function() {
 
     it('should not allow viewing of private projects to users without access', function(done) {
         co(function* () {
-            assert(false);
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/4?token=' + token
+            };
+
+            // Should not be able to view private projects without permission
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Users that are not logged in should not be able to view private projects
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/4'
+            });
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);

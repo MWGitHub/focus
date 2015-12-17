@@ -61,6 +61,10 @@ var handler = {
 
         return co(function* () {
             var project = yield Project.forge({id: projectID}).fetch({require: true});
+            // Do not allow guests to view private projects
+            if (!request.auth.isAuthenticated && !project.get('is_public')) {
+                throw Boom.unauthorized();
+            }
             var data = yield project.retrieve(Project.retrievals.all);
             reply(API.makeData(data));
         }).catch(function(error) {

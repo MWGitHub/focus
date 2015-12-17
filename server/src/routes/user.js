@@ -83,8 +83,8 @@ var routes = [
         }
     },
     {
-        method: 'DELETE',
-        path: API.route + '/users/{id}',
+        method: 'POST',
+        path: API.route + '/users/{id}/delete',
         handler: UserAPI.remove,
         config: {
             auth: 'jwt',

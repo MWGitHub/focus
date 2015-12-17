@@ -48,6 +48,7 @@ var routes = [
         config: {
             auth: {
                 strategy: 'jwt',
+                mode: 'try',
                 scope: ['admin', 'member', 'viewer']
             },
             cors: true,
@@ -58,6 +59,28 @@ var routes = [
                 query: {
                     token: Joi.string(),
                     isDeep: Joi.boolean()
+                }
+            },
+            plugins: {
+                permission: {
+                    type: 'project'
+                }
+            }
+        }
+    },
+    {
+        method: 'POST',
+        path: API.route + '/projects/{id}/delete',
+        handler: ProjectAPI.deleteSelf,
+        config: {
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin']
+            },
+            cors: true,
+            validate: {
+                params: {
+                    id: Joi.number().integer().required()
                 }
             },
             plugins: {
