@@ -6,16 +6,6 @@ var Boom = require('boom');
 var co = require('co');
 var Permission = require('../auth/permission-model');
 
-/**
- * Columns to retrieve.
- */
-var retrievals = {
-    all: [
-        {name: 'title'},
-        {name: 'is_public'}
-    ]
-};
-
 var handler = {
     create: function(request, reply) {
         var title = request.payload['title'];
@@ -36,7 +26,7 @@ var handler = {
                 role: Permission.ProjectPermission.roles.admin
             }).save();
 
-            var output = yield project.retrieve(retrievals.all);
+            var output = yield project.retrieve(Project.retrievals.all);
             reply(API.makeData(output));
         }).catch(function(e) {
             reply(Boom.wrap(e));
@@ -58,8 +48,21 @@ var handler = {
                 options.is_public = isPublic
             }
             yield project.set(options).save();
-            var result = yield project.retrieve(retrievals.all);
+            var result = yield project.retrieve(Project.retrievals.all);
             reply(API.makeData(result));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
+        });
+    },
+
+    retrieve: function(request, reply) {
+        var projectID = request.params['id'];
+        var isDeep = request.query['isDeep'];
+
+        return co(function* () {
+            var project = yield Project.forge({id: projectID}).fetch({require: true});
+            var data = yield project.retrieve(Project.retrievals.all);
+            reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));
         });
@@ -81,24 +84,6 @@ var handler = {
             reply(Boom.wrap(error));
         });
 
-    },
-
-    retrieve: function(request, reply) {
-        var projectID = request.params['id'];
-        var isDeep = !!request.query['isDeep'];
-        console.log(projectID);
-        return co(function* () {
-            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-            var userId = user.get('id');
-            var project = yield Project.forge({id: projectID}).fetch({require: true});
-            if (project.get('user_id') !== userId) {
-                throw Boom.unauthorized();
-            }
-            var data = yield project.retrieveAsData(isDeep);
-            reply(API.makeData(data));
-        }).catch(function(error) {
-            reply(Boom.wrap(error));
-        });
     }
 };
 

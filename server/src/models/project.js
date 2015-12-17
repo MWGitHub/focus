@@ -45,7 +45,7 @@ var Project = Bookshelf.Model.extend({
 
     /**
      * Retrieves the data of the project.
-     * @param {{name: string, isDeep: boolean}[]?} columns the columns to retrieve or all if none specified.
+     * @param {{name: string, obj: *}[]?} columns the columns to retrieve or all if none specified.
      * @return {Promise} the promise with the data.
      */
     retrieve: function(columns) {
@@ -62,7 +62,16 @@ var Project = Bookshelf.Model.extend({
             } else {
                 for (var i = 0; i < columns.length; i++) {
                     var column = columns[i];
-                    if (instance.has(column.name)) {
+                    // If the column is a relationship retrieve the relationship
+                    if (column.obj != null) {
+                        var items = [];
+                        var children = yield instance[column.name].call(instance);
+                        for (var j = 0; j < children.length; j++) {
+                            var childData = yield children[j].retrieve(column.obj);
+                            items.push(childData);
+                        }
+                        output.attributes[column.name] = items;
+                    } else if (instance.has(column.name)) {
                         output.attributes[column.name] = instance.get(column.name);
                     }
                 }
@@ -77,6 +86,15 @@ var Project = Bookshelf.Model.extend({
         id: {type: 'increments', notNullable: true, primary: true},
         title: {type: 'string', length: 150, notNullable: true},
         is_public: {type: 'boolean', notNullable: true}
+    },
+    /**
+     * Preset ways of retrieving properties.
+     */
+    retrievals: {
+        all: [
+            {name: 'title'},
+            {name: 'is_public'}
+        ]
     }
 });
 

@@ -302,7 +302,85 @@ describe('project', function() {
 
     it('should allow viewing of projects for valid users', function(done) {
         co(function* () {
-            assert(false);
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0?token=' + token
+            };
+
+            // Admin should be able to view the project
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 0);
+            assert.equal(response.result.data.attributes.title, 'title0');
+
+            // Anyone logged in should be able to view public projects
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/3?token=' + token;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 3);
+            assert.equal(response.result.data.attributes.title, 'title3');
+
+            // Anyone should be able to view public projects
+            clone = _.cloneDeep(payload);
+            delete clone.headers;
+            clone.url = helper.apiRoute + '/projects/3?token=' + token;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 3);
+            assert.equal(response.result.data.attributes.title, 'title3');
+
+            // Members should be able to view projects
+            user = helper.userSeeds[1];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1?token=' + token,
+                headers: {
+                    authorization: token
+                }
+            };
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 1);
+            assert.equal(response.result.data.attributes.title, 'title1');
+
+            // Members should be able to view private projects
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/2?token=' + token;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 2);
+            assert.equal(response.result.data.attributes.title, 'title2');
+
+            // Viewer should be able to view projects
+            user = helper.userSeeds[2];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/3?token=' + token,
+                headers: {
+                    authorization: token
+                }
+            };
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 3);
+            assert.equal(response.result.data.attributes.title, 'title3');
+
+            // Members should be able to view private projects
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/4?token=' + token;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 4);
+            assert.equal(response.result.data.attributes.title, 'title4');
+
             done();
         }).catch(function(e) {
             done(e);

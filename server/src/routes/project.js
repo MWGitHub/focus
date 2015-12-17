@@ -59,6 +59,11 @@ var routes = [
                     token: Joi.string(),
                     isDeep: Joi.boolean()
                 }
+            },
+            plugins: {
+                permission: {
+                    type: 'project'
+                }
             }
         }
     }
