@@ -80,6 +80,21 @@ var User = Bookshelf.Model.extend({
     },
 
     /**
+     * Columns to retrieve.
+     * @type {{owner: *[], guest: *[]}}
+     */
+    retrievals: {
+        owner: [
+            {name: 'username'},
+            {name: 'timezone'},
+            {name: 'email'}
+        ],
+        guest: [
+            {name: 'username'}
+        ]
+    },
+
+    /**
      * Find a user by username or email.
      * @param {string?} username the username to search, omits username if none given.
      * @param {string?} email the email to search, omits email if none given.

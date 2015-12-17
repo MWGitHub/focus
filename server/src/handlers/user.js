@@ -20,21 +20,6 @@ UserHandler.StatusCodes = {
 };
 
 /**
- * Columns to retrieve.
- * @type {{owner: *[], guest: *[]}}
- */
-var retrievals = {
-    owner: [
-        {name: 'username'},
-        {name: 'timezone'},
-        {name: 'email'}
-    ],
-    guest: [
-        {name: 'username'}
-    ]
-};
-
-/**
  * Registers a user and populates with default data.
  * @param request
  * @param reply
@@ -71,7 +56,7 @@ UserHandler.register = function(request, reply) {
             return User.forge(data).save()
         })
         .then(function(user) {
-            return user.retrieve(retrievals.owner);
+            return user.retrieve(User.retrievals.owner);
         })
         .then(function(data) {
             reply(API.makeData(data));
@@ -102,7 +87,7 @@ UserHandler.login = function(request, reply) {
                 } else if (isValid) {
                     var token = Session.generateToken(user.get('id'));
                     Session.login(token).then(function() {
-                        return user.retrieve(retrievals.owner);
+                        return user.retrieve(User.retrievals.owner);
                     })
                     .then(function(data) {
                         data.token = token;
@@ -156,7 +141,7 @@ UserHandler.retrieve = function(request, reply) {
 
     co(function* () {
         var user = yield User.forge({id: id}).fetch({require: true});
-        var data = yield isUser ? user.retrieve(retrievals.owner) : user.retrieve(retrievals.guest);
+        var data = yield isUser ? user.retrieve(User.retrievals.owner) : user.retrieve(User.retrievals.guest);
         reply(API.makeData(data));
     }).catch(function(err) {
         reply(Boom.notFound());
@@ -204,7 +189,7 @@ UserHandler.update = function(request, reply) {
             return user.set(options).save();
         })
         .then(function() {
-            return user.retrieve(retrievals.owner);
+            return user.retrieve(User.retrievals.owner);
         })
         .then(function(data) {
             reply(API.makeData(data));

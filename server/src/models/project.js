@@ -87,6 +87,7 @@ var Project = Bookshelf.Model.extend({
         title: {type: 'string', length: 150, notNullable: true},
         is_public: {type: 'boolean', notNullable: true}
     },
+
     /**
      * Preset ways of retrieving properties.
      */
