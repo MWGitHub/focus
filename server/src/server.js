@@ -63,24 +63,27 @@ class Server {
                     }
                 },
                 {
-                    register: Permission
-                },
-                {
-                    register: Auth,
-                    options: {
-                        permission: {
-                            plugin: 'permission',
-                            scope: 'scopeFunction'
-                        },
-                        key: config.authkey
-                    }
-                },
-                {
                     register: Session,
                     options: {
                         redis: {
                             plugin: 'redis-client',
                             key: 'client'
+                        },
+                        key: config.authkey
+                    }
+                },
+                {
+                    register: Permission
+                },
+                {
+                    register: Auth,
+                    options: {
+                        session: {
+                            validate: Session.validate,
+                            key: 'tid'
+                        },
+                        permission: {
+                            scope: Permission.getScope
                         },
                         key: config.authkey
                     }
