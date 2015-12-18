@@ -1,5 +1,5 @@
 var Bookshelf = require('../lib/database').bookshelf;
-var Permission = require('../auth/permission-model');
+require('../auth/permission-model');
 var co = require('co');
 var _ = require('lodash');
 
@@ -12,7 +12,7 @@ var User = Bookshelf.Model.extend({
     },
 
     permissions: function() {
-        return this.hasMany(Permission.ProjectPermission, 'user_id');
+        return this.hasMany('ProjectPermission');
     },
 
     /**
@@ -125,4 +125,4 @@ var User = Bookshelf.Model.extend({
     }
 });
 
-module.exports = User;
+module.exports = Bookshelf.model('User', User);

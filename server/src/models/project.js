@@ -2,9 +2,9 @@
 
 var Bookshelf = require('../lib/database').bookshelf;
 var co = require('co');
-var Board = require('./board');
-var Permission = require('../auth/permission-model');
 var _ = require('lodash');
+require('./board');
+require('../auth/permission-model');
 
 var Project = Bookshelf.Model.extend({
     tableName: 'projects',
@@ -15,31 +15,34 @@ var Project = Bookshelf.Model.extend({
     },
 
     boards: function() {
-        return this.hasMany(Board);
+        return this.hasMany('Board');
     },
 
     permissions: function() {
-        return this.hasMany(Permission.ProjectPermission);
+        return this.hasMany('ProjectPermission');
     },
 
     /**
      * Destroys all related objects before destroying itself.
      * @return {Promise} the promise for destroying.
      */
-    _destroyDeep: function() {
+    _destroyDeep: function(model, attrs, options) {
         var instance = this;
 
         return co(function* () {
             // Destroy all permissions
+            console.log(instance);
+            console.log(instance.permissions());
             var permissions = yield instance.permissions().fetch();
+            console.log(permissions);
             yield permissions.invokeThen('destroy');
+            console.log('permission destroyed');
 
             // Destroy all connected boards
             var boards = yield instance.boards().fetch();
             yield boards.invokeThen('destroy');
-
-            // Destroy the itself
-            return yield instance.destroy();
+        }).catch(function(e) {
+            console.log(e);
         });
     },
 
@@ -99,4 +102,4 @@ var Project = Bookshelf.Model.extend({
     }
 });
 
-module.exports = Project;
+module.exports = Bookshelf.model('Project', Project);

@@ -5,14 +5,14 @@ var Good = require('good');
 var Boom = require('boom');
 var co = require('co');
 var RedisClient = require('./lib/redis-client');
-var Routes = require('./routes/routes');
-
-var Auth = require('./auth/auth');
-var Permission = require('./auth/permission');
+var database = require('./lib/database');
 var Session = require('./auth/session');
+var Permission = require('./auth/permission');
+var Routes = require('./routes/routes');
+var Auth = require('./auth/auth');
 var Stale = require('./lib/stale');
 var logger = require('./lib/logger');
-var database = require('./lib/database');
+
 
 class Server {
     /**

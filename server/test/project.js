@@ -401,6 +401,13 @@ describe('project', function() {
             var response = yield helper.inject(payload);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
+            // Should be unable to find projects that do not exist
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/40?token=' + token
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             // Users that are not logged in should not be able to view private projects
             response = yield helper.inject({
                 method: 'GET',
@@ -416,7 +423,28 @@ describe('project', function() {
 
     it('should allow admins to delete projects', function(done) {
         co(function* () {
-            assert(false);
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/delete',
+                headers: {
+                    authorization: token
+                }
+            };
+
+            // Admin should be able to delete project
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            // Item should not be found when retrieving deleted project
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0?token=' + token
+            });
+            assert.equal(response.statusCode, Helper.Status.notFound);
+
             done();
         }).catch(function(e) {
             done(e);

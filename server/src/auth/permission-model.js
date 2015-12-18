@@ -2,18 +2,18 @@
  * Permission models for models that require them.
  */
 var Bookshelf = require('../lib/database').bookshelf;
-var User = require('../models/user');
-var Project = require('../models/project');
+require('../models/user');
+require('../models/project');
 
 var ProjectPermission = Bookshelf.Model.extend({
     tableName: 'project_permissions',
 
     user: function() {
-        return this.belongsTo(User);
+        return this.belongsTo('User');
     },
 
     project: function() {
-        return this.belongsTo(Project);
+        return this.belongsTo('Project');
     }
 }, {
     schema: {
@@ -36,5 +36,5 @@ var ProjectPermission = Bookshelf.Model.extend({
 });
 
 module.exports = {
-    ProjectPermission: ProjectPermission
+    ProjectPermission: Bookshelf.model('ProjectPermission', ProjectPermission)
 };

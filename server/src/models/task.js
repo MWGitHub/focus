@@ -2,7 +2,7 @@
  * Represents a task.
  */
 var Bookshelf = require('../lib/database').bookshelf;
-var List = require('./list');
+require('./list');
 
 var Task = Bookshelf.Model.extend({
     tableName: 'tasks',
@@ -10,7 +10,7 @@ var Task = Bookshelf.Model.extend({
 
     list: function() {
         "use strict";
-        return this.belongsTo(List);
+        return this.belongsTo('List');
     },
 
     /**
@@ -53,4 +53,4 @@ var Task = Bookshelf.Model.extend({
     }
 });
 
-module.exports = Task;
+module.exports = Bookshelf.model('Task', Task);

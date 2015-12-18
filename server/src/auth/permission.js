@@ -38,6 +38,7 @@ var internals = {
                 if (isPublic) {
                     return ['viewer'];
                 } else {
+                    // No role if project not found or not public
                     return [];
                 }
             }

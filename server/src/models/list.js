@@ -1,7 +1,7 @@
 var Bookshelf = require('../lib/database').bookshelf;
-var Task = require('./task');
-var Board = require('./board');
-var User = require('./user');
+require('./task');
+require('./board');
+require('./user');
 var co = require('co');
 
 var List = Bookshelf.Model.extend({
@@ -10,17 +10,17 @@ var List = Bookshelf.Model.extend({
 
     tasks: function() {
         "use strict";
-        return this.hasMany(Task);
+        return this.hasMany('Task');
     },
 
     board: function() {
         "use strict";
-        return this.belongsTo(Board);
+        return this.belongsTo('Board');
     },
 
     user: function() {
         "use strict";
-        return this.belongsTo(User);
+        return this.belongsTo('User');
     },
 
     /**
@@ -90,4 +90,4 @@ var List = Bookshelf.Model.extend({
     }
 });
 
-module.exports = List;
+module.exports = Bookshelf.model('List', List);

@@ -23,6 +23,7 @@ if (environment && environment === 'production') {
 
 var knex = Knex(config);
 var bookshelf = Bookshelf(knex);
+bookshelf.plugin('registry');
 
 module.exports = {
     knex: knex,

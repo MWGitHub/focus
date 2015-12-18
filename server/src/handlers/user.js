@@ -216,11 +216,7 @@ UserHandler.remove = function(request, reply) {
             return user.destroy();
         })
         .then(function () {
-            if (request.auth.strategy === 'simple') {
-                reply(API.makeStatusMessage('user-delete', true, 'User deleted')).redirect(API.route + '/user/logout');
-            } else {
-                reply(API.makeStatusMessage('user-delete', true, 'User deleted'));
-            }
+            reply(API.makeStatusMessage('user-delete', true, 'User deleted'));
         })
         .catch(function (e) {
             reply(Boom.notFound());

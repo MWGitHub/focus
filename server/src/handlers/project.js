@@ -75,16 +75,11 @@ var handler = {
     deleteSelf: function(request, reply) {
         var projectID = request.params['id'];
         return co(function* () {
-            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-            var userId = user.get('id');
             var project = yield Project.forge({id: projectID}).fetch({require: true});
-            if (project.get('user_id') !== userId) {
-                reply(Boom.unauthorized());
-                return;
-            }
-            yield project.destroyDeep();
+            yield project.destroy();
             reply(API.makeStatusMessage('project-delete', true, 'project deleted'));
         }).catch(function(error) {
+            console.log(error);
             reply(Boom.wrap(error));
         });
 
