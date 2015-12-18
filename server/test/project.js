@@ -1,7 +1,6 @@
 var assert = require('chai').assert;
 var Helper = require('./helpers/helper');
 var co = require('co');
-var moment = require('moment-timezone');
 var _ = require('lodash');
 
 describe('project', function() {

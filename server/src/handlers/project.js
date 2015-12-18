@@ -4,7 +4,7 @@ var Project = require('../models/project');
 var API = require('../lib/api');
 var Boom = require('boom');
 var co = require('co');
-var Permission = require('../auth/permission-model');
+var Permission = require('../permission/permission-model');
 
 var handler = {
     create: function(request, reply) {

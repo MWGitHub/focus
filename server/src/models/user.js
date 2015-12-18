@@ -1,5 +1,5 @@
 var Bookshelf = require('../lib/database').bookshelf;
-require('../auth/permission-model');
+require('../permission/permission-model');
 var co = require('co');
 var _ = require('lodash');
 

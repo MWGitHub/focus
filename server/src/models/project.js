@@ -4,7 +4,7 @@ var Bookshelf = require('../lib/database').bookshelf;
 var co = require('co');
 var _ = require('lodash');
 require('./board');
-require('../auth/permission-model');
+require('../permission/permission-model');
 
 var Project = Bookshelf.Model.extend({
     tableName: 'projects',

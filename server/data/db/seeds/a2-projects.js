@@ -1,5 +1,5 @@
 var co = require('co');
-var PermissionModel = require('../../../src/auth/permission-model');
+var PermissionModel = require('../../../src/permission/permission-model');
 
 exports.seed = function(knex, Promise) {
     return co(function* () {
