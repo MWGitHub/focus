@@ -32,15 +32,11 @@ var Project = Bookshelf.Model.extend({
         return co(function* () {
             // Destroy all permissions
             var permissions = yield instance.permissions().fetch();
-            console.log(permissions);
             yield permissions.invokeThen('destroy');
-            console.log('permission destroyed');
 
             // Destroy all connected boards
             var boards = yield instance.boards().fetch();
             yield boards.invokeThen('destroy');
-        }).catch(function(e) {
-            console.log(e);
         });
     },
 

@@ -443,7 +443,7 @@ describe('project', function() {
                 method: 'GET',
                 url: helper.apiRoute + '/projects/0?token=' + token
             });
-            assert.equal(response.statusCode, Helper.Status.notFound);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             done();
         }).catch(function(e) {
@@ -453,7 +453,71 @@ describe('project', function() {
 
     it('should not allow non-admins to delete projects', function(done) {
         co(function* () {
-            assert(false);
+            var user = helper.userSeeds[1];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/2/delete',
+                headers: {
+                    authorization: token
+                }
+            };
+
+            // Member should not be able to delete a private project
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Member should not be able to delete public project
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/1/delete';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Should not be able to delete a project with no relation to
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/0/delete';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+
+            // Viewer should not be able to delete private project
+            user = helper.userSeeds[2];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/2/delete',
+                headers: {
+                    authorization: token
+                }
+            };
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to delete public project
+            clone = _.cloneDeep(payload);
+            clone.url = helper.apiRoute + '/projects/3/delete';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Unauthorized should not be able to delete private project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/delete'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
+            // Unauthorized should not be able to delete public project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/1/delete'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);
