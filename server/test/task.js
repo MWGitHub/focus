@@ -4,7 +4,7 @@ var User = require('../src/models/user');
 var List = require('../src/models/list');
 var Task = require('../src/models/task');
 var Auth = require('../src/auth/auth');
-var Session = require('../src/auth/session');
+var Session = require('../src/session/session');
 var API = require('../src/lib/api');
 var Helper = require('./helpers/helper');
 

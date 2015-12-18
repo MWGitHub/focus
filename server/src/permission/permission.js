@@ -48,6 +48,8 @@ var internals = {
 
 var permission = {
     register: function(server, options, next) {
+
+
         server.expose('scopeFunction', internals.getScope);
 
         next();

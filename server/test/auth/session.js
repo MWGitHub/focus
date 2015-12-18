@@ -1,4 +1,4 @@
-var Session = require('../../src/auth/session');
+var Session = require('../../src/session/session');
 var assert = require('chai').assert;
 var Hapi = require('hapi');
 var redis = require('redis');

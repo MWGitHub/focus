@@ -2,7 +2,7 @@
 
 var Bcrypt = require('bcrypt');
 var AuthJWT = require('hapi-auth-jwt2');
-var Session = require('./session');
+var Session = require('./../session/session');
 var co = require('co');
 
 function validateJWT(scopeFunction) {

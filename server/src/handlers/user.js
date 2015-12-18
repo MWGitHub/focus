@@ -2,7 +2,7 @@
 
 var User = require('../models/user');
 var Auth = require('../auth/auth');
-var Session = require('../auth/session');
+var Session = require('../session/session');
 var Boom = require('boom');
 var Bcrypt = require('bcrypt');
 var API = require('../lib/api');
