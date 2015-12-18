@@ -31,8 +31,6 @@ var Project = Bookshelf.Model.extend({
 
         return co(function* () {
             // Destroy all permissions
-            console.log(instance);
-            console.log(instance.permissions());
             var permissions = yield instance.permissions().fetch();
             console.log(permissions);
             yield permissions.invokeThen('destroy');
