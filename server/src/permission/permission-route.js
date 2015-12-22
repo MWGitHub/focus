@@ -28,27 +28,29 @@ var routes = [
     },
     {
         method: 'GET',
-        path: API.route + '/permissions',
+        path: API.route + '/permissions/{type}/{id}',
         handler: Handler.retrieve,
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin', 'member']
+                scope: ['admin', 'member', 'viewer'],
+                mode: 'try'
             },
             cors: true,
             validate: {
                 query: {
-                    token: Joi.string(),
-                    user_id: Joi.number().integer(),
-                    project_id: Joi.number().integer(),
-                    role: Joi.string().valid(Plugin.levels())
+                    token: Joi.string()
+                },
+                params: {
+                    type: Joi.string(),
+                    id: Joi.number().integer()
                 }
             }
         }
     },
     {
         method: 'POST',
-        path: API.route + '/permissions/delete',
+        path: API.route + '/permissions/{type}/{id}/delete',
         handler: Handler.deleteSelf,
         config: {
             auth: {
@@ -57,9 +59,12 @@ var routes = [
             },
             cors: true,
             validate: {
+                payload: {
+                    user_id: Joi.number().integer().required()
+                },
                 params: {
                     id: Joi.number().integer(),
-                    user_id: Joi.number().integer()
+                    type: Joi.string()
                 }
             }
         }

@@ -32,6 +32,14 @@ var ProjectPermission = Bookshelf.Model.extend({
         admin: 'admin',
         member: 'member',
         viewer: 'viewer'
+    },
+
+    retrievals: {
+        all: [
+            {name: 'user_id'},
+            {name: 'project_id'},
+            {name: 'role'}
+        ]
     }
 });
 

@@ -3,6 +3,7 @@
 var Bookshelf = require('../lib/database').bookshelf;
 var co = require('co');
 var _ = require('lodash');
+var ModelUtil = require('../lib/model-util');
 require('./board');
 require('../permission/permission-model');
 
@@ -46,37 +47,7 @@ var Project = Bookshelf.Model.extend({
      * @return {Promise} the promise with the data.
      */
     retrieve: function(columns) {
-        var instance = this;
-        return co(function* () {
-            var output = {
-                type: 'projects',
-                id: instance.get('id'),
-                attributes: {}
-            };
-            if (!columns) {
-                output.attributes.title = instance.get('title');
-                output.attributes.is_public = instance.get('is_public');
-            } else {
-                for (var i = 0; i < columns.length; i++) {
-                    var column = columns[i];
-                    // If the column is a relationship retrieve the relationship
-                    if (column.obj != null) {
-                        var items = [];
-                        var children = yield instance[column.name].call(instance);
-                        for (var j = 0; j < children.length; j++) {
-                            var childData = yield children[j].retrieve(column.obj);
-                            items.push(childData);
-                        }
-                        output.attributes[column.name] = items;
-                    } else if (instance.has(column.name)) {
-                        output.attributes[column.name] = instance.get(column.name);
-                    }
-                }
-            }
-            return output;
-        }, function(e) {
-            console.log(e);
-        });
+        return ModelUtil.retrieve(this.tableName, this.get('id'), this, columns);
     }
 }, {
     schema: {

@@ -1,7 +1,8 @@
 var Bookshelf = require('../lib/database').bookshelf;
-require('../permission/permission-model');
 var co = require('co');
 var _ = require('lodash');
+var ModelUtil = require('../lib/model-util');
+require('../permission/permission-model');
 
 var User = Bookshelf.Model.extend({
     tableName: 'users',
@@ -43,28 +44,7 @@ var User = Bookshelf.Model.extend({
     retrieve: function(columns) {
         "use strict";
 
-        var instance = this;
-        return co(function* () {
-            var output = {
-                type: 'users',
-                id: instance.get('id'),
-                attributes: {}
-            };
-            if (!columns) {
-                output.attributes.username = instance.get('username');
-                output.attributes.timezone = instance.get('timezone');
-                output.attributes.email = instance.get('email');
-                output.attributes.verified = instance.get('verified');
-            } else {
-                for (var i = 0; i < columns.length; i++) {
-                    var column = columns[i];
-                    if (instance.has(column.name)) {
-                        output.attributes[column.name] = instance.get(column.name);
-                    }
-                }
-            }
-            return output;
-        });
+        return ModelUtil.retrieve(this.tableName, this.get('id'), this, columns);
     }
 }, {
     schema: {
