@@ -337,10 +337,7 @@ describe('project', function() {
             token = (yield helper.login(user.username, user.password)).result.data.token;
             payload = {
                 method: 'GET',
-                url: helper.apiRoute + '/projects/1?token=' + token,
-                headers: {
-                    authorization: token
-                }
+                url: helper.apiRoute + '/projects/1?token=' + token
             };
 
             response = yield helper.inject(payload);
@@ -361,10 +358,7 @@ describe('project', function() {
             token = (yield helper.login(user.username, user.password)).result.data.token;
             payload = {
                 method: 'GET',
-                url: helper.apiRoute + '/projects/3?token=' + token,
-                headers: {
-                    authorization: token
-                }
+                url: helper.apiRoute + '/projects/3?token=' + token
             };
 
             response = yield helper.inject(payload);

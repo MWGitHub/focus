@@ -27,8 +27,8 @@ function validateJWT(decoded, request, callback) {
             if (internals.permission.scope) {
                 scope = yield internals.permission.scope(decoded.id, request);
             }
-            // console.log('scope');
-            // console.log(scope);
+            //console.log('scope');
+            //console.log(scope);
             var credentials = {
                 id: decoded.id,
                 scope: scope

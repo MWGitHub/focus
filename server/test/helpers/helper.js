@@ -123,16 +123,6 @@ class Helper {
     }
 
     /**
-     * Generate the authorization header string.
-     * @param {String} username the username to use.
-     * @param {String} password the password of the user.
-     * @returns {string} the generated header.
-     */
-    generateSimpleAuthHeader(username, password) {
-        return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
-    }
-
-    /**
      * Logs a user in.
      * @param {string} login the user name or email.
      * @param {string} password the password of the user.
@@ -170,7 +160,8 @@ Helper.Status = {
     unauthorized: 401,
     forbidden: 403,
     notFound: 404,
-    taken: 440
+    taken: 440,
+    internal: 500
 };
 
 module.exports = Helper;
