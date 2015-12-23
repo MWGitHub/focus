@@ -60,18 +60,20 @@ var User = Bookshelf.Model.extend({
     },
 
     /**
-     * Columns to retrieve.
+     * Common columns to retrieve.
      * @type {{owner: *[], guest: *[]}}
      */
-    retrievals: {
-        owner: [
-            {name: 'username'},
-            {name: 'timezone'},
-            {name: 'email'}
-        ],
-        guest: [
-            {name: 'username'}
-        ]
+    getRetrievals: function() {
+        return {
+            owner: [
+                {name: 'username'},
+                {name: 'timezone'},
+                {name: 'email'}
+            ],
+            guest: [
+                {name: 'username'}
+            ]
+        };
     },
 
     /**

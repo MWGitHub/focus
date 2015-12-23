@@ -57,13 +57,16 @@ var Project = Bookshelf.Model.extend({
     },
 
     /**
-     * Preset ways of retrieving properties.
+     * Common columns to retrieve.
+     * @returns {{all: *[]}}
      */
-    retrievals: {
-        all: [
-            {name: 'title'},
-            {name: 'is_public'}
-        ]
+    getRetrievals: function() {
+        return {
+            all: [
+                {name: 'title'},
+                {name: 'is_public'}
+            ]
+        };
     }
 });
 

@@ -26,7 +26,7 @@ var handler = {
                 role: Permission.ProjectPermission.roles.admin
             }).save();
 
-            var output = yield project.retrieve(Project.retrievals.all);
+            var output = yield project.retrieve(Project.getRetrievals().all);
             reply(API.makeData(output));
         }).catch(function(e) {
             reply(Boom.wrap(e));
@@ -48,7 +48,7 @@ var handler = {
                 options.is_public = isPublic
             }
             yield project.set(options).save();
-            var result = yield project.retrieve(Project.retrievals.all);
+            var result = yield project.retrieve(Project.getRetrievals().all);
             reply(API.makeData(result));
         }).catch(function(error) {
             reply(Boom.wrap(error));
@@ -65,7 +65,7 @@ var handler = {
             if (!request.auth.isAuthenticated && !project.get('is_public')) {
                 throw Boom.unauthorized();
             }
-            var data = yield project.retrieve(Project.retrievals.all);
+            var data = yield project.retrieve(Project.getRetrievals().all);
             reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));

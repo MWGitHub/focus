@@ -36,7 +36,7 @@ var handler = {
     },
 
     retrieve: function(request, reply) {
-
+        console.log(ProjectPermission.getRetrievals());
     },
 
     deleteSelf: function(request, reply) {

@@ -34,12 +34,16 @@ var ProjectPermission = Bookshelf.Model.extend({
         viewer: 'viewer'
     },
 
-    retrievals: {
-        all: [
-            {name: 'user_id'},
-            {name: 'project_id'},
-            {name: 'role'}
-        ]
+    getRetrievals() {
+        var User = Bookshelf.model('User');
+        var Project = Bookshelf.model('Project');
+        return {
+            all: [
+                {name: 'user_id', title: 'users', obj: User.retrievals.guest},
+                {name: 'project_id', title: 'projects', obj: Project.retrievals.all},
+                {name: 'role'}
+            ]
+        }
     }
 });
 

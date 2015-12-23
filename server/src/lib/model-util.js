@@ -11,7 +11,9 @@ var util = {
      * @param {string} type the model type.
      * @param {number} id the id of the model.
      * @param model the model to retrieve data from.
-     * @param {{name: string, obj: *}[]} columns the columns to retrieve by name or by object for deep retrieval.
+     * @param {{name: string, title: string?, obj: *?}[]} columns the columns to retrieve by name or by object for
+     *                                                            deep retrieval and an optional title used for
+     *                                                            the output.
      * @returns {Promise.<T>}
      */
     retrieve: function(type, id, model, columns) {
@@ -23,6 +25,7 @@ var util = {
             };
             for (var i = 0; i < columns.length; i++) {
                 var column = columns[i];
+                var title = column.title || column.name;
                 // If the column is a relationship retrieve the relationship
                 if (column.obj != null) {
                     var items = [];
@@ -31,9 +34,9 @@ var util = {
                         var childData = yield children[j].retrieve(column.obj);
                         items.push(childData);
                     }
-                    output.attributes[column.name] = items;
+                    output.attributes[title] = items;
                 } else if (model.has(column.name)) {
-                    output.attributes[column.name] = model.get(column.name);
+                    output.attributes[title] = model.get(column.name);
                 }
             }
             return output;

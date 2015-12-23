@@ -86,7 +86,7 @@ var session = {
     /**
      * Begin a session.
      * @param {String} token the token.
-     * @param {Number} duration the duration in seconds as an integer.
+     * @param {Number?} duration the duration in seconds as an integer.
      * @returns {Promise}
      */
     login: function(token, duration) {

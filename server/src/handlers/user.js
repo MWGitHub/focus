@@ -56,7 +56,7 @@ UserHandler.register = function(request, reply) {
             return User.forge(data).save()
         })
         .then(function(user) {
-            return user.retrieve(User.retrievals.owner);
+            return user.retrieve(User.getRetrievals().owner);
         })
         .then(function(data) {
             reply(API.makeData(data));
@@ -87,7 +87,7 @@ UserHandler.login = function(request, reply) {
                 } else if (isValid) {
                     var token = Session.generateToken(user.get('id'));
                     Session.login(token).then(function() {
-                        return user.retrieve(User.retrievals.owner);
+                        return user.retrieve(User.getRetrievals().owner);
                     })
                     .then(function(data) {
                         data.token = token;
@@ -118,10 +118,10 @@ UserHandler.logout = function(request, reply) {
             reply(API.makeStatusMessage('user-logout', true, 'Logged out')).code(401);
         } else {
             Session.logout(request.auth.credentials.tid)
-                .then(function () {
+                .then(function() {
                     reply(API.makeStatusMessage('user-logout', true, 'Logged out'));
                 })
-                .catch(function (err) {
+                .catch(function() {
                     reply(Boom.badRequest());
                 });
         }
@@ -141,9 +141,9 @@ UserHandler.retrieve = function(request, reply) {
 
     co(function* () {
         var user = yield User.forge({id: id}).fetch({require: true});
-        var data = yield isUser ? user.retrieve(User.retrievals.owner) : user.retrieve(User.retrievals.guest);
+        var data = yield isUser ? user.retrieve(User.getRetrievals().owner) : user.retrieve(User.getRetrievals().guest);
         reply(API.makeData(data));
-    }).catch(function(err) {
+    }).catch(function() {
         reply(Boom.notFound());
     });
 };
@@ -189,7 +189,7 @@ UserHandler.update = function(request, reply) {
             return user.set(options).save();
         })
         .then(function() {
-            return user.retrieve(User.retrievals.owner);
+            return user.retrieve(User.getRetrievals().owner);
         })
         .then(function(data) {
             reply(API.makeData(data));

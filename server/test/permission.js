@@ -234,7 +234,16 @@ describe('permission', function() {
 
     it('should list all users with permission', function(done) {
         co(function* () {
-            assert(false);
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/0?token=' + token
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            //assert.equal(response.result.data.attributes.user)
+
             done();
         }).catch(function(e) {
             done(e);
