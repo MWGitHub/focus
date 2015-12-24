@@ -36,7 +36,7 @@ var routes = [
             },
             plugins: {
                 permission: {
-                    type: 'project'
+                    type: 'projects'
                 }
             }
         }
@@ -63,7 +63,7 @@ var routes = [
             },
             plugins: {
                 permission: {
-                    type: 'project'
+                    type: 'projects'
                 }
             }
         }
@@ -85,7 +85,7 @@ var routes = [
             },
             plugins: {
                 permission: {
-                    type: 'project'
+                    type: 'projects'
                 }
             }
         }

@@ -2,6 +2,7 @@
  * Permission models for models that require them.
  */
 var Bookshelf = require('../lib/database').bookshelf;
+var ModelUtil = require('../lib/model-util');
 require('../models/user');
 require('../models/project');
 
@@ -14,6 +15,15 @@ var ProjectPermission = Bookshelf.Model.extend({
 
     project: function() {
         return this.belongsTo('Project');
+    },
+
+    /**
+     * Retrieves the data of the permission.
+     * @param {{name: string, obj: *}[]} columns the columns to retrieve or all if none specified.
+     * @return {Promise} the promise with the data.
+     */
+    retrieve: function(columns) {
+        return ModelUtil.retrieve(this.tableName, this.get('id'), this, columns);
     }
 }, {
     schema: {
@@ -39,8 +49,13 @@ var ProjectPermission = Bookshelf.Model.extend({
         var Project = Bookshelf.model('Project');
         return {
             all: [
-                {name: 'user_id', title: 'users', obj: User.retrievals.guest},
-                {name: 'project_id', title: 'projects', obj: Project.retrievals.all},
+                {name: 'user_id', title: 'user', obj: User.getRetrievals().guest},
+                {name: 'project_id', title: 'project', obj: Project.getRetrievals().all},
+                {name: 'role'}
+            ],
+            // Retrieve only users for a project
+            users: [
+                {name: 'user', title: 'user', obj: User.getRetrievals().guest},
                 {name: 'role'}
             ]
         }

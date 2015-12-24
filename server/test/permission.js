@@ -234,6 +234,7 @@ describe('permission', function() {
 
     it('should list all users with permission', function(done) {
         co(function* () {
+            // Retrieve permissions as an admin
             var user = helper.userSeeds[0];
             var token = (yield helper.login(user.username, user.password)).result.data.token;
             var payload = {
@@ -242,7 +243,270 @@ describe('permission', function() {
             };
             var response = yield helper.inject(payload);
             assert.equal(response.statusCode, Helper.Status.valid);
-            //assert.equal(response.result.data.attributes.user)
+            assert.equal(response.result.data.length, 1);
+
+            // Add a member and retrieve permissions
+            yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/0',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[1].id,
+                    role: "member"
+                }
+            });
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.length, 2);
+
+            // Add a viewer and retrieve permissions
+            yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/0',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[2].id,
+                    role: "viewer"
+                }
+            });
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.length, 3);
+
+            // Retrieve permissions of a public project
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/1'
+            });
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.length, 2);
+
+            // Retrieve permissions of a public project as an admin
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/1?token=' + token
+            });
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.length, 2);
+
+            // Retrieve permissions as a member
+            user = helper.userSeeds[1];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/2?token=' + token
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.length, 3);
+
+            // Retrieve permissions as a viewer
+            user = helper.userSeeds[2];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/4?token=' + token
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.length, 1);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
+    it('should not allow listing users for private boards not a member of', function(done) {
+        co(function* () {
+            // Should not allow listings for forbidden private boards
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/4?token=' + token
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Should not allow listings for unauthorized private boards
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/4'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
+    it('should update permissions of a user', function(done) {
+        co(function* () {
+            // Should change a user to admin
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var changed = helper.userSeeds[1];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/1/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: changed.id,
+                    role: 'admin'
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            // Have changed user add a member
+            token = (yield helper.login(changed.username, changed.password)).result.data.token;
+            response = yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/1',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[4].id,
+                    role: "member"
+                }
+            });
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
+    it('should prevent an admin from demoting if they are the only one', function(done) {
+        co(function* () {
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/1/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: user.id,
+                    role: 'member'
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.error);
+            done();
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
+    it('should not allow non admins to update permissions of a user', function(done) {
+        co(function* () {
+            // Should not allow members from updating
+            var user = helper.userSeeds[1];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/1/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[0].id,
+                    role: 'member'
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Should not allow viewers from updating
+            user = helper.userSeeds[2];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[1].id,
+                    role: 'member'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Should not allow unauthorized from updating
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/update',
+                payload: {
+                    user_id: helper.userSeeds[1].id,
+                    role: 'member'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
+            done();
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
+    it('should not allow invalid updates', function(done) {
+        co(function* () {
+            // Should not allow invalid roles
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/1/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[1].id,
+                    role: 'member'
+                }
+            };
+
+            var clone = _.cloneDeep(payload);
+            clone.payload.role = 'invalid';
+            var response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.error);
+
+            // Should not allow invalid users
+            clone = _.cloneDeep(payload);
+            clone.payload.user_id = 13578135;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.internal);
+
+            // Should not allow missing parameters
+            clone = _.cloneDeep(payload);
+            delete clone.payload.user_id;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.error);
+
+            clone = _.cloneDeep(payload);
+            delete clone.payload.role;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.error);
 
             done();
         }).catch(function(e) {

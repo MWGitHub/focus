@@ -20,7 +20,7 @@ var routes = [
                     role: Joi.string().valid(Plugin.levels()).required()
                 },
                 params: {
-                    type: Joi.string(),
+                    type: Joi.string().valid(Plugin.types()),
                     id: Joi.number().integer()
                 }
             }
@@ -42,7 +42,29 @@ var routes = [
                     token: Joi.string()
                 },
                 params: {
-                    type: Joi.string(),
+                    type: Joi.string().valid(Plugin.types()),
+                    id: Joi.number().integer()
+                }
+            }
+        }
+    },
+    {
+        method: 'POST',
+        path: API.route + '/permissions/{type}/{id}/update',
+        handler: Handler.update,
+        config: {
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin']
+            },
+            cors: true,
+            validate: {
+                payload: {
+                    role: Joi.string().valid(Plugin.levels()).required(),
+                    user_id: Joi.number().integer().required()
+                },
+                params: {
+                    type: Joi.string().valid(Plugin.types()),
                     id: Joi.number().integer()
                 }
             }
@@ -63,8 +85,8 @@ var routes = [
                     user_id: Joi.number().integer().required()
                 },
                 params: {
+                    type: Joi.string().valid(Plugin.types()),
                     id: Joi.number().integer(),
-                    type: Joi.string()
                 }
             }
         }

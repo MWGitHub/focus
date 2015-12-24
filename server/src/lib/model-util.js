@@ -8,12 +8,11 @@ var Logger = require('./logger');
 var util = {
     /**
      * Retrieves data from a model.
+     * For relations, the model must have a retrieval function and the name must match the function name.
      * @param {string} type the model type.
      * @param {number} id the id of the model.
      * @param model the model to retrieve data from.
-     * @param {{name: string, title: string?, obj: *?}[]} columns the columns to retrieve by name or by object for
-     *                                                            deep retrieval and an optional title used for
-     *                                                            the output.
+     * @param {{name: string, title: string?, obj: *?}[]} columns the columns to retrieve by name, relation, or object.
      * @returns {Promise.<T>}
      */
     retrieve: function(type, id, model, columns) {
@@ -23,25 +22,29 @@ var util = {
                 id: id,
                 attributes: {}
             };
-            for (var i = 0; i < columns.length; i++) {
-                var column = columns[i];
-                var title = column.title || column.name;
-                // If the column is a relationship retrieve the relationship
+            for (let i = 0; i < columns.length; i++) {
+                let column = columns[i];
+                let title = column.title || column.name;
+                // If the column is a relationship then retrieve the relationship
                 if (column.obj != null) {
-                    var items = [];
-                    var children = yield model[column.name].call(model);
-                    for (var j = 0; j < children.length; j++) {
-                        var childData = yield children[j].retrieve(column.obj);
-                        items.push(childData);
+                    let children = yield model[column.name].call(model).fetch();
+                    if (children instanceof Array) {
+                        let items = [];
+                        for (let j = 0; j < children.length; j++) {
+                            var childData = yield children[j].retrieve(column.obj);
+                            items.push(childData);
+                        }
+                        output.attributes[title] = items;
+                    } else {
+                        output.attributes[title] = children.retrieve(column.obj);
                     }
-                    output.attributes[title] = items;
                 } else if (model.has(column.name)) {
                     output.attributes[title] = model.get(column.name);
                 }
             }
             return output;
         }).catch(function(e) {
-            Logger.warn({error: e}, 'Error retrieving model');
+            Logger.warn(e);
         });
     }
 };

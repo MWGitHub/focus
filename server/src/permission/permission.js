@@ -3,7 +3,8 @@ var knex = require('../lib/database').knex;
 var Logger = require('../lib/logger');
 
 var internals = {
-    levels: ['admin', 'member', 'viewer']
+    levels: ['admin', 'member', 'viewer'],
+    types: ['projects']
 };
 
 var permission = {
@@ -36,7 +37,7 @@ var permission = {
             } else {
                 // Check if project is public if no other roles exist for user
                 var isPublic = false;
-                if (type === 'project') {
+                if (type === 'projects') {
                     var project = yield knex('projects').where({
                         id: id
                     }).select('is_public');
@@ -64,6 +65,13 @@ var permission = {
      */
     levels: function() {
         return internals.levels;
+    },
+
+    /**
+     * Types of permissions.
+     */
+    types: function() {
+        return internals.types;
     }
 };
 permission.register.attributes = {

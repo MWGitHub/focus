@@ -23,7 +23,7 @@ module.exports.defaultTimeZone = config.defaultTimeZone;
  * Creates a JSON status message.
  * @param {String} action the action of the request.
  * @param {Boolean} isSuccessful true if successful.
- * @param {String} message the message to give.
+ * @param {String=} message the message to give.
  * @returns {{meta: {action: String, success: Boolean, message: String}}}
  */
 module.exports.makeStatusMessage = function(action, isSuccessful, message) {
@@ -33,7 +33,7 @@ module.exports.makeStatusMessage = function(action, isSuccessful, message) {
         meta: {
             action: action,
             success: isSuccessful,
-            message: message
+            message: message || ''
         }
     }
 };
