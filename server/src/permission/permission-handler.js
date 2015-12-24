@@ -93,7 +93,28 @@ var handler = {
     },
 
     deleteSelf: function(request, reply) {
+        var id = request.params.id;
+        var userID = request.payload.user_id;
 
+        return co(function* () {
+            let permission = yield ProjectPermission.forge({project_id: id, user_id: userID}).fetch({require: true});
+            // Check if they are the only admin
+            if (permission.get('role') === 'admin') {
+                let adminCount = yield ProjectPermission.where({
+                    project_id: id,
+                    role: ProjectPermission.roles.admin
+                }).count();
+                if (adminCount <= 1) {
+                    reply(Boom.badRequest());
+                    return;
+                }
+            }
+            // Not an admin, delete the role
+            yield permission.destroy();
+            reply();
+        }).catch(function(e) {
+            reply(Boom.wrap(e));
+        });
     }
 };
 

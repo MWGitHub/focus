@@ -63,26 +63,6 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'switched');
 
-            /*
-            // Set user to viewer
-            var clone = _.cloneDeep(payload);
-            clone.payload.role = 'viewer';
-            response = yield helper.inject(clone);
-            assert.equal(response.statusCode, Helper.Status.valid);
-
-            // Try and fail to update title as viewer
-            response = yield helper.inject(viewPayload);
-            assert.equal(response.statusCode, Helper.Status.forbidden);
-
-            // Be able to view the project
-            viewPayload = {
-                method: 'GET',
-                url: helper.apiRoute + '/projects/0?token=' + viewerToken
-            };
-            response = yield helper.inject(viewPayload);
-            assert.equal(response.statusCode, Helper.Status.valid);
-            */
-
             done();
         }).catch(function(e) {
             done(e);
@@ -393,10 +373,11 @@ describe('permission', function() {
 
     it('should prevent an admin from demoting if they are the only one', function(done) {
         co(function* () {
+            // Attempt to demote self
             var user = helper.userSeeds[0];
             var token = (yield helper.login(user.username, user.password)).result.data.token;
 
-            var payload = {
+            var demoteSelf = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1/update',
                 headers: {
@@ -407,8 +388,25 @@ describe('permission', function() {
                     role: 'member'
                 }
             };
-            var response = yield helper.inject(payload);
+            var response = yield helper.inject(demoteSelf);
             assert.equal(response.statusCode, Helper.Status.error);
+
+            // Change another to admin and demote self
+            response = yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/1/update',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[1].id,
+                    role: 'admin'
+                }
+            });
+            assert.equal(response.statusCode, Helper.Status.valid);
+            response = yield helper.inject(demoteSelf);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -516,25 +514,180 @@ describe('permission', function() {
 
     it('should delete a permission', function(done) {
         co(function* () {
-            assert(false);
+            // Delete a member in a project
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/delete',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[1].id
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            // Attempt to view the project with the previous member
+            user = helper.userSeeds[1];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/permissions/projects/2?token=' + token
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Make a user an admin and delete them
+            user = helper.userSeeds[0];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            response = yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[4].id,
+                    role: 'admin'
+                }
+            });
+            assert.equal(response.statusCode, Helper.Status.valid);
+            var clone = _.cloneDeep(payload);
+            clone.payload.user_id = helper.userSeeds[4].id;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            // Try to have the new user create a new permission
+            user = helper.userSeeds[4];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            response = yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[3].id,
+                    role: 'admin'
+                }
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             done();
         }).catch(function(e) {
             done(e);
         })
     });
 
-    it('should not an unauthorized deletion', function(done) {
+    it('should not allow an unauthorized deletion', function(done) {
         co(function* () {
-            assert(false);
+            // Attempt to delete an admin as a member
+            var user = helper.userSeeds[1];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/delete',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[0].id
+                }
+            };
+
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Attempt to delete a viewer as a member
+            var clone = _.cloneDeep(payload);
+            clone.payload.user_id = helper.userSeeds[2].id;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Attempt to delete an admin as a viewer
+            user = helper.userSeeds[1];
+            token = (yield helper.login(user.username, user.password)).result.data.token;
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/delete',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[0].id
+                }
+            };
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Attempt to delete a member as a viewer
+            clone = _.cloneDeep(payload);
+            clone.payload.user_id = helper.userSeeds[2].id;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Attempt to delete a member while not logged in
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/delete',
+                payload: {
+                    user_id: helper.userSeeds[1].id
+                }
+            };
+
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);
         })
     });
 
-    it('should not allow invalid inputs', function(done) {
+    it('should not allow invalid inputs for deletion', function(done) {
         co(function* () {
-            assert(false);
+            // Attempt to delete the sole admin
+            var user = helper.userSeeds[0];
+            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2/delete',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[0].id
+                }
+            };
+
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.error);
+
+            // Attempt to delete a user that does not exist
+            var clone = _.cloneDeep(payload);
+            clone.payload.user_id = 12312412;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.internal);
+
+            // Make a user an admin and delete self
+            yield helper.inject({
+                method: 'POST',
+                url: helper.apiRoute + '/permissions/projects/2',
+                headers: {
+                    authorization: token
+                },
+                payload: {
+                    user_id: helper.userSeeds[4].id,
+                    role: 'admin'
+                }
+            });
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+
             done();
         }).catch(function(e) {
             done(e);
