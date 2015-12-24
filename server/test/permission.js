@@ -24,24 +24,24 @@ describe('permission', function() {
 
     it('should allow permission creation', function(done) {
         co(function* () {
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
-            var viewer = helper.userSeeds[1];
-            var viewerToken = (yield helper.login(viewer.username, viewer.password)).result.data.token;
-            var payload = {
+            var admin = helper.userSeeds[0];
+            var token = yield helper.login(admin);
+            var stranger = helper.userSeeds[1];
+            var viewerToken = yield helper.login(stranger);
+            var createAdmin = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/0',
                 headers: {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: stranger.id,
                     role: "admin"
                 }
             };
 
             // Try to update title before user is changed to admin
-            var viewPayload = {
+            var viewerAdminAction = {
                 method: 'POST',
                 url: helper.apiRoute + '/projects/0/update',
                 headers: {
@@ -51,15 +51,15 @@ describe('permission', function() {
                     title: 'switched'
                 }
             };
-            var response = yield helper.inject(viewPayload);
+            var response = yield helper.inject(viewerAdminAction);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Set user to admin
-            response = yield helper.inject(payload);
+            response = yield helper.inject(createAdmin);
             assert.equal(response.statusCode, Helper.Status.valid);
 
             // Have new admin user update title
-            response = yield helper.inject(viewPayload);
+            response = yield helper.inject(viewerAdminAction);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'switched');
 
@@ -72,8 +72,9 @@ describe('permission', function() {
     it('should not allow unauthorized users from setting permissions', function(done) {
         co(function* () {
             // Members should not be allowed to add permissions for public projects
-            var user = helper.userSeeds[1];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var member = helper.userSeeds[1];
+            var token = yield helper.login(member);
+            var stranger = helper.userSeeds[4];
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1',
@@ -81,7 +82,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: "admin"
                 }
             };
@@ -96,8 +97,8 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Viewers should not be allowed to add permissions for public projects
-            user = helper.userSeeds[2];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var viewer = helper.userSeeds[2];
+            token = yield helper.login(viewer);
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/3',
@@ -105,7 +106,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: "admin"
                 }
             };
@@ -124,7 +125,7 @@ describe('permission', function() {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1',
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: "admin"
                 }
             };
@@ -147,8 +148,9 @@ describe('permission', function() {
     it('should not allow invalid inputs', function(done) {
         co(function* () {
             // A user with permissions should not be able to have another permission for the same project
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var member = helper.userSeeds[1];
+            var token = yield helper.login(admin);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1',
@@ -156,7 +158,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: member.id,
                     role: "admin"
                 }
             };
@@ -164,6 +166,7 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.error);
 
             // Check for invalid inputs
+            var stranger = helper.userSeeds[4];
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1',
@@ -171,7 +174,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: "admin"
                 }
             };
@@ -215,8 +218,8 @@ describe('permission', function() {
     it('should list all users with permission', function(done) {
         co(function* () {
             // Retrieve permissions as an admin
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var token = yield helper.login(admin);
             var payload = {
                 method: 'GET',
                 url: helper.apiRoute + '/permissions/projects/0?token=' + token
@@ -226,6 +229,7 @@ describe('permission', function() {
             assert.equal(response.result.data.length, 1);
 
             // Add a member and retrieve permissions
+            var member = helper.userSeeds[1];
             yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/0',
@@ -233,7 +237,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: member.id,
                     role: "member"
                 }
             });
@@ -243,6 +247,7 @@ describe('permission', function() {
             assert.equal(response.result.data.length, 2);
 
             // Add a viewer and retrieve permissions
+            var viewer = helper.userSeeds[2];
             yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/0',
@@ -250,7 +255,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[2].id,
+                    user_id: viewer.id,
                     role: "viewer"
                 }
             });
@@ -276,8 +281,7 @@ describe('permission', function() {
             assert.equal(response.result.data.length, 2);
 
             // Retrieve permissions as a member
-            user = helper.userSeeds[1];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            token = yield helper.login(member);
             payload = {
                 method: 'GET',
                 url: helper.apiRoute + '/permissions/projects/2?token=' + token
@@ -287,8 +291,7 @@ describe('permission', function() {
             assert.equal(response.result.data.length, 3);
 
             // Retrieve permissions as a viewer
-            user = helper.userSeeds[2];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            token = yield helper.login(viewer);
             payload = {
                 method: 'GET',
                 url: helper.apiRoute + '/permissions/projects/4?token=' + token
@@ -306,8 +309,8 @@ describe('permission', function() {
     it('should not allow listing users for private boards not a member of', function(done) {
         co(function* () {
             // Should not allow listings for forbidden private boards
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var stranger = helper.userSeeds[0];
+            var token = yield helper.login(stranger);
             var payload = {
                 method: 'GET',
                 url: helper.apiRoute + '/permissions/projects/4?token=' + token
@@ -332,9 +335,8 @@ describe('permission', function() {
     it('should update permissions of a user', function(done) {
         co(function* () {
             // Should change a user to admin
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
-
+            var admin = helper.userSeeds[0];
+            var token = yield helper.login(admin);
             var changed = helper.userSeeds[1];
             var payload = {
                 method: 'POST',
@@ -351,7 +353,8 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.valid);
 
             // Have changed user add a member
-            token = (yield helper.login(changed.username, changed.password)).result.data.token;
+            var stranger = helper.userSeeds[4];
+            token = yield helper.login(changed);
             response = yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1',
@@ -359,7 +362,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: "member"
                 }
             });
@@ -374,8 +377,8 @@ describe('permission', function() {
     it('should prevent an admin from demoting if they are the only one', function(done) {
         co(function* () {
             // Attempt to demote self
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var token = yield helper.login(admin);
 
             var demoteSelf = {
                 method: 'POST',
@@ -384,7 +387,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: user.id,
+                    user_id: admin.id,
                     role: 'member'
                 }
             };
@@ -392,6 +395,7 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.error);
 
             // Change another to admin and demote self
+            var newAdmin = helper.userSeeds[1];
             response = yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1/update',
@@ -399,7 +403,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: newAdmin.id,
                     role: 'admin'
                 }
             });
@@ -416,8 +420,9 @@ describe('permission', function() {
     it('should not allow non admins to update permissions of a user', function(done) {
         co(function* () {
             // Should not allow members from updating
-            var user = helper.userSeeds[1];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var member = helper.userSeeds[1];
+            var token = yield helper.login(member);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1/update',
@@ -425,7 +430,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[0].id,
+                    user_id: admin.id,
                     role: 'member'
                 }
             };
@@ -433,8 +438,8 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Should not allow viewers from updating
-            user = helper.userSeeds[2];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var viewer = helper.userSeeds[2];
+            token = yield helper.login(viewer);
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/update',
@@ -442,7 +447,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: member.id,
                     role: 'member'
                 }
             };
@@ -454,7 +459,7 @@ describe('permission', function() {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/update',
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: member.id,
                     role: 'member'
                 }
             };
@@ -470,8 +475,9 @@ describe('permission', function() {
     it('should not allow invalid updates', function(done) {
         co(function* () {
             // Should not allow invalid roles
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var member = helper.userSeeds[1];
+            var token = yield helper.login(admin);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/1/update',
@@ -479,7 +485,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id,
+                    user_id: member.id,
                     role: 'member'
                 }
             };
@@ -515,8 +521,9 @@ describe('permission', function() {
     it('should delete a permission', function(done) {
         co(function* () {
             // Delete a member in a project
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var member = helper.userSeeds[1];
+            var token = yield helper.login(admin);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/delete',
@@ -524,15 +531,15 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[1].id
+                    user_id: member.id
                 }
             };
             var response = yield helper.inject(payload);
             assert.equal(response.statusCode, Helper.Status.valid);
 
             // Attempt to view the project with the previous member
-            user = helper.userSeeds[1];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var viewer = helper.userSeeds[1];
+            token = yield helper.login(viewer);
             response = yield helper.inject({
                 method: 'GET',
                 url: helper.apiRoute + '/permissions/projects/2?token=' + token
@@ -540,8 +547,8 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Make a user an admin and delete them
-            user = helper.userSeeds[0];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var stranger = helper.userSeeds[4];
+            token = yield helper.login(admin);
             response = yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2',
@@ -549,19 +556,19 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: 'admin'
                 }
             });
             assert.equal(response.statusCode, Helper.Status.valid);
             var clone = _.cloneDeep(payload);
-            clone.payload.user_id = helper.userSeeds[4].id;
+            clone.payload.user_id = stranger.id;
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
 
             // Try to have the new user create a new permission
-            user = helper.userSeeds[4];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var anotherStranger = helper.userSeeds[3];
+            token = yield helper.login(stranger);
             response = yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2',
@@ -569,7 +576,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[3].id,
+                    user_id: anotherStranger.id,
                     role: 'admin'
                 }
             });
@@ -584,8 +591,9 @@ describe('permission', function() {
     it('should not allow an unauthorized deletion', function(done) {
         co(function* () {
             // Attempt to delete an admin as a member
-            var user = helper.userSeeds[1];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var member = helper.userSeeds[1];
+            var token = yield helper.login(member);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/delete',
@@ -593,7 +601,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[0].id
+                    user_id: admin.id
                 }
             };
 
@@ -601,14 +609,14 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Attempt to delete a viewer as a member
+            var viewer = helper.userSeeds[2];
             var clone = _.cloneDeep(payload);
-            clone.payload.user_id = helper.userSeeds[2].id;
+            clone.payload.user_id = viewer;
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Attempt to delete an admin as a viewer
-            user = helper.userSeeds[1];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            token = yield helper.login(viewer);
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/delete',
@@ -616,7 +624,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[0].id
+                    user_id: admin.id
                 }
             };
 
@@ -625,7 +633,7 @@ describe('permission', function() {
 
             // Attempt to delete a member as a viewer
             clone = _.cloneDeep(payload);
-            clone.payload.user_id = helper.userSeeds[2].id;
+            clone.payload.user_id = member.id;
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
@@ -634,7 +642,7 @@ describe('permission', function() {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/delete',
                 payload: {
-                    user_id: helper.userSeeds[1].id
+                    user_id: member.id
                 }
             };
 
@@ -650,8 +658,8 @@ describe('permission', function() {
     it('should not allow invalid inputs for deletion', function(done) {
         co(function* () {
             // Attempt to delete the sole admin
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var token = yield helper.login(admin);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2/delete',
@@ -659,7 +667,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[0].id
+                    user_id: admin.id
                 }
             };
 
@@ -673,6 +681,7 @@ describe('permission', function() {
             assert.equal(response.statusCode, Helper.Status.internal);
 
             // Make a user an admin and delete self
+            var stranger = helper.userSeeds[4];
             yield helper.inject({
                 method: 'POST',
                 url: helper.apiRoute + '/permissions/projects/2',
@@ -680,7 +689,7 @@ describe('permission', function() {
                     authorization: token
                 },
                 payload: {
-                    user_id: helper.userSeeds[4].id,
+                    user_id: stranger.id,
                     role: 'admin'
                 }
             });

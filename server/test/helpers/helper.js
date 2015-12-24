@@ -124,17 +124,37 @@ class Helper {
 
     /**
      * Logs a user in.
-     * @param {string} login the user name or email.
-     * @param {string} password the password of the user.
+     * @param {string|{username: string, password: string}} login the user name, email, or user object.
+     * @param {string=} password the password of the user, required if login is not a user object.
+     * @param {boolean=} asResponse set to true to return the result as a response.
      * @returns {Promise} the promise with the token response or error if not found.
      */
-    login(login, password) {
-        return this.inject({
-            method: 'POST',
-            url: this.apiRoute + '/users/login',
-            payload: {
-                login: login,
-                password: password
+    login(login, password, asResponse) {
+        let promise = null;
+        if (login instanceof Object) {
+            promise = this.inject({
+                method: 'POST',
+                url: this.apiRoute + '/users/login',
+                payload: {
+                    login: login.username,
+                    password: login.password
+                }
+            })
+        } else {
+            promise = this.inject({
+                method: 'POST',
+                url: this.apiRoute + '/users/login',
+                payload: {
+                    login: login,
+                    password: password
+                }
+            })
+        }
+        return promise.then(function(response) {
+            if (!asResponse && response.statusCode === Helper.Status.valid) {
+                return response.result.data.token;
+            } else {
+                return response;
             }
         });
     }

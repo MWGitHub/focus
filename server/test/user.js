@@ -235,7 +235,7 @@ describe('user', function() {
             var response = yield helper.login(helper.userSeeds[0].username, 'invalid');
             assert.equal(response.statusCode, Helper.Status.unauthorized);
 
-            response = yield helper.login(helper.userSeeds[0].username, helper.userSeeds[0].password);
+            response = yield helper.login(helper.userSeeds[0].username, helper.userSeeds[0].password, true);
             assert.equal(response.statusCode, Helper.Status.valid);
 
             done();
@@ -309,8 +309,7 @@ describe('user', function() {
 
             // Retrieve when logged in as the owner
             var user = helper.userSeeds[0];
-            response = yield helper.login(user.username, user.password);
-            var token = response.result.data.token;
+            var token = yield helper.login(user.username, user.password);
 
             payload.headers = {
                 authorization: token
@@ -329,7 +328,7 @@ describe('user', function() {
     it('should update the user', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             // Change time zone
             var payload = {
@@ -368,12 +367,12 @@ describe('user', function() {
             });
             response = yield helper.login(user.username, user.password);
             assert.equal(response.statusCode, Helper.Status.unauthorized);
-            response = yield helper.login(user.username, 'another');
+            response = yield helper.login(user.username, 'another', true);
             assert.equal(response.statusCode, Helper.Status.valid);
 
             // Change everything at the same time
             user = helper.userSeeds[1];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            token = yield helper.login(user);
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/users/' + user.id + '/update',
@@ -398,7 +397,7 @@ describe('user', function() {
             });
             response = yield helper.login(user.username, user.password);
             assert.equal(response.statusCode, Helper.Status.unauthorized);
-            response = yield helper.login(user.username, 'something');
+            response = yield helper.login(user.username, 'something', true);
             assert.equal(response.statusCode, Helper.Status.valid);
 
             done();
@@ -410,7 +409,7 @@ describe('user', function() {
     it('should not allow invalid update inputs', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/users/' + user.id + '/update',
@@ -462,7 +461,7 @@ describe('user', function() {
         co(function* () {
             var updatedUser = helper.userSeeds[0];
             var authUser = helper.userSeeds[1];
-            var token = (yield helper.login(authUser.username, authUser.password)).result.data.token;
+            var token = yield helper.login(authUser);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/users/' + updatedUser.id + '/update',
@@ -493,7 +492,7 @@ describe('user', function() {
             assert.equal(response.statusCode, Helper.Status.valid);
 
             // Delete the user
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/users/' + user.id + '/delete',
@@ -518,7 +517,7 @@ describe('user', function() {
         co(function* () {
             var deletedUser = helper.userSeeds[0];
             var authUser = helper.userSeeds[1];
-            var token = (yield helper.login(authUser.username, authUser.password)).result.data.token;
+            var token = yield helper.login(authUser);
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/users/' + deletedUser.id + '/delete',

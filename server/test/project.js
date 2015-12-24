@@ -25,7 +25,7 @@ describe('project', function() {
     it('should create a project and set admin on creator', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             // Test with only title given
             var payload = {
@@ -68,7 +68,7 @@ describe('project', function() {
     it('should not create an invalid project', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             // Test with title too short
             var payload = {
@@ -115,7 +115,7 @@ describe('project', function() {
     it('should update the project', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             var payload = {
                 method: 'POST',
@@ -183,7 +183,7 @@ describe('project', function() {
     it('should disallow invalid updates', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             var payload = {
                 method: 'POST',
@@ -229,7 +229,7 @@ describe('project', function() {
     it('should disallow updating project title of non-admins', function(done) {
         co(function* () {
             var user = helper.userSeeds[1];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             var payload = {
                 method: 'POST',
@@ -270,7 +270,7 @@ describe('project', function() {
 
             // Viewer should not be able to change private project properties
             user = helper.userSeeds[2];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            token = yield helper.login(user);
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/projects/2/update',
@@ -301,12 +301,12 @@ describe('project', function() {
 
     it('should allow viewing of projects for valid users', function(done) {
         co(function* () {
-            var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var admin = helper.userSeeds[0];
+            var adminToken = yield helper.login(admin);
 
             var payload = {
                 method: 'GET',
-                url: helper.apiRoute + '/projects/0?token=' + token
+                url: helper.apiRoute + '/projects/0?token=' + adminToken
             };
 
             // Admin should be able to view the project
@@ -317,7 +317,7 @@ describe('project', function() {
 
             // Anyone logged in should be able to view public projects
             var clone = _.cloneDeep(payload);
-            clone.url = helper.apiRoute + '/projects/3?token=' + token;
+            clone.url = helper.apiRoute + '/projects/3?token=' + adminToken;
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.id, 3);
@@ -333,11 +333,11 @@ describe('project', function() {
             assert.equal(response.result.data.attributes.title, 'title1');
 
             // Members should be able to view projects
-            user = helper.userSeeds[1];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var member = helper.userSeeds[1];
+            var memberToken = yield helper.login(member);
             payload = {
                 method: 'GET',
-                url: helper.apiRoute + '/projects/1?token=' + token
+                url: helper.apiRoute + '/projects/1?token=' + memberToken
             };
 
             response = yield helper.inject(payload);
@@ -347,18 +347,18 @@ describe('project', function() {
 
             // Members should be able to view private projects
             clone = _.cloneDeep(payload);
-            clone.url = helper.apiRoute + '/projects/2?token=' + token;
+            clone.url = helper.apiRoute + '/projects/2?token=' + memberToken;
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.id, 2);
             assert.equal(response.result.data.attributes.title, 'title2');
 
             // Viewer should be able to view projects
-            user = helper.userSeeds[2];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var viewer = helper.userSeeds[2];
+            var viewerToken = yield helper.login(viewer);
             payload = {
                 method: 'GET',
-                url: helper.apiRoute + '/projects/3?token=' + token
+                url: helper.apiRoute + '/projects/3?token=' + viewerToken
             };
 
             response = yield helper.inject(payload);
@@ -366,9 +366,9 @@ describe('project', function() {
             assert.equal(response.result.data.id, 3);
             assert.equal(response.result.data.attributes.title, 'title3');
 
-            // Members should be able to view private projects
+            // Viewer should be able to view private projects
             clone = _.cloneDeep(payload);
-            clone.url = helper.apiRoute + '/projects/4?token=' + token;
+            clone.url = helper.apiRoute + '/projects/4?token=' + viewerToken;
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.id, 4);
@@ -383,7 +383,7 @@ describe('project', function() {
     it('should not allow viewing of private projects to users without access', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             var payload = {
                 method: 'GET',
@@ -417,7 +417,7 @@ describe('project', function() {
     it('should allow admins to delete projects', function(done) {
         co(function* () {
             var user = helper.userSeeds[0];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var token = yield helper.login(user);
 
             var payload = {
                 method: 'POST',
@@ -446,14 +446,14 @@ describe('project', function() {
 
     it('should not allow non-admins to delete projects', function(done) {
         co(function* () {
-            var user = helper.userSeeds[1];
-            var token = (yield helper.login(user.username, user.password)).result.data.token;
+            var member = helper.userSeeds[1];
+            var memberToken = yield helper.login(member);
 
             var payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/projects/2/delete',
                 headers: {
-                    authorization: token
+                    authorization: memberToken
                 }
             };
 
@@ -475,14 +475,14 @@ describe('project', function() {
 
 
             // Viewer should not be able to delete private project
-            user = helper.userSeeds[2];
-            token = (yield helper.login(user.username, user.password)).result.data.token;
+            var viewer = helper.userSeeds[2];
+            var viewerToken = yield helper.login(viewer);
 
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/projects/2/delete',
                 headers: {
-                    authorization: token
+                    authorization: viewerToken
                 }
             };
 
