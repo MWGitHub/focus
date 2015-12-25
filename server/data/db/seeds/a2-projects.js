@@ -1,20 +1,30 @@
+"use strict";
 var co = require('co');
 var PermissionModel = require('../../../src/permission/permission-model');
 
+/**
+ * Project seeds with odd projects as public.
+ * @type {{id: number, title: string, is_public: boolean}[]}
+ */
+var projects = [];
+for(let i = 0; i < 5; i++) {
+    projects.push({
+        id: i,
+        title: 'title' + i,
+        is_public: i % 2 === 1
+    });
+}
+
 exports.seed = function(knex, Promise) {
     return co(function* () {
-        // Deletes ALL existing entries
+        // Deletes all existing entries
         yield knex('projects').del();
         yield knex('project_permissions').del();
 
         // Create projects for users to use with odd projects as public
         var i;
-        for (i = 0; i < 5; i++) {
-            yield knex('projects').insert({
-                id: i,
-                title: 'title' + i,
-                is_public: i % 2 === 1
-            });
+        for (i = 0; i < projects.length; i++) {
+            yield knex('projects').insert(projects[i]);
         }
 
         // Make user 0 an admin of some projects
@@ -45,3 +55,8 @@ exports.seed = function(knex, Promise) {
         }
     });
 };
+
+/**
+ * @type {{id: number, title: string, is_public: boolean}[]}
+ */
+exports.projects = projects;

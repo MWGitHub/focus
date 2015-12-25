@@ -10,6 +10,10 @@ var Config = require('../../config.json');
 var Knexfile = require('../../knexfile');
 var moment = require('moment-timezone');
 
+var seedUsers = require('../../data/db/seeds/a1-users').users;
+var seedProjects = require('../../data/db/seeds/a2-projects').projects;
+var seedBoards = require('../../data/db/seeds/a3-boards').boards;
+
 /**
  * Helper instance that holds server state until after is run.
  */
@@ -28,43 +32,22 @@ class Helper {
         this.server = null;
 
         /**
-         * Seeded users in the database
-         * @type {{
-         *  id: number,
-         *  username: string,
-         *  email: string,
-         *  password: string,
-         *  timezone: string
-         * }[]}
+         * Seeded users in the database.
+         * @type {{id: number, username: string, email: string, password: string, timezone: string}[]}
          */
-        this.userSeeds = [];
-        var i;
-        for (i = 0; i < 5; i++) {
-            this.userSeeds.push({
-                id: i,
-                username: 'seed' + i,
-                email: 'seed' + i + '@example.com',
-                password: 'seed' + i + 'pw',
-                timezone: moment.tz.names()[i]
-            });
-        }
+        this.userSeeds = seedUsers;
 
         /**
-         * Seeded projects in the database
-         * @type {{
-         *  id: number,
-         *  title: string,
-         *  is_public: boolean
-         * }}
+         * Seeded projects in the database.
+         * @type {{id: number, title: string, is_public: boolean}[]}
          */
-        this.projectSeeds = [];
-        for (i = 0; i < 5; i++) {
-            this.projectSeeds.push({
-                id: i,
-                title: 'title' + i,
-                is_public: i % 2 === 1
-            });
-        }
+        this.projectSeeds = seedProjects;
+
+        /**
+         * Seeded boards in the database.
+         * @type {{id: number, project_id: number, title: string}[]}
+         */
+        this.boardSeeds = seedBoards;
     }
 
     /**
@@ -83,6 +66,7 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 1');
+            yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 1');
 
             yield Database.knex.seed.run();
 
@@ -90,6 +74,7 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
+            yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 10000');
 
             yield instance.server.initialize();
             return instance.server;

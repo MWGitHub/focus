@@ -1,15 +1,37 @@
+"use strict";
 var auth = require('../../../src/auth/auth');
 var moment = require('moment-timezone');
 var co = require('co');
 
-function createUser(knex, id, name, email, password, timezone) {
-    return auth.hash(password).then(function(hash) {
+/**
+ * Seed users
+ * @type {{id: number, username: string, email: string, password: string, timezone: string}[]}
+ */
+var users = [];
+for (let i = 0; i < 5; i++) {
+    users.push({
+        id: i,
+        username: 'seed' + i,
+        email: 'seed' + i + '@example.com',
+        password: 'seed' + i + 'pw',
+        timezone: moment.tz.names()[i]
+    });
+}
+
+/**
+ * Create and insert a user into the database.
+ * @param knex
+ * @param user the user to insert.
+ * @returns {Promise.<T>}
+ */
+function createUser(knex, user) {
+    return auth.hash(user.password).then(function(hash) {
         return knex('users').insert({
-            id: id,
-            username: name,
+            id: user.id,
+            username: user.username,
             password: hash,
-            email: email,
-            timezone: timezone
+            email: user.email,
+            timezone: user.timezone
         });
     });
 }
@@ -20,8 +42,14 @@ exports.seed = function(knex, Promise) {
         yield knex('users').del();
 
         // Inserts seed entries
-        for (var i = 0; i < 5; i++) {
-            yield createUser(knex, i, 'seed' + i, 'seed' + i + '@example.com', 'seed' + i + 'pw', moment.tz.names()[i]);
+        for (let i = 0; i < users.length; i++) {
+            yield createUser(knex, users[i]);
         }
     });
 };
+
+/**
+ * Seed users
+ * @type {{id: number, username: string, email: string, password: string, timezone: string}[]}
+ */
+exports.users = users;
