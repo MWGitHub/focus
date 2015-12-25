@@ -4,23 +4,46 @@
 var JWT = require('jsonwebtoken');
 var uuid = require('node-uuid');
 
-// Redis client to use for storing tokens
-var redisClient;
-// Namespace for the tokens
-var tokenTable = 'token:';
-// Sessions by default expire in one year
-var expiration = 365 * 60 * 60 * 24 * 30;
-// Secret key for signing tokens
-var key;
+var internals = {
+    // Redis client to use for storing tokens
+    redisClient: null,
+
+    // Namespace for the tokens
+    tokenTable: 'token:',
+
+    // Sessions by default expire in one year
+    expiration: 365 * 60 * 60 * 24 * 30,
+
+    // Secret key for signing tokens
+    key: null
+};
 
 /**
  * Sign data with JWT.
  * @param {*} data the data to sign.
  * @returns {String} the signed data.
  */
-function sign(data) {
-    return JWT.sign(data, key);
-}
+internals.sign = function(data) {
+    return JWT.sign(data, internals.key);
+};
+
+/**
+ * Checks if a given token is in the store.
+ * @param {String} tid the ID of the token to find.
+ * @returns {Promise} the promise with true if successful and false if not.
+ */
+internals.validate = function(tid) {
+    return new Promise(function(resolve, reject) {
+        internals.redisClient.get(internals.tokenTable + tid, function(err, reply) {
+            if (err) return reject(err);
+            if (reply) {
+                return resolve(true);
+            } else {
+                return resolve(false);
+            }
+        });
+    });
+};
 
 var session = {
     register: function(server, options, next) {
@@ -29,25 +52,30 @@ var session = {
         if (!options.redis) return next(new Error('options.redis requires a redis client or the plugin name and key.'));
         if (options.redis.client) {
             // Redis client given
-            redisClient = options.redis.client;
+            internals.redisClient = options.redis.client;
         } else {
             // Try to find a redis client from the given plugin name and key
             if (!options.redis.plugin) return next(new Error('options.redis requires a redis plugin name'));
             if (!options.redis.key) return next(new Error('options.redis requires a plugin key'));
             var plugin = server.plugins[options.redis.plugin];
             if (!plugin) return next(new Error('options.redis.plugin does not exist'));
-            redisClient = server.plugins[options.redis.plugin][options.redis.key];
+            internals.redisClient = server.plugins[options.redis.plugin][options.redis.key];
         }
-        if (!redisClient) return next(new Error('redis client not found'));
+        if (!internals.redisClient) return next(new Error('redis client not found'));
 
-        key = options.key;
-        if (!key) return next(new Error('option.key is required'));
+        internals.key = options.key;
+        if (!internals.key) return next(new Error('option.key is required'));
 
-        tokenTable = options.table || tokenTable;
-        expiration = options.expiration || expiration;
+        internals.tokenTable = options.table || internals.tokenTable;
+        internals.expiration = options.expiration || internals.expiration;
 
-        server.expose('table', tokenTable);
-        server.expose('expiration', expiration);
+        server.expose('table', internals.tokenTable);
+        server.expose('expiration', internals.expiration);
+
+        // Add session support to an authentication plugin if provided
+        if (options.auth && options.auth.plugin && options.auth.method) {
+            server.plugins[options.auth.plugin][options.auth.method].call(this, internals.validate, 'tid');
+        }
 
         next();
     },
@@ -58,16 +86,7 @@ var session = {
      * @returns {Promise} the promise with true if successful and false if not.
      */
     validate: function(tid) {
-        return new Promise(function(resolve, reject) {
-            redisClient.get(tokenTable + tid, function(err, reply) {
-                if (err) return reject(err);
-                if (reply) {
-                    return resolve(true);
-                } else {
-                    return resolve(false);
-                }
-            });
-        });
+        return internals.validate(tid);
     },
 
     /**
@@ -90,12 +109,12 @@ var session = {
      * @returns {Promise}
      */
     login: function(token, duration) {
-        var ttl = duration || expiration;
+        var ttl = duration || internals.expiration;
         if (ttl % 1 !== 0) throw new Error('Duration must be an integer.');
         var parsed = this.decodeToken(token);
         return new Promise(function(resolve, reject) {
-            redisClient.set(tokenTable + parsed.data.tid, parsed.data.id, function(err, res) {
-                redisClient.expire(tokenTable + parsed.data.tid, ttl);
+            internals.redisClient.set(internals.tokenTable + parsed.data.tid, parsed.data.id, function(err, res) {
+                internals.redisClient.expire(internals.tokenTable + parsed.data.tid, ttl);
                 err ? reject(err) : resolve(res);
             });
         });
@@ -107,7 +126,7 @@ var session = {
      */
     logout: function(id) {
         return new Promise(function(resolve, reject) {
-            redisClient.del(tokenTable + id, function(err, res) {
+            internals.redisClient.del(internals.tokenTable + id, function(err, res) {
                 err ? reject(err) : resolve(res);
             });
         });
@@ -119,7 +138,7 @@ var session = {
      * @returns {String} the generated token.
      */
     generateToken: function(id) {
-        return sign({
+        return internals.sign({
             id: id,
             tid: uuid.v4()
         });

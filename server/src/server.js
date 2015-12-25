@@ -63,29 +63,40 @@ class Server {
                     }
                 },
                 {
+                    register: Auth,
+                    options: {
+                        key: config.authkey
+                    }
+                },
+                {
                     register: Session,
                     options: {
                         redis: {
                             plugin: 'redis-client',
                             key: 'client'
                         },
+                        auth: {
+                            plugin: 'auth',
+                            method: 'setSessionOptions'
+                        },
                         key: config.authkey
                     }
                 },
                 {
-                    register: Permission
-                },
-                {
-                    register: Auth,
+                    register: Permission,
                     options: {
-                        session: {
-                            validate: Session.validate,
-                            key: 'tid'
+                        auth: {
+                            plugin: 'auth',
+                            method: 'setPermissionOptions'
                         },
-                        permission: {
-                            scope: Permission.getScope
-                        },
-                        key: config.authkey
+                        types: {
+                            projects: {
+                                permission: 'project_permissions'
+                            },
+                            boards: {
+                                through: ['projects']
+                            }
+                        }
                     }
                 },
                 {
@@ -133,7 +144,7 @@ class Server {
                 });
             });
 
-            // Route all routes that are not plugins.
+            // Add all non-plugin routes
             Routes.addRoutes(server);
 
             // 404 response if a route is not matched.

@@ -79,7 +79,6 @@ var handler = {
             yield project.destroy();
             reply(API.makeStatusMessage('project-delete', true, 'project deleted'));
         }).catch(function(error) {
-            console.log(error);
             reply(Boom.wrap(error));
         });
 

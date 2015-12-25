@@ -30,8 +30,6 @@ var Board = Bookshelf.Model.extend({
         return co(function* () {
             var lists = yield instance.lists().fetch();
             yield lists.invokeThen('destroy');
-
-            return instance.destroy();
         });
     },
 
