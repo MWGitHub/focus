@@ -23,8 +23,27 @@ internals.getScope = function(uid, request) {
         // Use the type to retrieve the project id if needed
         var type = options ? options.type : request.params.type;
 
+        // Invalid type, return empty scopes
+        if (!internals.types[type]) {
+            return [];
+        }
+
         // console.log('uid: ' + uid + '   id: ' + id + '      type: ' + type);
-        var role = yield knex('project_permissions').where({
+        var permissionTable = null;
+        var publicField = null;
+        var table = null;
+        // Find the base permissions of the type
+        if (internals.types[type].permissionTable) {
+            permissionTable = internals.types[type].permissionTable;
+            publicField = internals.types[type].publicField;
+            if (publicField) {
+                table = internals.types[type].table;
+            }
+        } else {
+
+        }
+
+        var role = yield knex(permissionTable).where({
             user_id: uid,
             project_id: id
         }).select('role');
@@ -32,14 +51,18 @@ internals.getScope = function(uid, request) {
         if (role.length > 0) {
             return [role[0].role];
         } else {
-            // Check if project is public if no other roles exist for user
+            // If the model is not able to be public return no roles
+            if (!publicField && table) {
+                return [];
+            }
+            // Check if model is public if no other roles exist for user
             var isPublic = false;
             if (type === 'projects') {
-                var project = yield knex('projects').where({
+                var model = yield knex(table).where({
                     id: id
-                }).select('is_public');
-                if (project.length > 0) {
-                    isPublic = project[0].is_public;
+                }).select(publicField);
+                if (model.length > 0) {
+                    isPublic = model[0][publicField];
                 }
             }
             // Give the viewer role when public

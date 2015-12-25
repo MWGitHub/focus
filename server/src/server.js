@@ -91,7 +91,9 @@ class Server {
                         },
                         types: {
                             projects: {
-                                permission: 'project_permissions'
+                                table: 'projects',
+                                permissionTable: 'project_permissions',
+                                publicField: 'is_public'
                             },
                             boards: {
                                 through: ['projects']
