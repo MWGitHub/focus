@@ -9,6 +9,7 @@ var Task = require('./src/models/task');
 var program = require('commander');
 var Auth = require('./src/auth/auth');
 var knex = require('./src/lib/database').knex;
+var co = require('co');
 
 program.version('1.0.0');
 
@@ -158,6 +159,31 @@ program
             process.exit(0);
         });
         */
+    });
+
+program
+    .command('generate-seeds')
+    .description('Generates seeds for the database.')
+    .action(function() {
+        co(function* () {
+            yield knex.migrate.latest();
+
+            // Set database sequence to not collide with seed ids
+            yield knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+            yield knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
+            yield knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 1');
+            yield knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 1');
+
+            yield knex.seed.run();
+
+            // Set database sequence to not collide with seed ids
+            yield knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 10000');
+            yield knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 10000');
+            yield knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
+            yield knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 10000');
+
+            process.exit(0);
+        });
     });
 
 program.parse(process.argv);

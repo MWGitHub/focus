@@ -1,3 +1,4 @@
+"use strict";
 var co = require('co');
 var knex = require('../lib/database').knex;
 var Logger = require('../lib/logger');
@@ -21,49 +22,66 @@ internals.getScope = function(uid, request) {
         // ID of the object being checked
         var id = request.params.id;
         // Use the type to retrieve the project id if needed
-        var type = options ? options.type : request.params.type;
+        var typeString = options ? options.type : request.params.type;
 
         // Invalid type, return empty scopes
-        if (!internals.types[type]) {
+        if (!internals.types[typeString]) {
             return [];
         }
 
         // console.log('uid: ' + uid + '   id: ' + id + '      type: ' + type);
-        var permissionTable = null;
-        var publicField = null;
-        var table = null;
-        // Find the base permissions of the type
-        if (internals.types[type].permissionTable) {
-            permissionTable = internals.types[type].permissionTable;
-            publicField = internals.types[type].publicField;
-            if (publicField) {
-                table = internals.types[type].table;
-            }
-        } else {
+        let type = internals.types[typeString];
+        // Check if the table is a base table
+        let isBase = !!type.permissionTable;
+        let base = isBase ? type : internals.types[type.through[type.through.length - 1].type];
 
+        let permissionTable = base.permissionTable;
+        let relationField = base.relation;
+        let userField = base.userRelation;
+        let publicField = base.publicField;
+        let table = null;
+        if (base.publicField) {
+            table = type.table;
         }
 
-        var role = yield knex(permissionTable).where({
-            user_id: uid,
-            project_id: id
-        }).select('role');
+        if (!base) {
+            // Not base permissions, subquery until the permissions table is reached
+            let through = type.through;
+            permissionTable = base.permissionTable;
+            publicField = base.publicField;
+            table = base.table;
+            var query = 'SELECT * FROM ' + permissionTable + ' WHERE ' + permissionTable + '.' + base.relation + ' IN';
+            for (let i = 0; i < through.length - 1; i++) {
+                let next = internals.types[through[i + 1]];
+                let current = internals.types[through[i]];
+                query += ' WHERE ' + next.table + '.' + next.relation + ' IN (';
+                query += 'SELECT ' + current.key + ' FROM ' + current.table;
+                query += ' WHERE ' + current.table + '.' + current.key + ' = ?';
+                query += ')';
+                //'select role from project_permissions join boards on project_id = boards.id'
+            }
+            query += ' AND ' + permissionTable + '.' + 'user_id = ?;';
+        }
+
+        var whereObject = {};
+        whereObject[userField] = uid;
+        whereObject[relationField] = id;
+        var role = yield knex(permissionTable).where(whereObject).select('role');
 
         if (role.length > 0) {
             return [role[0].role];
         } else {
             // If the model is not able to be public return no roles
-            if (!publicField && table) {
+            if (!publicField) {
                 return [];
             }
             // Check if model is public if no other roles exist for user
             var isPublic = false;
-            if (type === 'projects') {
-                var model = yield knex(table).where({
-                    id: id
-                }).select(publicField);
-                if (model.length > 0) {
-                    isPublic = model[0][publicField];
-                }
+            var model = yield knex(table).where({
+                id: id
+            }).select(publicField);
+            if (model.length > 0) {
+                isPublic = model[0][publicField];
             }
             // Give the viewer role when public
             if (isPublic) {

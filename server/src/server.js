@@ -93,10 +93,20 @@ class Server {
                             projects: {
                                 table: 'projects',
                                 permissionTable: 'project_permissions',
-                                publicField: 'is_public'
+                                publicField: 'is_public',
+                                key: 'id',
+                                relation: 'project_id',
+                                userRelation: 'user_id'
                             },
                             boards: {
-                                through: ['projects']
+                                through: [
+                                    {
+                                        type: 'projects',
+                                        table: 'boards',
+                                        key: 'id',
+                                        relation: 'project_id'
+                                    }
+                                ]
                             }
                         }
                     }

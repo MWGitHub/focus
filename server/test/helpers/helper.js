@@ -50,18 +50,8 @@ class Helper {
         this.boardSeeds = seedBoards;
     }
 
-    /**
-     * Sets up the server.
-     * @returns {*|Promise}
-     */
-    startup() {
-        this.server = new Server(Config, Knexfile);
-        var instance = this;
+    generateSeeds() {
         return co(function* () {
-            process.env.NODE_ENV = 'test';
-
-            yield Database.knex.migrate.latest();
-
             // Set database sequence to not collide with seed ids
             yield Database.knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
@@ -75,6 +65,34 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 10000');
+        });
+    }
+
+    clearDatabase() {
+        return co(function* () {
+            yield Database.knex('project_permissions').del();
+            yield Database.knex('tasks').del();
+            yield Database.knex('lists').del();
+            yield Database.knex('boards').del();
+            yield Database.knex('projects').del();
+            yield Database.knex('users').del();
+        });
+    }
+
+    /**
+     * Sets up the server.
+     * @returns {*|Promise}
+     */
+    startup() {
+        this.server = new Server(Config, Knexfile);
+        var instance = this;
+        return co(function* () {
+            process.env.NODE_ENV = 'test';
+
+            yield Database.knex.migrate.latest();
+
+            yield instance.clearDatabase();
+            yield instance.generateSeeds();
 
             yield instance.server.initialize();
             return instance.server;
@@ -91,12 +109,7 @@ class Helper {
         var instance = this;
         return co(function* () {
             // Delete all data
-            yield Database.knex('project_permissions').del();
-            yield Database.knex('tasks').del();
-            yield Database.knex('lists').del();
-            yield Database.knex('boards').del();
-            yield Database.knex('projects').del();
-            yield Database.knex('users').del();
+            yield instance.clearDatabase();
 
             if (instance.server) {
                 yield instance.server.stop();
