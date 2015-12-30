@@ -64,8 +64,6 @@ internals.getScope = function(uid, request) {
 
             // Parent ID used when creating a child
             let parentID = request.params[types[0].relation];
-            // Handle first select to limit rows
-            //console.log('=============================================');
             // Runs a sub query if the current type has a child
             let subquery = function(current) {
                 return function() {
@@ -74,8 +72,9 @@ internals.getScope = function(uid, request) {
                         this.whereIn(current.relation, subquery(types.pop()));
                     }
                     this.select(current.key).from(current.table);
-                    // Lowest level uses the ID or the parent ID if none provided
+                    // Current type does not have any children
                     if (types.length === 0) {
+                        // If no ID then use the parent ID for object creation
                         if (id) {
                             this.where(current.key, id);
                         } else {
@@ -84,43 +83,9 @@ internals.getScope = function(uid, request) {
                     }
                 }
             };
-            let subselect = function(previous, current) {
-                return function() {
-                    // Subquery again if parents still exist and compare the relation with the keys
-                    if (types.length > 1) {
-                        this.whereIn(current.relation, subquery(current, types.pop()));
-                    }
-                    this.select(current.key).from(current.table);
-                    // Lowest level uses the ID or the parent ID if none provided
-                    if (types.length === 0) {
-                        if (id) {
-                            this.where(current.key, id);
-                        } else {
-                            this.where(current.key, parentID);
-                        }
-                    }
-                }
-            };
-            /*
-            let query = knex.select('*').from(base.table);
-            if (types.length === 1) {
-                // Only a single pass, query directly
-                current = types.pop();
-                query.where(base.key, parentID);
-            } else {
-                // Query from the base and work down
-                query.whereIn(base.relation, subselect(base, types.pop()));
-            }
-            query.debug(true);
-            let results = yield query;
-            console.log(results);
-            if (results.length > 1) {
-                isValid = true;
-            }*/
 
             let query = knex.select('role', 'user_id', 'project_id').from(base.permissionTable);
             query.whereIn(relationField, subquery(types.pop()));
-            //query.where('user_id', uid);
             query.orderBy(userField);
             //query.debug(true);
             let results = yield query;
