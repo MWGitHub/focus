@@ -7,7 +7,7 @@ var co = require('co');
 var handler = {
     create: function(request, reply) {
         let title = request.payload.title;
-        let projectID = request.payload.project_id;
+        let projectID = request.params.project_id;
 
         co(function* () {
             var board = yield Board.forge({title: title, project_id: projectID}).save();

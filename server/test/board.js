@@ -27,12 +27,11 @@ describe('board', function() {
             var admin = helper.userSeeds[0];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/boards',
+                url: helper.apiRoute + '/projects/0/boards',
                 headers: {
                     authorization: yield helper.login(admin)
                 },
                 payload: {
-                    project_id: helper.projectSeeds[0].id,
                     title: 'new'
                 }
             };
@@ -52,12 +51,11 @@ describe('board', function() {
             var member = helper.userSeeds[1];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/boards',
+                url: helper.apiRoute + '/projects/1/boards',
                 headers: {
                     authorization: yield helper.login(member)
                 },
                 payload: {
-                    project_id: helper.projectSeeds[1].id,
                     title: 'new'
                 }
             };
@@ -68,12 +66,11 @@ describe('board', function() {
             var stranger = helper.userSeeds[4];
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/boards',
+                url: helper.apiRoute + '/projects/0/boards',
                 headers: {
                     authorization: yield helper.login(stranger)
                 },
                 payload: {
-                    project_id: helper.projectSeeds[0].id,
                     title: 'new'
                 }
             };
@@ -84,12 +81,11 @@ describe('board', function() {
             var viewer = helper.userSeeds[4];
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/boards',
+                url: helper.apiRoute + '/projects/2/boards',
                 headers: {
                     authorization: yield helper.login(viewer)
                 },
                 payload: {
-                    project_id: helper.projectSeeds[2].id,
                     title: 'new'
                 }
             };
@@ -99,9 +95,8 @@ describe('board', function() {
             // Unauthorized should not be able to create a board
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/boards',
+                url: helper.apiRoute + '/projects/0/boards',
                 payload: {
-                    project_id: helper.projectSeeds[0].id,
                     title: 'new'
                 }
             };
@@ -119,43 +114,36 @@ describe('board', function() {
             var admin = helper.userSeeds[0];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/boards',
+                url: helper.apiRoute + '/projects/0/boards',
                 headers: {
                     authorization: yield helper.login(admin)
                 },
                 payload: {
-                    project_id: helper.projectSeeds[0].id,
                     title: 'new'
                 }
             };
             // No inputs
             var clone = _.cloneDeep(payload);
             delete clone.payload;
-            var response = yield helper.inject(payload);
+            var response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.error);
 
             // Invalid project ID
             clone = _.cloneDeep(payload);
-            clone.payload.project_id = 124987;
-            response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.internal);
-
-            // Project ID missing
-            clone = _.cloneDeep(payload);
-            delete clone.payload.project_id;
-            response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.error);
+            clone.url = helper.apiRoute + '/projects/129387/boards';
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Title missing
             clone = _.cloneDeep(payload);
             delete clone.payload.title;
-            response = yield helper.inject(payload);
+            response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.error);
 
             // Title too long
             clone = _.cloneDeep(payload);
             clone.payload.title = _.pad('test', 200, 'a');
-            response = yield helper.inject(payload);
+            response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.error);
 
             done();

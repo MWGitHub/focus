@@ -2,10 +2,21 @@ var Handler = require('../handlers/board');
 var Joi = require('joi');
 var API = require('../lib/api');
 
-var routes = [
+var internals = {
+    route: API.route + '/projects/{project_id}',
+    paramsCreate: {
+        project_id: Joi.number().integer().required()
+    },
+    params: {
+        id: Joi.number().integer().required(),
+        project_id: Joi.number().integer().required()
+    }
+};
+
+module.exports = [
     {
         method: 'POST',
-        path: API.route + '/boards',
+        path: internals.route + '/boards',
         handler: Handler.create,
         config: {
             auth: {
@@ -15,9 +26,9 @@ var routes = [
             cors: true,
             validate: {
                 payload: {
-                    title: Joi.string().min(1).max(100).required(),
-                    project_id: Joi.number().integer().required()
-                }
+                    title: Joi.string().min(1).max(100).required()
+                },
+                params: internals.paramsCreate
             },
             plugins: {
                 permission: {
@@ -28,7 +39,7 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/boards/{id}/update',
+        path: internals.route + '/boards/{id}/update',
         handler: Handler.update,
         config: {
             auth: {
@@ -38,9 +49,9 @@ var routes = [
             cors: true,
             validate: {
                 payload: {
-                    title: Joi.string().min(1).max(100).required(),
-                    project_id: Joi.number().integer().required()
-                }
+                    title: Joi.string().min(1).max(100).required()
+                },
+                params: internals.params
             },
             plugins: {
                 permission: {
@@ -51,7 +62,7 @@ var routes = [
     },
     {
         method: 'GET',
-        path: API.route + '/boards/{id}',
+        path: internals.route + '/boards/{id}',
         handler: Handler.retrieve,
         config: {
             auth: {
@@ -61,9 +72,7 @@ var routes = [
             },
             cors: true,
             validate: {
-                params: {
-                    id: Joi.number().integer().required()
-                },
+                params: internals.params,
                 query: {
                     token: Joi.string()
                 }
@@ -77,7 +86,7 @@ var routes = [
     },
     {
         method: 'POST',
-        path: API.route + '/boards/{id}/delete',
+        path: internals.route + '/boards/{id}/delete',
         handler: Handler.deleteSelf,
         config: {
             auth: {
@@ -86,9 +95,7 @@ var routes = [
             },
             cors: true,
             validate: {
-                params: {
-                    id: Joi.number().integer().required()
-                }
+                params: internals.params
             },
             plugins: {
                 permission: {
@@ -98,5 +105,3 @@ var routes = [
         }
     }
 ];
-
-module.exports = routes;

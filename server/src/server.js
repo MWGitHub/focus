@@ -91,22 +91,31 @@ class Server {
                         },
                         types: {
                             projects: {
-                                table: 'projects',
                                 permissionTable: 'project_permissions',
                                 publicField: 'is_public',
+                                userRelation: 'user_id',
+
+                                table: 'projects',
                                 key: 'id',
-                                relation: 'project_id',
-                                userRelation: 'user_id'
+                                relation: 'project_id'
                             },
                             boards: {
-                                through: [
-                                    {
-                                        type: 'projects',
-                                        table: 'boards',
-                                        key: 'id',
-                                        relation: 'project_id'
-                                    }
-                                ]
+                                table: 'boards',
+                                key: 'id',
+                                relation: 'project_id',
+                                through: 'projects'
+                            },
+                            lists: {
+                                table: 'lists',
+                                key: 'id',
+                                relation: 'board_id',
+                                through: 'boards'
+                            },
+                            tasks: {
+                                table: 'tasks',
+                                key: 'id',
+                                relation: 'list_id',
+                                through: 'lists'
                             }
                         }
                     }

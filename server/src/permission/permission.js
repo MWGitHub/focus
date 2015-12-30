@@ -18,9 +18,9 @@ var internals = {
  */
 internals.getScope = function(uid, request) {
     return co(function* () {
-        var options = request.route.settings.plugins.permission;
-        // ID of the object being checked
-        var id = request.params.id;
+        let options = request.route.settings.plugins.permission;
+        // ID of the object being checked if available
+        let id = request.params.id;
         // Use the type to retrieve the project id if needed
         var typeString = options ? options.type : request.params.type;
 
@@ -31,48 +31,130 @@ internals.getScope = function(uid, request) {
 
         // console.log('uid: ' + uid + '   id: ' + id + '      type: ' + type);
         let type = internals.types[typeString];
+        let allowsViewers = _.indexOf(request.route.settings.auth.scope, 'viewer') >= 0;
         // Check if the table is a base table
         let isBase = !!type.permissionTable;
-        let base = isBase ? type : internals.types[type.through[type.through.length - 1].type];
-
+        // Find the base and the type chain excluding the base
+        let base = null;
+        let current = type;
+        let types = [];
+        while (current) {
+            if (!current.through) {
+                base = current;
+                break;
+            }
+            types.push(current);
+            current = internals.types[current.through];
+        }
+        // Set the base fields
         let permissionTable = base.permissionTable;
         let relationField = base.relation;
         let userField = base.userRelation;
         let publicField = base.publicField;
         let table = null;
         if (base.publicField) {
-            table = type.table;
-        }
-
-        if (!base) {
-            // Not base permissions, subquery until the permissions table is reached
-            let through = type.through;
-            permissionTable = base.permissionTable;
-            publicField = base.publicField;
             table = base.table;
-            var query = 'SELECT * FROM ' + permissionTable + ' WHERE ' + permissionTable + '.' + base.relation + ' IN';
-            for (let i = 0; i < through.length - 1; i++) {
-                let next = internals.types[through[i + 1]];
-                let current = internals.types[through[i]];
-                query += ' WHERE ' + next.table + '.' + next.relation + ' IN (';
-                query += 'SELECT ' + current.key + ' FROM ' + current.table;
-                query += ' WHERE ' + current.table + '.' + current.key + ' = ?';
-                query += ')';
-                //'select role from project_permissions join boards on project_id = boards.id'
-            }
-            query += ' AND ' + permissionTable + '.' + 'user_id = ?;';
         }
 
-        var whereObject = {};
-        whereObject[userField] = uid;
-        whereObject[relationField] = id;
-        var role = yield knex(permissionTable).where(whereObject).select('role');
+        // Find the role of the user with the base
+        let role = null;
+        if (!isBase) {
+            // Not a base, traverse hierarchy until base table is hit to confirm valid hierarchy.
+            // Params base ID is not used as it does not actually check if the given info is valid for the children.
 
-        if (role.length > 0) {
-            return [role[0].role];
+            // Parent ID used when creating a child
+            let parentID = request.params[types[0].relation];
+            // Handle first select to limit rows
+            //console.log('=============================================');
+            // Runs a sub query if the current type has a child
+            let subquery = function(current) {
+                return function() {
+                    // Subquery again if parents still exist and compare the relation with the keys
+                    if (types.length > 0) {
+                        this.whereIn(current.relation, subquery(types.pop()));
+                    }
+                    this.select(current.key).from(current.table);
+                    // Lowest level uses the ID or the parent ID if none provided
+                    if (types.length === 0) {
+                        if (id) {
+                            this.where(current.key, id);
+                        } else {
+                            this.where(current.key, parentID);
+                        }
+                    }
+                }
+            };
+            let subselect = function(previous, current) {
+                return function() {
+                    // Subquery again if parents still exist and compare the relation with the keys
+                    if (types.length > 1) {
+                        this.whereIn(current.relation, subquery(current, types.pop()));
+                    }
+                    this.select(current.key).from(current.table);
+                    // Lowest level uses the ID or the parent ID if none provided
+                    if (types.length === 0) {
+                        if (id) {
+                            this.where(current.key, id);
+                        } else {
+                            this.where(current.key, parentID);
+                        }
+                    }
+                }
+            };
+            /*
+            let query = knex.select('*').from(base.table);
+            if (types.length === 1) {
+                // Only a single pass, query directly
+                current = types.pop();
+                query.where(base.key, parentID);
+            } else {
+                // Query from the base and work down
+                query.whereIn(base.relation, subselect(base, types.pop()));
+            }
+            query.debug(true);
+            let results = yield query;
+            console.log(results);
+            if (results.length > 1) {
+                isValid = true;
+            }*/
+
+            let query = knex.select('role', 'user_id', 'project_id').from(base.permissionTable);
+            query.whereIn(relationField, subquery(types.pop()));
+            //query.where('user_id', uid);
+            query.orderBy(userField);
+            //query.debug(true);
+            let results = yield query;
+            //console.log(results);
+            if (results.length > 0) {
+                // Find the matching user and set the role and the base ID
+                let result = null;
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i][userField] === uid) {
+                        result = results[i];
+                        break;
+                    }
+                }
+                if (result) {
+                    role = result.role;
+                }
+                // Retrieve the base ID
+                id = results[0][relationField];
+            }
         } else {
-            // If the model is not able to be public return no roles
-            if (!publicField) {
+            let whereOptions = {};
+            whereOptions[userField] = uid;
+            whereOptions[relationField] = id;
+            let roles = yield knex(permissionTable).where(whereOptions).select('role');
+            if (roles.length > 0) {
+                role = roles[0].role;
+            }
+        }
+
+        if (role) {
+            return [role];
+        } else {
+            // If the model is not able to be public or does not allow viewers return no roles
+            if (!publicField || !allowsViewers) {
                 return [];
             }
             // Check if model is public if no other roles exist for user
@@ -92,6 +174,7 @@ internals.getScope = function(uid, request) {
             }
         }
     }).catch(function(e) {
+        console.log(e);
         Logger.warn({uid: uid, object_id: request.params.id}, 'Error retrieving role');
         return [];
     })
