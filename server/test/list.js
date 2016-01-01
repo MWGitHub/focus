@@ -3,7 +3,7 @@ var Helper = require('./helpers/helper');
 var co = require('co');
 var _ = require('lodash');
 
-describe('task', function() {
+describe('list', function() {
     /**
      * @type {Helper}
      */
@@ -22,7 +22,7 @@ describe('task', function() {
         });
     });
 
-    it('should create a task', function(done) {
+    it('should create a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -31,7 +31,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid users to create a task', function(done) {
+    it('should not allow invalid users to create a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -40,7 +40,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid inputs for a task', function(done) {
+    it('should not allow invalid inputs for a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -49,7 +49,7 @@ describe('task', function() {
         });
     });
 
-    it('should update a task', function(done) {
+    it('should update a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -58,7 +58,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid users to update a task', function(done) {
+    it('should not allow invalid users to update a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -67,7 +67,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid inputs for updating task', function(done) {
+    it('should not allow invalid inputs for updating list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -76,7 +76,7 @@ describe('task', function() {
         });
     });
 
-    it('should retrieve a task', function(done) {
+    it('should retrieve a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -85,7 +85,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid users to retrieve a task', function(done) {
+    it('should not allow invalid users to retrieve a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -94,7 +94,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid inputs for retrieving task', function(done) {
+    it('should not allow invalid inputs for retrieving list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -103,7 +103,7 @@ describe('task', function() {
         });
     });
 
-    it('should delete a task', function(done) {
+    it('should delete a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -112,7 +112,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid users to delete a task', function(done) {
+    it('should not allow invalid users to delete a list', function(done) {
         co(function* () {
             assert(false);
             done();
@@ -121,7 +121,7 @@ describe('task', function() {
         });
     });
 
-    it('should not allow invalid inputs for deleting task', function(done) {
+    it('should not allow invalid inputs for deleting list', function(done) {
         co(function* () {
             assert(false);
             done();
