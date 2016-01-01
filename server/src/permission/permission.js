@@ -71,7 +71,7 @@ internals.getScope = function(uid, request) {
                     if (types.length > 0) {
                         this.whereIn(current.relation, subquery(types.pop()));
                     }
-                    this.select(current.key).from(current.table);
+                    this.select(current.relation).from(current.table);
                     // Current type does not have any children
                     if (types.length === 0) {
                         // If no ID then use the parent ID for object creation
@@ -84,7 +84,7 @@ internals.getScope = function(uid, request) {
                 }
             };
 
-            let query = knex.select('role', 'user_id', 'project_id').from(base.permissionTable);
+            let query = knex.select('role', userField, relationField).from(permissionTable);
             query.whereIn(relationField, subquery(types.pop()));
             query.orderBy(userField);
             //query.debug(true);

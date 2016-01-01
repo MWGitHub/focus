@@ -57,7 +57,8 @@ var routes = [
                     id: Joi.number().integer().required()
                 },
                 query: {
-                    token: Joi.string()
+                    token: Joi.string(),
+                    deep: Joi.boolean()
                 }
             },
             plugins: {

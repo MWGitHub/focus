@@ -79,7 +79,7 @@ module.exports = [
             },
             plugins: {
                 permission: {
-                    type: 'projects'
+                    type: 'boards'
                 }
             }
         }

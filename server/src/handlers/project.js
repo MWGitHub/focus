@@ -57,7 +57,7 @@ var handler = {
 
     retrieve: function(request, reply) {
         var projectID = request.params['id'];
-        var isDeep = request.query['isDeep'];
+        var isDeep = request.query.deep;
 
         return co(function* () {
             var project = yield Project.forge({id: projectID}).fetch({require: true});
@@ -65,7 +65,8 @@ var handler = {
             if (!request.auth.isAuthenticated && !project.get('is_public')) {
                 throw Boom.unauthorized();
             }
-            var data = yield project.retrieve(Project.getRetrievals().all);
+            var retrieval = isDeep ? Project.getRetrievals().allDeep : Project.getRetrievals().all;
+            var data = yield project.retrieve(retrieval);
             reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));

@@ -6,11 +6,16 @@ var co = require('co');
  * @type {{id: number, project_id: number, title: string}[]}
  */
 var boards = [];
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 5; i++) {
     boards.push({
-        id: i,
-        project_id: i % 5,
-        title: 'title' + i
+        id: i * 2,
+        project_id: i,
+        title: 'title' + (i * 2)
+    });
+    boards.push({
+        id: i * 2 + 1,
+        project_id: i,
+        title: 'title' + (i * 2 + 1)
     });
 }
 

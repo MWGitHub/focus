@@ -65,6 +65,11 @@ var Project = Bookshelf.Model.extend({
             all: [
                 {name: 'title'},
                 {name: 'is_public'}
+            ],
+            allDeep: [
+                {name: 'title'},
+                {name: 'is_public'},
+                {name: 'boards', obj: Bookshelf.model('Board').getRetrievals().all}
             ]
         };
     }

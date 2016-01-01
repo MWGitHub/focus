@@ -55,7 +55,8 @@ var Board = Bookshelf.Model.extend({
     getRetrievals: function() {
         return {
             all: [
-                {name: 'title'}
+                {name: 'title'},
+                {name: 'project_id'}
             ]
         };
     }

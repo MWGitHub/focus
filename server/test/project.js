@@ -374,6 +374,18 @@ describe('project', function() {
             assert.equal(response.result.data.id, 4);
             assert.equal(response.result.data.attributes.title, 'title4');
 
+            // Should be able to retrieve projects deeply
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0?deep=true&token=' + adminToken
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.id, 0);
+            assert.equal(response.result.data.attributes.title, 'title0');
+            assert.equal(response.result.data.attributes.boards.length, 2);
+            assert.equal(response.result.data.attributes.boards[0].attributes.title, 'title0');
+
             done();
         }).catch(function(e) {
             done(e);

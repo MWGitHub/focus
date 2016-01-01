@@ -27,15 +27,19 @@ var util = {
                 let title = column.title || column.name;
                 // If the column is a relationship then retrieve the relationship
                 if (column.obj != null) {
+                    // Call the column relationship function from the model
                     let children = yield model[column.name].call(model).fetch();
-                    if (children instanceof Array) {
+                    if (children.models) {
+                        // Has a one to many relationship, retrieve as a collection
                         let items = [];
-                        for (let j = 0; j < children.length; j++) {
-                            var childData = yield children[j].retrieve(column.obj);
+                        let models = children.models;
+                        for (let j = 0; j < models.length; j++) {
+                            var childData = yield models[j].retrieve(column.obj);
                             items.push(childData);
                         }
                         output.attributes[title] = items;
                     } else {
+                        // Has a one to X relationship, retrieve as single model
                         output.attributes[title] = children.retrieve(column.obj);
                     }
                 } else if (model.has(column.name)) {
@@ -44,7 +48,7 @@ var util = {
             }
             return output;
         }).catch(function(e) {
-            Logger.warn(e);
+            Logger.error(e);
         });
     }
 };
