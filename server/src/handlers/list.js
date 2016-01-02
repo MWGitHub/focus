@@ -14,7 +14,7 @@ var handler = {
 
         co(function* () {
             // Check to make sure the board is in the project
-            var board = yield Bookshelf.model('Board').forge({id: boardID}).fetch();
+            var board = yield Bookshelf.model('Board').forge({id: boardID}).fetch({require: true});
             if (board.get('project_id') !== projectID) {
                 throw Boom.badRequest();
             }
@@ -28,7 +28,32 @@ var handler = {
     },
 
     update: function(request, reply) {
+        let title = request.payload.title;
+        let id = request.params.id;
+        let bid = request.params.board_id;
+        let pid = request.params.project_id;
 
+        co(function* () {
+            var list = yield List.forge({id: id}).fetch({require: true});
+            // Make sure the list is owned by the board
+            if (list.get('board_id') !== bid) {
+                throw Boom.badRequest();
+            }
+            // Make sure the board matches the project
+            let board = yield Bookshelf.model('Board').forge({id: bid}).fetch({require: true});
+            if (board.get('project_id') !== pid) {
+                throw Boom.badRequest();
+            }
+            var options = {};
+            if (title !== list.get('title')) {
+                options.title = title;
+            }
+            yield list.set(options).save();
+            var result = yield list.retrieve(List.getRetrievals().all);
+            reply(API.makeData(result));
+        }).catch(function(e) {
+            reply(Boom.wrap(e));
+        })
     },
 
     retrieve: function(request, reply) {
