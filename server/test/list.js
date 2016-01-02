@@ -190,7 +190,7 @@ describe('list', function() {
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.error);
 
-            // List with invalid board
+            // List with board outside the project
             payload = {
                 method: 'POST',
                 url: helper.apiRoute + '/projects/0/boards/4/lists',

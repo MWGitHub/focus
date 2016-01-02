@@ -4,13 +4,21 @@ var User = require('../models/user');
 var List = require('../models/list');
 var Boom = require('boom');
 var co = require('co');
+var Bookshelf = require('../lib/database').bookshelf;
 
 var handler = {
     create: function(request, reply) {
         let title = request.payload.title;
         let boardID = request.params.board_id;
+        let projectID = request.params.project_id;
 
         co(function* () {
+            // Check to make sure the board is in the project
+            var board = yield Bookshelf.model('Board').forge({id: boardID}).fetch();
+            if (board.get('project_id') !== projectID) {
+                throw Boom.badRequest();
+            }
+
             var list = yield List.forge({title: title, board_id: boardID}).save();
             var data = yield list.retrieve(List.getRetrievals().all);
             reply(API.makeData(data));
@@ -25,6 +33,7 @@ var handler = {
 
     retrieve: function(request, reply) {
         var listId = request.params['id'];
+        var boardID = request.params.board_id;
         var isDeep = !!request.query['isDeep'];
         co(function* () {
             try {
