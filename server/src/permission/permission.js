@@ -15,6 +15,7 @@ var internals = {
  * @param {number} uid the id of the user to check the scope for.
  * @param request the request.
  * @returns {Promise.<string[]>}
+ * TODO: Refactor
  */
 internals.getScope = function(uid, request) {
     return co(function* () {

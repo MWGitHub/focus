@@ -10,15 +10,8 @@ var handler = {
     create: function(request, reply) {
         let title = request.payload.title;
         let boardID = request.params.board_id;
-        let projectID = request.params.project_id;
 
         co(function* () {
-            // Check to make sure the board is in the project
-            var board = yield Bookshelf.model('Board').forge({id: boardID}).fetch({require: true});
-            if (board.get('project_id') !== projectID) {
-                throw Boom.badRequest();
-            }
-
             var list = yield List.forge({title: title, board_id: boardID}).save();
             var data = yield list.retrieve(List.getRetrievals().all);
             reply(API.makeData(data));
@@ -30,21 +23,9 @@ var handler = {
     update: function(request, reply) {
         let title = request.payload.title;
         let id = request.params.id;
-        let bid = request.params.board_id;
-        let pid = request.params.project_id;
 
         co(function* () {
-            var list = yield List.forge({id: id, board_id: bid}).fetch({require: true});
-
-            // Make sure the list is owned by the board
-            if (list.get('board_id') !== bid) {
-                throw Boom.badRequest();
-            }
-            // Make sure the board matches the project
-            let board = yield Bookshelf.model('Board').forge({id: bid}).fetch({require: true});
-            if (board.get('project_id') !== pid) {
-                throw Boom.badRequest();
-            }
+            var list = yield List.forge({id: id}).fetch({require: true});
             var options = {};
             if (title !== list.get('title')) {
                 options.title = title;
@@ -90,19 +71,15 @@ var handler = {
     },
 
     deleteSelf: function(request, reply) {
-        var listId = request.params['id'];
-        co(function* () {
-            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-            var list = yield List.forge({id: listId}).fetch({require: true});
-            if (list.get('user_id') !== user.get('id')) {
-                throw Boom.unauthorized();
-            }
-            yield list.destroyDeep();
+        var id = request.params.id;
+        var bid = request.params.board_id;
+        return co(function* () {
+            var list = yield List.forge({id: id, board_id: bid}).fetch({require: true});
+            yield list.destroy();
             reply(API.makeStatusMessage('list-delete', true, 'list deleted'));
-        }).catch(function(err) {
-            reply(Boom.wrap(err));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
         });
-
     }
 };
 

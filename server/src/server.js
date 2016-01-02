@@ -105,7 +105,7 @@ class Server {
                                 key: 'id',
                                 relation: 'project_id',
                                 param: 'board_id',
-                                through: 'projects',
+                                through: 'projects'
                             },
                             lists: {
                                 table: 'lists',

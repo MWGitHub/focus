@@ -552,7 +552,40 @@ describe('list', function() {
 
     it('should delete a list', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}';
+
+            // Admin should be able to delete a list in a private project
+            var admin = helper.userSeeds[0];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/0',
+                headers: {
+                    authorization: yield helper.login(admin)
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            // Attempt to retrieve the list
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/0?token=' + (yield helper.login(admin))
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Admin should be able to delete a list in a public project
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 7});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+
+            // Attempt to retrieve the list
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1/boards/2/lists/7?token=' + (yield helper.login(admin))
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -561,7 +594,58 @@ describe('list', function() {
 
     it('should not allow invalid users to delete a list', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}';
+
+            // Member should not be able to delete a private project
+            var member = helper.userSeeds[1];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/2/boards/4/lists/12',
+                headers: {
+                    authorization: yield helper.login(member)
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Member should not be able to delete a public project
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to delete a public project
+            var viewer = helper.userSeeds[2];
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/3/boards/6/lists/18',
+                headers: {
+                    authorization: yield helper.login(viewer)
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Stranger should not be able to delete a public project
+            var stranger = helper.userSeeds[4];
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/3/boards/6/lists/18',
+                headers: {
+                    authorization: yield helper.login(stranger)
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Guest should not be able to delete a public project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/3/boards/6/lists/18'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -570,7 +654,32 @@ describe('list', function() {
 
     it('should not allow invalid inputs for deleting list', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}';
+
+            // Attempt to delete a list that does not exist
+            var admin = helper.userSeeds[0];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/2410',
+                headers: {
+                    authorization: yield helper.login(admin)
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Attempt to delete a list that is in the wrong board
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 0, bid: 0, id: 7});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Attempt to delete a list with the wrong project
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 1, bid: 0, id: 0});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             done();
         }).catch(function(e) {
             done(e);
