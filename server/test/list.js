@@ -24,7 +24,37 @@ describe('list', function() {
 
     it('should create a list', function(done) {
         co(function* () {
-            assert(false);
+            // Admin should be able to create a list
+            var admin = helper.userSeeds[0];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/0/lists',
+                headers: {
+                    authorization: yield helper.login(admin)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'new');
+
+            // Admin should be able to create a list in a public project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/1/boards/2/lists',
+                headers: {
+                    authorization: yield helper.login(admin)
+                },
+                payload: {
+                    title: 'another'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'another');
+
             done();
         }).catch(function(e) {
             done(e);
@@ -33,7 +63,104 @@ describe('list', function() {
 
     it('should not allow invalid users to create a list', function(done) {
         co(function* () {
-            assert(false);
+            // Member should not be able to create a list
+            var member = helper.userSeeds[1];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/0/lists',
+                headers: {
+                    authorization: yield helper.login(member)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Member should not be able to create a list in a public project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/1/boards/2/lists',
+                headers: {
+                    authorization: yield helper.login(member)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to create a list in a private project
+            var viewer = helper.userSeeds[2];
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/2/boards/5/lists',
+                headers: {
+                    authorization: yield helper.login(viewer)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to create a list in a public project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/3/boards/6/lists',
+                headers: {
+                    authorization: yield helper.login(viewer)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Stranger should not be able to create a list in a private project
+            var stranger = helper.userSeeds[4];
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/0/lists',
+                headers: {
+                    authorization: yield helper.login(stranger)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Stranger should not be able to create a list in a public project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/1/boards/2/lists',
+                headers: {
+                    authorization: yield helper.login(stranger)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Unauthorized should not be able to create a list in a project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/1/boards/2/lists',
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -42,7 +169,55 @@ describe('list', function() {
 
     it('should not allow invalid inputs for a list', function(done) {
         co(function* () {
-            assert(false);
+            // Title too long
+            var admin = helper.userSeeds[0];
+            var payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/0/lists',
+                headers: {
+                    authorization: yield helper.login(admin)
+                },
+                payload: {
+                    title: _.pad('a', 300, 'b')
+                }
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.error);
+
+            // No title given
+            var clone = _.cloneDeep(payload);
+            delete clone.payload.title;
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.error);
+
+            // List with invalid board
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/0/boards/4/lists',
+                headers: {
+                    authorization: yield helper.login(admin)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.error);
+
+            // List with invalid project
+            payload = {
+                method: 'POST',
+                url: helper.apiRoute + '/projects/3/boards/1/lists',
+                headers: {
+                    authorization: yield helper.login(admin)
+                },
+                payload: {
+                    title: 'new'
+                }
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.error);
+
             done();
         }).catch(function(e) {
             done(e);

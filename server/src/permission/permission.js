@@ -65,27 +65,34 @@ internals.getScope = function(uid, request) {
             // Parent ID used when creating a child
             let parentID = request.params[types[0].relation];
             // Runs a sub query if the current type has a child
-            let subquery = function(current) {
+            let subquery = function(types, index) {
                 return function() {
-                    // Subquery again if parents still exist and compare the relation with the keys
-                    if (types.length > 0) {
-                        this.whereIn(current.relation, subquery(types.pop()));
-                    }
-                    this.select(current.relation).from(current.table);
-                    // Current type does not have any children
-                    if (types.length === 0) {
-                        // If no ID then use the parent ID for object creation
-                        if (id) {
+                    let current = types[index];
+                    if (index === 1 && !id) {
+                        // Object is being created, use parent ID
+                        this.select(current.relation).from(current.table).where(current.key, parentID);
+                    } else {
+                        // Subquery again if parents still exist and compare the relation with the keys
+                        if (index > 0) {
+                            this.whereIn(current.key, subquery(types, index - 1));
+                        }
+                        this.select(current.relation).from(current.table);
+                        // Current type does not have any children
+                        if (index === 0) {
                             this.where(current.key, id);
-                        } else {
-                            this.where(current.key, parentID);
                         }
                     }
-                }
+                };
             };
 
+            //console.log('Query Start');
             let query = knex.select('role', userField, relationField).from(permissionTable);
-            query.whereIn(relationField, subquery(types.pop()));
+            // First parent is base and is creating a new object
+            if (types.length === 1 && !id) {
+                query.where(types[types.length - 1].relation, parentID);
+            } else {
+                query.whereIn(relationField, subquery(types, types.length - 1));
+            }
             query.orderBy(userField);
             //query.debug(true);
             let results = yield query;

@@ -190,7 +190,7 @@ describe('board', function() {
             // Should be able to update a public board
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/1/boards/0/update',
+                url: helper.apiRoute + '/projects/1/boards/2/update',
                 headers: {
                     authorization: yield helper.login(admin)
                 },
@@ -215,7 +215,7 @@ describe('board', function() {
             var member = helper.userSeeds[1];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/1/boards/0/update',
+                url: helper.apiRoute + '/projects/1/boards/2/update',
                 headers: {
                     authorization: yield helper.login(member)
                 },
@@ -229,7 +229,7 @@ describe('board', function() {
 
             // Member should not be allowed to update a private board
             var clone = _.cloneDeep(payload);
-            clone.url = helper.apiRoute + '/projects/2/boards/0/update';
+            clone.url = helper.apiRoute + '/projects/2/boards/4/update';
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
@@ -237,7 +237,7 @@ describe('board', function() {
             var viewer = helper.userSeeds[2];
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/1/boards/0/update',
+                url: helper.apiRoute + '/projects/1/boards/2/update',
                 headers: {
                     authorization: yield helper.login(viewer)
                 },
@@ -252,7 +252,7 @@ describe('board', function() {
             // Unauthorized should not be allowed to update a board
             response = yield helper.inject({
                 method: 'POST',
-                url: helper.apiRoute + '/projects/1/boards/0/update',
+                url: helper.apiRoute + '/projects/1/boards/2/update',
                 payload: {
                     title: 'changed'
                 }
@@ -263,7 +263,7 @@ describe('board', function() {
             var stranger = helper.userSeeds[4];
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/1/boards/0/update',
+                url: helper.apiRoute + '/projects/1/boards/2/update',
                 headers: {
                     authorization: yield helper.login(stranger)
                 },
@@ -276,7 +276,7 @@ describe('board', function() {
 
             // Stranger should not be allowed to update a private board
             clone = _.cloneDeep(payload);
-            clone.url = helper.apiRoute + '/projects/2/boards/0/update';
+            clone.url = helper.apiRoute + '/projects/2/boards/4/update';
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 

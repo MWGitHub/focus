@@ -21,9 +21,10 @@ var handler = {
     update: function(request, reply) {
         let title = request.payload.title;
         let bid = request.params.id;
+        let pid = request.params.project_id;
 
         co(function* () {
-            var board = yield Board.forge({id: bid}).fetch({require: true});
+            var board = yield Board.forge({id: bid, project_id: pid}).fetch({require: true});
             var options = {};
             if (title !== board.get('title')) {
                 options.title = title;

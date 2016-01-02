@@ -9,10 +9,12 @@ var co = require('co');
 var Config = require('../../config.json');
 var Knexfile = require('../../knexfile');
 var moment = require('moment-timezone');
+var _ = require('lodash');
 
 var seedUsers = require('../../data/db/seeds/a1-users').users;
 var seedProjects = require('../../data/db/seeds/a2-projects').projects;
 var seedBoards = require('../../data/db/seeds/a3-boards').boards;
+var seedLists = require('../../data/db/seeds/a4-lists').lists;
 
 /**
  * Helper instance that holds server state until after is run.
@@ -48,6 +50,12 @@ class Helper {
          * @type {{id: number, project_id: number, title: string}[]}
          */
         this.boardSeeds = seedBoards;
+
+        /**
+         * Seeded lists in the database.
+         * @type {{id: number, board_id: number, title: string}[]}
+         */
+        this.listSeeds = seedLists;
     }
 
     generateSeeds() {
@@ -57,6 +65,7 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 1');
+            yield Database.knex.raw('ALTER SEQUENCE lists_id_seq RESTART WITH 1');
 
             yield Database.knex.seed.run();
 
@@ -65,6 +74,7 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 10000');
+            yield Database.knex.raw('ALTER SEQUENCE lists_id_seq RESTART WITH 10000');
         });
     }
 
@@ -168,6 +178,20 @@ class Helper {
             server.inject(data, function (response) {
                 resolve(response);
             });
+        });
+    }
+
+    /**
+     * Clones and changes the authorization of a payload to the given user.
+     * @param payload the payload to clone and change
+     * @param user the user to change to
+     * @returns {*|Promise}
+     */
+    changeHeaderAuth(payload, user) {
+        return co(function* () {
+            var clone = _.cloneDeep(payload);
+            clone.headers.authorization = yield this.login(user);
+            return clone;
         });
     }
 }
