@@ -1,3 +1,4 @@
+"use strict";
 var assert = require('chai').assert;
 var Helper = require('./helpers/helper');
 var co = require('co');
@@ -202,7 +203,7 @@ describe('list', function() {
                 }
             };
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.error);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // List with invalid project
             payload = {
@@ -216,7 +217,7 @@ describe('list', function() {
                 }
             };
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.error);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             done();
         }).catch(function(e) {
@@ -382,13 +383,13 @@ describe('list', function() {
             clone = _.cloneDeep(payload);
             clone.url = helper.apiRoute + '/projects/1/boards/2/lists/0/update';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, Helper.Status.error);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Should not allow lists that are in the wrong project
             clone = _.cloneDeep(payload);
             clone.url = helper.apiRoute + '/projects/0/boards/2/lists/6/update';
             response = yield helper.inject(clone);
-            assert.equal(response.statusCode, Helper.Status.error);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             done();
         }).catch(function(e) {
@@ -398,7 +399,72 @@ describe('list', function() {
 
     it('should retrieve a list', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}?token={token}';
+
+            // Admin should be able to retrieve from a private project
+            var admin = helper.userSeeds[0];
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/0?token=' + (yield helper.login(admin))
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title0');
+
+            // Admin should be able to retrieve from a public project
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(admin))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title6');
+
+            // Member should be able to retrieve from a public project
+            var member = helper.userSeeds[1];
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(member))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title6');
+
+            // Member should be able to retrieve from a private project
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 2, bid: 4, id: 12, token: (yield helper.login(member))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title12');
+
+            // Member should be able to retrieve from a public project
+            var viewer = helper.userSeeds[2];
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 3, bid: 6, id: 18, token: (yield helper.login(viewer))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title18');
+
+            // Member should be able to retrieve from a private project
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 2, bid: 4, id: 12, token: (yield helper.login(viewer))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title12');
+
+            // Stranger should be able to retrieve from a public project
+            var stranger = helper.userSeeds[4];
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(stranger))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title6');
+
+            // Guest should be able to retrieve from a public project
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1/boards/2/lists/8'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title8');
+
             done();
         }).catch(function(e) {
             done(e);
@@ -407,7 +473,23 @@ describe('list', function() {
 
     it('should not allow invalid users to retrieve a list', function(done) {
         co(function* () {
-            assert(false);
+            // Stranger should not be able to retrieve from a private project
+            var stranger = helper.userSeeds[0];
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/4/boards/8/lists/24?token=' + (yield helper.login(stranger))
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Guest should not be able to retrieve from a private project
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/4/boards/8/lists/24'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -416,7 +498,52 @@ describe('list', function() {
 
     it('should not allow invalid inputs for retrieving list', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}?token={token}';
+            var admin = helper.userSeeds[0];
+            // Invalid list
+            var payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/2400?token=' + (yield helper.login(admin))
+            };
+            var response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Invalid board
+            var clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 0, bid: 3, id: 0, token: (yield helper.login(admin))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Invalid project
+            clone = _.cloneDeep(payload);
+            clone.url = helper.changeURL(url, {pid: 3, bid: 0, id: 0, token: (yield helper.login(admin))});
+            response = yield helper.inject(clone);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Invalid guest list
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1/boards/2/lists/2400'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.internal);
+
+            // Invalid guest board
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1/boards/6/lists/6'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.internal);
+
+            // Invalid guest project
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/3/boards/2/lists/6'
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.error);
+
             done();
         }).catch(function(e) {
             done(e);

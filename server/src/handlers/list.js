@@ -34,7 +34,8 @@ var handler = {
         let pid = request.params.project_id;
 
         co(function* () {
-            var list = yield List.forge({id: id}).fetch({require: true});
+            var list = yield List.forge({id: id, board_id: bid}).fetch({require: true});
+
             // Make sure the list is owned by the board
             if (list.get('board_id') !== bid) {
                 throw Boom.badRequest();
@@ -57,23 +58,34 @@ var handler = {
     },
 
     retrieve: function(request, reply) {
-        var listId = request.params['id'];
-        var boardID = request.params.board_id;
-        var isDeep = !!request.query['isDeep'];
-        co(function* () {
-            try {
-                var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-                var list = yield List.forge({id: listId}).fetch({require: true});
-            } catch(e) {
-                throw Boom.notFound();
+        var id = request.params.id;
+        var bid = request.params.board_id;
+        var pid = request.params.project_id;
+
+        return co(function* () {
+            var list = yield List.forge({id: id, board_id: bid}).fetch({require: true});
+
+            // Make sure the list is owned by the board
+            if (list.get('board_id') !== bid) {
+                throw Boom.badRequest();
             }
-            if (list.get('user_id') !== user.get('id')) {
-                throw Boom.unauthorized();
+            // Make sure the board matches the project
+            let board = yield Bookshelf.model('Board').forge({id: bid}).fetch({require: true});
+            if (board.get('project_id') !== pid) {
+                throw Boom.badRequest();
             }
-            var data = yield list.retrieveAsData(isDeep);
+
+            // Do not allow guests to view private boards
+            if (!request.auth.isAuthenticated) {
+                var project = yield board.project().fetch();
+                if (!project.get('is_public')) {
+                    throw Boom.unauthorized();
+                }
+            }
+            var data = yield list.retrieve(List.getRetrievals().all);
             reply(API.makeData(data));
-        }).catch(function(err) {
-            reply(Boom.wrap(err));
+        }).catch(function(error) {
+            reply(Boom.wrap(error));
         });
     },
 

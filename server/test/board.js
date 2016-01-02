@@ -422,7 +422,7 @@ describe('board', function() {
                 url: helper.apiRoute + '/projects/0/boards/3?token=' + (yield helper.login(admin))
             };
             var response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.internal);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Attempt to retrieve a board that does not exist in a project that does not exist
             payload = {
@@ -577,7 +577,7 @@ describe('board', function() {
                 }
             };
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.internal);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Delete a board that is in a project that does not exist
             payload = {
@@ -588,7 +588,7 @@ describe('board', function() {
                 }
             };
             response = yield helper.inject(payload);
-            assert.equal(response.statusCode, Helper.Status.internal);
+            assert.equal(response.statusCode, Helper.Status.forbidden);
 
             done();
         }).catch(function(e) {

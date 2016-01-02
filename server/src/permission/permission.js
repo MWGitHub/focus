@@ -18,6 +18,8 @@ var internals = {
  */
 internals.getScope = function(uid, request) {
     return co(function* () {
+        //console.log(request.path);
+
         let options = request.route.settings.plugins.permission;
         // ID of the object being checked if available
         let id = request.params.id;
@@ -76,10 +78,14 @@ internals.getScope = function(uid, request) {
                         if (index > 0) {
                             this.whereIn(current.key, subquery(types, index - 1));
                         }
-                        this.select(current.relation).from(current.table);
-                        // Current type does not have any children
+                        // Get the ID of the current query or the id of the object if at the lowest level
                         if (index === 0) {
-                            this.where(current.key, id);
+                            // No children left, compare with lowest id
+                            this.select(current.relation).from(current.table)
+                                .where(current.key, id);
+                        } else {
+                            this.select(current.relation).from(current.table)
+                                .where(current.key, request.params[current.param]);
                         }
                     }
                 };
@@ -92,6 +98,7 @@ internals.getScope = function(uid, request) {
                 query.where(types[types.length - 1].relation, parentID);
             } else {
                 query.whereIn(relationField, subquery(types, types.length - 1));
+                query.where(relationField, request.params[base.param]);
             }
             query.orderBy(userField);
             //query.debug(true);
@@ -111,6 +118,9 @@ internals.getScope = function(uid, request) {
                 }
                 // Retrieve the base ID
                 id = results[0][relationField];
+            } else {
+                // No permissions found, some or all of the models in the chain do not exist
+                id = null;
             }
         } else {
             let whereOptions = {};
@@ -123,7 +133,11 @@ internals.getScope = function(uid, request) {
         }
 
         if (role) {
+            // Role found, return the roles
             return [role];
+        } if (!id) {
+            // Some or all models do not exist, return no roles
+            return [];
         } else {
             // If the model is not able to be public or does not allow viewers return no roles
             if (!publicField || !allowsViewers) {

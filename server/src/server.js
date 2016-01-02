@@ -97,24 +97,28 @@ class Server {
 
                                 table: 'projects',
                                 key: 'id',
-                                relation: 'project_id'
+                                relation: 'project_id',
+                                param: 'project_id'
                             },
                             boards: {
                                 table: 'boards',
                                 key: 'id',
                                 relation: 'project_id',
-                                through: 'projects'
+                                param: 'board_id',
+                                through: 'projects',
                             },
                             lists: {
                                 table: 'lists',
                                 key: 'id',
                                 relation: 'board_id',
+                                param: 'list_id',
                                 through: 'boards'
                             },
                             tasks: {
                                 table: 'tasks',
                                 key: 'id',
                                 relation: 'list_id',
+                                param: 'task_id',
                                 through: 'lists'
                             }
                         }

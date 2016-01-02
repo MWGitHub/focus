@@ -194,6 +194,21 @@ class Helper {
             return clone;
         });
     }
+
+    /**
+     * Change the url with the given tokens.
+     * @param {string} url the url to change.
+     * @param {Object.<string, string>} tokens the strings to replace matching the keys.
+     * @returns {string} the changed URL.
+     */
+    changeURL(url, tokens) {
+        var str = url;
+        for (let key in tokens) {
+            if (!tokens.hasOwnProperty(key)) continue;
+            str = str.replace('{' + key + '}', tokens[key]);
+        }
+        return str;
+    }
 }
 
 Helper.Status = {
