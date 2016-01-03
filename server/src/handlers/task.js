@@ -1,10 +1,9 @@
+"use strict";
 var Task = require('../models/task');
 var Hoek = require('hoek');
-var User = require('../models/user');
 var Boom = require('boom');
 var List = require('../models/list');
 var API = require('../lib/api');
-var stale = require('../lib/stale');
 var co = require('co');
 
 var handler = {
@@ -12,45 +11,16 @@ var handler = {
      * Create a new task.
      */
     create: function(request, reply) {
-        "use strict";
-
-        var list_id = request.payload['list_id'];
+        var list_id = request.params.list_id;
         var title = Hoek.escapeHtml(request.payload['title']);
-        var position = request.payload['position'];
-        var extra = request.payload['extra'];
 
         co(function* () {
-            var user = yield User.forge({id: request.auth.credentials.id}).fetch();
-            if (!user) {
-                reply(Boom.notFound());
-                return;
-            }
-            var uid = user.get('id');
-
-            var list = yield List.forge({id: list_id}).fetch();
-            if (!list) {
-                reply(Boom.notFound());
-                return;
-            }
-
-            if (uid !== list.get('user_id')) {
-                reply(Boom.unauthorized());
-                return;
-            }
-
             var data = {
-                list_id: list.get('id'),
-                title: title,
-                position: position
+                list_id: list_id,
+                title: title
             };
-            if (extra) {
-                data.extra = extra;
-            }
             var task = yield Task.forge(data).save();
-            var taskData = yield task.retrieveAsData();
-
-            // Signal that the board has been updated
-            yield stale.touch(list.get('board_id'));
+            var taskData = yield task.retrieve(Task.getRetrievals().all);
 
             reply(API.makeData(taskData));
         }).catch(function(error) {

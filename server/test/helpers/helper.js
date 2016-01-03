@@ -186,20 +186,29 @@ class Helper {
      */
     inject(payload, user, url, tokens) {
         let clone = _.cloneDeep(payload);
-        var server = this.server.server;
-        return new Promise(function (resolve, reject) {
+        let server = this.server.server;
+        let instance = this;
+        return co(function* () {
             if (user) {
-                clone = this.changeHeaderAuth(payload, user);
+                if (clone.headers) {
+                    clone.headers.authorization = yield instance.login(user);
+                } else {
+                    clone.headers = {
+                        authorization: yield instance.login(user)
+                    }
+                }
             }
             if (url) {
                 if (tokens) {
-                    clone.url = this.parseURL(url, tokens);
+                    clone.url = instance.parseURL(url, tokens);
                 } else {
                     clone.url = url;
                 }
             }
-            server.inject(clone, function (response) {
-                resolve(response);
+            return new Promise(function(resolve) {
+                server.inject(clone, function (response) {
+                    resolve(response);
+                });
             });
         });
     }
@@ -211,9 +220,10 @@ class Helper {
      * @returns {*|Promise}
      */
     changeHeaderAuth(payload, user) {
+        let instance = this;
         return co(function* () {
             var clone = _.cloneDeep(payload);
-            clone.headers.authorization = yield this.login(user);
+            clone.headers.authorization = yield instance.login(user);
             return clone;
         });
     }

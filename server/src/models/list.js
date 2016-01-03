@@ -2,7 +2,6 @@
 var Bookshelf = require('../lib/database').bookshelf;
 require('./task');
 require('./board');
-require('./user');
 var co = require('co');
 var ModelUtil = require('../lib/model-util');
 

@@ -1,76 +1,112 @@
-var TaskAPI = require('../handlers/task');
+var Handler = require('../handlers/task');
 var Joi = require('joi');
 var API = require('../lib/api');
 
-var routes = [
+var internals = {
+    route: API.route + '/projects/{project_id}/boards/{board_id}/lists/{list_id}',
+    paramsCreate: {
+        project_id: Joi.number().integer().required(),
+        board_id: Joi.number().integer().required(),
+        list_id: Joi.number().integer().required()
+    },
+    params: {
+        id: Joi.number().integer().required(),
+        project_id: Joi.number().integer().required(),
+        board_id: Joi.number().integer().required(),
+        list_id: Joi.number().integer().required()
+    }
+};
+
+console.log(internals.route + '/tasks');
+module.exports = [
     {
         method: 'POST',
-        path: API.route + '/tasks',
-        handler: TaskAPI.create,
+        path: internals.route + '/tasks',
+        handler: Handler.create,
         config: {
-            auth: 'jwt',
-            validate: {
-                payload: {
-                    list_id: Joi.number().integer().required(),
-                    title: Joi.string().min(1).max(30).required(),
-                    position: Joi.number().min(0).max(Number.MAX_SAFE_INTEGER).required(),
-                    extra: Joi.boolean()
-                }
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin', 'member']
             },
-            cors: true
-        }
-    },
-    {
-        method: 'GET',
-        path: API.route + '/tasks/{id}',
-        handler: TaskAPI.retrieve,
-        config: {
-            auth: 'jwt',
             cors: true,
             validate: {
-                params: {
-                    id: Joi.number().integer().required(),
+                payload: {
+                    title: Joi.string().min(1).max(100).required()
                 },
-                query: {
-                    token: Joi.string(),
-                    isDeep: Joi.boolean()
+                params: internals.paramsCreate
+            },
+            plugins: {
+                permission: {
+                    type: 'tasks'
                 }
             }
         }
     },
     {
         method: 'POST',
-        path: API.route + '/tasks/{id}/update',
-        handler: TaskAPI.update,
+        path: internals.route + '/tasks/{id}/update',
+        handler: Handler.update,
         config: {
-            auth: 'jwt',
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin', 'member']
+            },
+            cors: true,
             validate: {
                 payload: {
-                    list_id: Joi.number().integer(),
-                    position: Joi.number().min(0).max(Number.MAX_SAFE_INTEGER),
-                    title: Joi.string().min(1).max(30)
+                    title: Joi.string().min(1).max(100).required()
                 },
-                params: {
-                    id: Joi.number().integer().required()
+                params: internals.params
+            },
+            plugins: {
+                permission: {
+                    type: 'tasks'
+                }
+            }
+        }
+    },
+    {
+        method: 'GET',
+        path: internals.route + '/tasks/{id}',
+        handler: Handler.retrieve,
+        config: {
+            auth: {
+                strategy: 'jwt',
+                mode: 'try',
+                scope: ['admin', 'member', 'viewer']
+            },
+            cors: true,
+            validate: {
+                params: internals.params,
+                query: {
+                    token: Joi.string()
                 }
             },
-            cors: true
+            plugins: {
+                permission: {
+                    type: 'tasks'
+                }
+            }
         }
     },
     {
         method: 'POST',
-        path: API.route + '/tasks/{id}/delete',
-        handler: TaskAPI.deleteSelf,
+        path: internals.route + '/tasks/{id}/delete',
+        handler: Handler.deleteSelf,
         config: {
-            auth: 'jwt',
-            validate: {
-                params: {
-                    id: Joi.number().integer().required()
-                }
+            auth: {
+                strategy: 'jwt',
+                scope: ['admin', 'member']
             },
-            cors: true
+            cors: true,
+            validate: {
+                params: internals.params
+            },
+            plugins: {
+                permission: {
+                    type: 'tasks'
+                }
+            }
         }
     }
 ];
-
-module.exports = routes;
