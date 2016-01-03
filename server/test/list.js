@@ -68,7 +68,7 @@ describe('list', function() {
             var member = helper.userSeeds[1];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/0/boards/0/lists',
+                url: helper.apiRoute + '/projects/1/boards/2/lists',
                 headers: {
                     authorization: yield helper.login(member)
                 },
@@ -413,7 +413,7 @@ describe('list', function() {
 
             // Admin should be able to retrieve from a public project
             var clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(admin))});
+            clone.url = helper.parseURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(admin))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title6');
@@ -421,14 +421,14 @@ describe('list', function() {
             // Member should be able to retrieve from a public project
             var member = helper.userSeeds[1];
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(member))});
+            clone.url = helper.parseURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(member))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title6');
 
             // Member should be able to retrieve from a private project
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 2, bid: 4, id: 12, token: (yield helper.login(member))});
+            clone.url = helper.parseURL(url, {pid: 2, bid: 4, id: 12, token: (yield helper.login(member))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title12');
@@ -436,14 +436,14 @@ describe('list', function() {
             // Member should be able to retrieve from a public project
             var viewer = helper.userSeeds[2];
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 3, bid: 6, id: 18, token: (yield helper.login(viewer))});
+            clone.url = helper.parseURL(url, {pid: 3, bid: 6, id: 18, token: (yield helper.login(viewer))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title18');
 
             // Member should be able to retrieve from a private project
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 2, bid: 4, id: 12, token: (yield helper.login(viewer))});
+            clone.url = helper.parseURL(url, {pid: 2, bid: 4, id: 12, token: (yield helper.login(viewer))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title12');
@@ -451,7 +451,7 @@ describe('list', function() {
             // Stranger should be able to retrieve from a public project
             var stranger = helper.userSeeds[4];
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(stranger))});
+            clone.url = helper.parseURL(url, {pid: 1, bid: 2, id: 6, token: (yield helper.login(stranger))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title6');
@@ -510,13 +510,13 @@ describe('list', function() {
 
             // Invalid board
             var clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 0, bid: 3, id: 0, token: (yield helper.login(admin))});
+            clone.url = helper.parseURL(url, {pid: 0, bid: 3, id: 0, token: (yield helper.login(admin))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Invalid project
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 3, bid: 0, id: 0, token: (yield helper.login(admin))});
+            clone.url = helper.parseURL(url, {pid: 3, bid: 0, id: 0, token: (yield helper.login(admin))});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
@@ -575,7 +575,7 @@ describe('list', function() {
 
             // Admin should be able to delete a list in a public project
             var clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 7});
+            clone.url = helper.parseURL(url, {pid: 1, bid: 2, id: 7});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.valid);
 
@@ -610,7 +610,7 @@ describe('list', function() {
 
             // Member should not be able to delete a public project
             var clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 1, bid: 2, id: 6});
+            clone.url = helper.parseURL(url, {pid: 1, bid: 2, id: 6});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
@@ -670,13 +670,13 @@ describe('list', function() {
 
             // Attempt to delete a list that is in the wrong board
             var clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 0, bid: 0, id: 7});
+            clone.url = helper.parseURL(url, {pid: 0, bid: 0, id: 7});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 
             // Attempt to delete a list with the wrong project
             clone = _.cloneDeep(payload);
-            clone.url = helper.changeURL(url, {pid: 1, bid: 0, id: 0});
+            clone.url = helper.parseURL(url, {pid: 1, bid: 0, id: 0});
             response = yield helper.inject(clone);
             assert.equal(response.statusCode, Helper.Status.forbidden);
 

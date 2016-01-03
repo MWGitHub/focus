@@ -178,13 +178,27 @@ class Helper {
 
     /**
      * Injects as a promise.
-     * @param {*} data the data to inject.
+     * @param {*} payload the payload to inject.
+     * @param {*=} user the user to add to switch authentication with if given.
+     * @param {string=} url the URL to inject with, uses the payload url if not given.
+     * @param {Object.<string, string>=} tokens the tokens to inject with the URL.
      * @returns {Promise} the promise with the response.
      */
-    inject(data) {
+    inject(payload, user, url, tokens) {
+        let clone = _.cloneDeep(payload);
         var server = this.server.server;
         return new Promise(function (resolve, reject) {
-            server.inject(data, function (response) {
+            if (user) {
+                clone = this.changeHeaderAuth(payload, user);
+            }
+            if (url) {
+                if (tokens) {
+                    clone.url = this.parseURL(url, tokens);
+                } else {
+                    clone.url = url;
+                }
+            }
+            server.inject(clone, function (response) {
                 resolve(response);
             });
         });
@@ -205,12 +219,12 @@ class Helper {
     }
 
     /**
-     * Change the url with the given tokens.
+     * Returns a new string with the tokens replaced in the url.
      * @param {string} url the url to change.
      * @param {Object.<string, string>} tokens the strings to replace matching the keys.
-     * @returns {string} the changed URL.
+     * @returns {string} the new string with the parsed URL.
      */
-    changeURL(url, tokens) {
+    parseURL(url, tokens) {
         var str = url;
         for (let key in tokens) {
             if (!tokens.hasOwnProperty(key)) continue;

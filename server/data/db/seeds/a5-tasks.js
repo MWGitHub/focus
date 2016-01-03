@@ -12,7 +12,9 @@ for (let i = 0; i < 30; i++) {
             id: i * 3 + j,
             list_id: i,
             title: 'title' + (i * 3 + j),
-            position: i * 3 + j
+            data: {
+                position: i * 3 + j
+            }
         });
     }
 }

@@ -3,9 +3,6 @@
  */
 var API = require('./src/lib/api');
 var User = require('./src/models/user');
-var Board = require('./src/models/board');
-var List = require('./src/models/list');
-var Task = require('./src/models/task');
 var program = require('commander');
 var Auth = require('./src/auth/auth');
 var knex = require('./src/lib/database').knex;
@@ -164,15 +161,31 @@ program
 program
     .command('generate-seeds')
     .description('Generates seeds for the database.')
-    .action(function() {
+    .option('-n, --no-migrate', 'Do not run migrations')
+    .option('-d, --delete', 'Delete all rows in tables')
+    .action(function(options) {
         co(function* () {
-            yield knex.migrate.latest();
+            if (options.migrate) {
+                yield knex.migrate.latest();
+            }
+
+            // Remove all data from tables
+            if (options.delete) {
+                yield knex('project_permissions').del();
+                yield knex('tasks').del();
+                yield knex('lists').del();
+                yield knex('boards').del();
+                yield knex('projects').del();
+                yield knex('users').del();
+            }
 
             // Set database sequence to not collide with seed ids
             yield knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1');
             yield knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 1');
             yield knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 1');
             yield knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 1');
+            yield knex.raw('ALTER SEQUENCE lists_id_seq RESTART WITH 1');
+            yield knex.raw('ALTER SEQUENCE tasks_id_seq RESTART WITH 1');
 
             yield knex.seed.run();
 
@@ -181,8 +194,13 @@ program
             yield knex.raw('ALTER SEQUENCE projects_id_seq RESTART WITH 10000');
             yield knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
             yield knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 10000');
+            yield knex.raw('ALTER SEQUENCE lists_id_seq RESTART WITH 10000');
+            yield knex.raw('ALTER SEQUENCE tasks_id_seq RESTART WITH 10000');
 
             process.exit(0);
+        }).catch(function(e) {
+            console.log(e);
+            process.exit(1);
         });
     });
 
