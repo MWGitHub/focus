@@ -15,6 +15,7 @@ var seedUsers = require('../../data/db/seeds/a1-users').users;
 var seedProjects = require('../../data/db/seeds/a2-projects').projects;
 var seedBoards = require('../../data/db/seeds/a3-boards').boards;
 var seedLists = require('../../data/db/seeds/a4-lists').lists;
+var seedTasks = require('../../data/db/seeds/a5-tasks').tasks;
 
 /**
  * Helper instance that holds server state until after is run.
@@ -56,6 +57,12 @@ class Helper {
          * @type {{id: number, board_id: number, title: string}[]}
          */
         this.listSeeds = seedLists;
+
+        /**
+         * Seeded tasks in the database.
+         * @type {{id: number, list_id: number, title: string, position: number}[]}
+         */
+        this.taskSeeds = seedTasks;
     }
 
     generateSeeds() {
@@ -66,6 +73,7 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 1');
             yield Database.knex.raw('ALTER SEQUENCE lists_id_seq RESTART WITH 1');
+            yield Database.knex.raw('ALTER SEQUENCE tasks_id_seq RESTART WITH 1');
 
             yield Database.knex.seed.run();
 
@@ -75,6 +83,7 @@ class Helper {
             yield Database.knex.raw('ALTER SEQUENCE project_permissions_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE boards_id_seq RESTART WITH 10000');
             yield Database.knex.raw('ALTER SEQUENCE lists_id_seq RESTART WITH 10000');
+            yield Database.knex.raw('ALTER SEQUENCE tasks_id_seq RESTART WITH 10000');
         });
     }
 

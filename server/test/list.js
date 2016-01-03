@@ -552,13 +552,13 @@ describe('list', function() {
 
     it('should delete a list', function(done) {
         co(function* () {
-            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}';
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}/delete';
 
             // Admin should be able to delete a list in a private project
             var admin = helper.userSeeds[0];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/0/boards/0/lists/0',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/0/delete',
                 headers: {
                     authorization: yield helper.login(admin)
                 }
@@ -594,13 +594,13 @@ describe('list', function() {
 
     it('should not allow invalid users to delete a list', function(done) {
         co(function* () {
-            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}';
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}/delete';
 
             // Member should not be able to delete a private project
             var member = helper.userSeeds[1];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/2/boards/4/lists/12',
+                url: helper.apiRoute + '/projects/2/boards/4/lists/12/delete',
                 headers: {
                     authorization: yield helper.login(member)
                 }
@@ -618,7 +618,7 @@ describe('list', function() {
             var viewer = helper.userSeeds[2];
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/3/boards/6/lists/18',
+                url: helper.apiRoute + '/projects/3/boards/6/lists/18/delete',
                 headers: {
                     authorization: yield helper.login(viewer)
                 }
@@ -630,7 +630,7 @@ describe('list', function() {
             var stranger = helper.userSeeds[4];
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/3/boards/6/lists/18',
+                url: helper.apiRoute + '/projects/3/boards/6/lists/18/delete',
                 headers: {
                     authorization: yield helper.login(stranger)
                 }
@@ -641,7 +641,7 @@ describe('list', function() {
             // Guest should not be able to delete a public project
             payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/3/boards/6/lists/18'
+                url: helper.apiRoute + '/projects/3/boards/6/lists/18/delete'
             };
             response = yield helper.inject(payload);
             assert.equal(response.statusCode, Helper.Status.unauthorized);
@@ -654,13 +654,13 @@ describe('list', function() {
 
     it('should not allow invalid inputs for deleting list', function(done) {
         co(function* () {
-            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}';
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{id}/delete';
 
             // Attempt to delete a list that does not exist
             var admin = helper.userSeeds[0];
             var payload = {
                 method: 'POST',
-                url: helper.apiRoute + '/projects/0/boards/0/lists/2410',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/2410/delete',
                 headers: {
                     authorization: yield helper.login(admin)
                 }

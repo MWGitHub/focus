@@ -3,7 +3,7 @@ var co = require('co');
 
 /**
  * Seed list objects.
- * @type {{id: number, project_id: number, title: string}[]}
+ * @type {{id: number, board_id: number, title: string}[]}
  */
 var lists = [];
 for (let i = 0; i < 10; i++) {
