@@ -455,9 +455,6 @@ describe('task', function() {
 
             // Check guest retrievals
             url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{lid}/tasks/{id}';
-            payload = {
-                method: 'GET'
-            };
             // Task does not exist
             response = yield helper.inject(payload, null, url, {pid: 0, bid: 0, lid: 0, id: 1000});
             assert.equal(response.statusCode, Helper.Status.unauthorized);
@@ -486,7 +483,49 @@ describe('task', function() {
 
     it('should delete a task', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{lid}/tasks/{id}/delete';
+            let payload = {
+                method: 'POST'
+            };
+
+            // Admin should be able to delete a task in a private project
+            let admin = helper.userSeeds[0];
+            let response = yield helper.inject(payload, admin, url, {pid: 0, bid: 0, lid: 0, id: 0});
+            assert.equal(response.statusCode, Helper.Status.valid);
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/0/tasks/0?token=' + (yield helper.login(admin))
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Admin should be able to delete a task in a public project
+            response = yield helper.inject(payload, admin, url, {pid: 1, bid: 2, lid: 6, id: 18});
+            assert.equal(response.statusCode, Helper.Status.valid);
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1/boards/2/lists/6/tasks/18?token=' + (yield helper.login(admin))
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Member should be able to delete a task in a private project
+            let member = helper.userSeeds[1];
+            response = yield helper.inject(payload, member, url, {pid: 2, bid: 4, lid: 12, id: 36});
+            assert.equal(response.statusCode, Helper.Status.valid);
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/2/boards/4/lists/12/tasks/36?token=' + (yield helper.login(member))
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Member should be able to delete a task in a public project
+            response = yield helper.inject(payload, member, url, {pid: 1, bid: 2, lid: 6, id: 19});
+            assert.equal(response.statusCode, Helper.Status.valid);
+            response = yield helper.inject({
+                method: 'GET',
+                url: helper.apiRoute + '/projects/1/boards/2/lists/6/tasks/19?token=' + (yield helper.login(member))
+            });
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -495,7 +534,37 @@ describe('task', function() {
 
     it('should not allow invalid users to delete a task', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{lid}/tasks/{id}/delete';
+            let payload = {
+                method: 'POST'
+            };
+
+            // Viewer should not be able to delete a task in a private project
+            let viewer = helper.userSeeds[2];
+            let response = yield helper.inject(payload, viewer, url, {pid: 2, bid: 4, lid: 12, id: 36});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Viewer should not be able to delete a task in a public project
+            response = yield helper.inject(payload, viewer, url, {pid: 3, bid: 6, lid: 18, id: 54});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Stranger should not be able to delete a task in a private project
+            let stranger = helper.userSeeds[4];
+            response = yield helper.inject(payload, stranger, url, {pid: 0, bid: 0, lid: 0, id: 0});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Stranger should not be able to delete a task in a public project
+            response = yield helper.inject(payload, stranger, url, {pid: 1, bid: 2, lid: 6, id: 18});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Guest should not be able to delete a task in a private project
+            response = yield helper.inject(payload, null, url, {pid: 0, bid: 1, lid: 3, id: 9});
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
+            // Guest should not be able to delete a task in a public project
+            response = yield helper.inject(payload, null, url, {pid: 1, bid: 3, lid: 9, id: 27});
+            assert.equal(response.statusCode, Helper.Status.unauthorized);
+
             done();
         }).catch(function(e) {
             done(e);
@@ -504,7 +573,32 @@ describe('task', function() {
 
     it('should not allow invalid inputs for deleting task', function(done) {
         co(function* () {
-            assert(false);
+            let url = helper.apiRoute + '/projects/{pid}/boards/{bid}/lists/{lid}/tasks/{id}/delete';
+            let payload = {
+                method: 'POST'
+            };
+            // Check admin deletions
+            let admin = helper.userSeeds[0];
+            // Task does not exist
+            let response = yield helper.inject(payload, admin, url, {pid: 0, bid: 0, lid: 0, id: 1000});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // List does not match
+            response = yield helper.inject(payload, admin, url, {pid: 0, bid: 0, lid: 1, id: 0});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // List does not match public
+            response = yield helper.inject(payload, admin, url, {pid: 1, bid: 2, lid: 1, id: 18});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Board does not match public
+            response = yield helper.inject(payload, admin, url, {pid: 1, bid: 1, lid: 6, id: 18});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
+            // Project does not match public
+            response = yield helper.inject(payload, admin, url, {pid: 3, bid: 2, lid: 6, id: 18});
+            assert.equal(response.statusCode, Helper.Status.forbidden);
+
             done();
         }).catch(function(e) {
             done(e);

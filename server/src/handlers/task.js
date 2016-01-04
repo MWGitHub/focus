@@ -109,25 +109,12 @@ var handler = {
     },
 
     deleteSelf: function(request, reply) {
-        "use strict";
-
-        var id = request.params['id'];
-        co(function* () {
-            try {
-                var user = yield User.forge({id: request.auth.credentials.id}).fetch({required: true});
-                var task = yield Task.forge({id: id}).fetch({required: true})
-            } catch(e) {
-                throw Boom.notFound();
-            }
-            if (user.get('id') !== task.get('user_id')) {
-                throw Boom.unauthorized();
-            }
-            // Update board staleness
-            var list = yield List.forge({id: task.get('list_id')}).fetch({required: true});
-            yield stale.touch(list.get('board_id'));
-
+        var id = request.params.id;
+        var lid = request.params.list_id;
+        return co(function* () {
+            var task = yield Task.forge({id: id, list_id: lid}).fetch({require: true});
             yield task.destroy();
-            reply(API.makeStatusMessage('task-delete', true, 'Task deleted'));
+            reply(API.makeStatusMessage('list-delete', true, 'list deleted'));
         }).catch(function(error) {
             reply(Boom.wrap(error));
         });
