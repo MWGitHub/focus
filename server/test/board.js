@@ -382,6 +382,19 @@ describe('board', function() {
             response = yield helper.inject(payload);
             assert.equal(response.statusCode, Helper.Status.valid);
 
+            // Retrieve a private board as an admin deeply
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/2/boards/4?deep=true&token=' + (yield helper.login(admin))
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, helper.boardSeeds[4].title);
+            assert.equal(response.result.data.attributes.lists.length, 3);
+            assert.equal(response.result.data.attributes.lists[1].attributes.title, 'title13');
+            assert.equal(response.result.data.attributes.lists[0].attributes.tasks.length, 3);
+            assert.equal(response.result.data.attributes.lists[0].attributes.tasks[1].attributes.title, 'title37');
+
             done();
         }).catch(function(e) {
             done(e);

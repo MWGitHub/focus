@@ -465,6 +465,17 @@ describe('list', function() {
             assert.equal(response.statusCode, Helper.Status.valid);
             assert.equal(response.result.data.attributes.title, 'title8');
 
+            // Admin should be able to retrieve deeply from a private project
+            payload = {
+                method: 'GET',
+                url: helper.apiRoute + '/projects/0/boards/0/lists/0?deep=true&token=' + (yield helper.login(admin))
+            };
+            response = yield helper.inject(payload);
+            assert.equal(response.statusCode, Helper.Status.valid);
+            assert.equal(response.result.data.attributes.title, 'title0');
+            assert.equal(response.result.data.attributes.tasks.length, 3);
+            assert.equal(response.result.data.attributes.tasks[1].attributes.title, 'title1');
+
             done();
         }).catch(function(e) {
             done(e);

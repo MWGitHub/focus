@@ -76,7 +76,8 @@ module.exports = [
             validate: {
                 params: internals.params,
                 query: {
-                    token: Joi.string()
+                    token: Joi.string(),
+                    deep: Joi.boolean()
                 }
             },
             plugins: {

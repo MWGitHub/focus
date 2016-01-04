@@ -57,6 +57,11 @@ var List = Bookshelf.Model.extend({
             all: [
                 {name: 'title'},
                 {name: 'board_id'}
+            ],
+            allDeep: [
+                {name: 'title'},
+                {name: 'board_id'},
+                {name: 'tasks', obj: Bookshelf.model('Task').getRetrievals().all}
             ]
         };
     }

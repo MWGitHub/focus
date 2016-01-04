@@ -57,6 +57,11 @@ var Board = Bookshelf.Model.extend({
             all: [
                 {name: 'title'},
                 {name: 'project_id'}
+            ],
+            allDeep: [
+                {name: 'title'},
+                {name: 'project_id'},
+                {name: 'lists', obj: Bookshelf.model('List').getRetrievals().allDeep}
             ]
         };
     }

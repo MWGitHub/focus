@@ -39,8 +39,9 @@ var handler = {
     },
 
     retrieve: function(request, reply) {
-        var boardID = request.params['id'];
-        var projectID = request.params['project_id'];
+        var boardID = request.params.id;
+        var projectID = request.params.project_id;
+        var isDeep = request.query.deep;
 
         return co(function* () {
             var board = yield Board.forge({id: boardID, project_id: projectID}).fetch({require: true});
@@ -51,7 +52,12 @@ var handler = {
                     throw Boom.unauthorized();
                 }
             }
-            var data = yield board.retrieve(Board.getRetrievals().all);
+            var data = null;
+            if (isDeep) {
+                data = yield board.retrieve(Board.getRetrievals().allDeep);
+            } else {
+                data = yield board.retrieve(Board.getRetrievals().all);
+            }
             reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));

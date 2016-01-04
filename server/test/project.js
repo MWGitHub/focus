@@ -1,3 +1,4 @@
+"use strict";
 var assert = require('chai').assert;
 var Helper = require('./helpers/helper');
 var co = require('co');
@@ -385,6 +386,12 @@ describe('project', function() {
             assert.equal(response.result.data.attributes.title, 'title0');
             assert.equal(response.result.data.attributes.boards.length, 2);
             assert.equal(response.result.data.attributes.boards[0].attributes.title, 'title0');
+            let board = response.result.data.attributes.boards[0];
+            assert.equal(board.attributes.lists.length, 3);
+            assert.equal(board.attributes.lists[1].attributes.title, 'title1');
+            let list = board.attributes.lists[2];
+            assert.equal(list.attributes.tasks.length, 3);
+            assert.equal(list.attributes.tasks[0].attributes.title, 'title6');
 
             done();
         }).catch(function(e) {

@@ -43,6 +43,7 @@ var handler = {
         var id = request.params.id;
         var bid = request.params.board_id;
         var pid = request.params.project_id;
+        var isDeep = request.query.deep;
 
         return co(function* () {
             var list = yield List.forge({id: id, board_id: bid}).fetch({require: true});
@@ -64,7 +65,12 @@ var handler = {
                     throw Boom.unauthorized();
                 }
             }
-            var data = yield list.retrieve(List.getRetrievals().all);
+            var data = null;
+            if (isDeep) {
+                data = yield list.retrieve(List.getRetrievals().allDeep);
+            } else {
+                data = yield list.retrieve(List.getRetrievals().all);
+            }
             reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));

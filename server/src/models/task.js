@@ -33,9 +33,7 @@ var Task = Bookshelf.Model.extend({
         started_at: {type: 'datetime'},
         // Completed date
         completed_at: {type: 'datetime'},
-        // Position or manual priority for the task
-        position: {type: 'integer', notNullable: true},
-        // Arbitrary data for a task that is only used client side
+        // Arbitrary data for a task that is mainly used client side
         data: {type: 'jsonb'}
     },
 
@@ -47,7 +45,9 @@ var Task = Bookshelf.Model.extend({
         return {
             all: [
                 {name: 'title'},
-                {name: 'list_id'}
+                {name: 'list_id'},
+                {name: 'created_at'},
+                {name: 'data'}
             ]
         };
     }

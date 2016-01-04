@@ -69,7 +69,7 @@ var Project = Bookshelf.Model.extend({
             allDeep: [
                 {name: 'title'},
                 {name: 'is_public'},
-                {name: 'boards', obj: Bookshelf.model('Board').getRetrievals().all}
+                {name: 'boards', obj: Bookshelf.model('Board').getRetrievals().allDeep}
             ]
         };
     }
