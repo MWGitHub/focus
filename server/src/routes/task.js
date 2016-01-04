@@ -17,7 +17,6 @@ var internals = {
     }
 };
 
-console.log(internals.route + '/tasks');
 module.exports = [
     {
         method: 'POST',
@@ -54,7 +53,8 @@ module.exports = [
             cors: true,
             validate: {
                 payload: {
-                    title: Joi.string().min(1).max(100).required()
+                    title: Joi.string().min(1).max(100),
+                    list_id: Joi.number().integer()
                 },
                 params: internals.params
             },

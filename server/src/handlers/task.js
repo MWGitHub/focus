@@ -2,7 +2,11 @@
 var Task = require('../models/task');
 var Hoek = require('hoek');
 var Boom = require('boom');
-var List = require('../models/list');
+require('../models/list');
+require('../models/board');
+require('../models/project');
+require('../permission/permission-model');
+var Bookshelf = require('../lib/database').bookshelf;
 var API = require('../lib/api');
 var co = require('co');
 
@@ -28,77 +32,77 @@ var handler = {
         });
     },
 
-    retrieve: function(request, reply) {
-        "use strict";
-
-        var id = request.params['id'];
-        var isDeep = !!request.query['isDeep'];
-        co(function* () {
-            try {
-                var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-                var task = yield Task.forge({id: id}).fetch({require: true});
-            } catch(e) {
-                throw Boom.notFound();
-            }
-            if (task.get('user_id') !== user.get('id')) {
-                throw Boom.unauthorized();
-            }
-            var data = yield task.retrieveAsData(isDeep);
-            reply(API.makeData(data));
-        }).catch(function(error) {
-            reply(Boom.wrap(error));
-        });
-    },
-
     update: function(request, reply) {
-        "use strict";
-
-        var listId = request.payload['list_id'];
-        var id = request.params['id'];
-        var position = request.payload['position'];
-        var title;
-        if (request.payload['title']) {
-            title = Hoek.escapeHtml(request.payload['title']);
-        }
+        let id = request.params.id;
+        let changedID = request.payload.list_id;
+        let title = request.payload.title ? Hoek.escapeHtml(request.payload.title) : null;
 
         co(function* () {
-            var user = yield User.forge({id: request.auth.credentials.id}).fetch({require: true});
-            var uid = user.get('id');
-            var list = null;
-            if (listId) {
-                list = yield List.forge({id: listId}).fetch({require: true});
-                if (list.get('user_id') !== uid) {
-                    throw Boom.unauthorized();
-                }
-            }
-            var task = yield Task.forge({id: id}).fetch({require: true});
-            if (task.get('user_id') !== uid) {
-                throw Boom.unauthorized();
-            }
-            var data = {};
-            if (position) {
-                data.position = position;
-            }
+            let data = {};
             if (title) {
                 data.title = title;
             }
-            if (listId) {
-                data.list_id = listId;
-            }
-            task = yield task.set(data).save();
-            var taskData = yield task.retrieveAsData();
 
-            // Update board staleness
-            var bid;
-            if (list) {
-                bid = list.get('board_id');
-            } else {
-                list = yield List.forge({id: task.get('list_id')}).fetch({require: true});
-                bid = list.get('board_id');
+            // Check if changed list is within user's permissions
+            if (changedID) {
+                let uid = request.auth.credentials.id;
+                let list = yield Bookshelf.model('List').forge({id: changedID}).fetch({require: true});
+                let board = yield list.board().fetch({require: true});
+                let permission = yield Bookshelf.model('ProjectPermission').forge(
+                    {
+                        project_id: board.get('project_id'),
+                        user_id: uid
+                    }
+                ).fetch({require: true});
+                let role = permission.get('role');
+                if (role === 'admin' || role === 'member') {
+                    data.list_id = changedID;
+                } else {
+                    throw Boom.forbidden();
+                }
             }
-            yield stale.touch(bid);
+            let task = yield Task.forge({id: id}).fetch({require: true});
+            task = yield task.set(data).save();
+            var taskData = yield task.retrieve(Task.getRetrievals().all);
 
             reply(API.makeData(taskData));
+        }).catch(function() {
+            reply(Boom.forbidden());
+        });
+    },
+
+    retrieve: function(request, reply) {
+        var id = request.params.id;
+        var lid = request.params.list_id;
+        var bid = request.params.board_id;
+        var pid = request.params.project_id;
+
+        return co(function* () {
+            let task = yield Task.forge({id: id, list_id: lid}).fetch();
+            if (!task) {
+                if (request.auth.isAuthenticated) {
+                    throw Boom.forbidden();
+                } else {
+                    throw Boom.unauthorized();
+                }
+            }
+
+            // Do not allow guests to view private boards
+            if (!request.auth.isAuthenticated) {
+                // Retrieve step by step to make sure the hierarchy is valid
+                let list = yield Bookshelf.model('List').forge({id: lid, board_id: bid}).fetch();
+                if (!list) throw Boom.unauthorized();
+                let board = yield Bookshelf.model('Board').forge({id: bid, project_id: pid}).fetch();
+                if (!board) throw Boom.unauthorized();
+                let project = yield Bookshelf.model('Project').forge({id: pid}).fetch();
+                if (!project) throw Boom.unauthorized();
+                if (!project.get('is_public')) {
+                    throw Boom.unauthorized();
+                }
+            }
+
+            var data = yield task.retrieve(Task.getRetrievals().all);
+            reply(API.makeData(data));
         }).catch(function(error) {
             reply(Boom.wrap(error));
         });
