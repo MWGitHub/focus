@@ -2,11 +2,12 @@
 var Board = require('../models/board');
 var API = require('../lib/api');
 var Boom = require('boom');
+var Hoek = require('hoek');
 var co = require('co');
 
 var handler = {
     create: function(request, reply) {
-        let title = request.payload.title;
+        let title = Hoek.escapeHtml(request.payload.title);
         let projectID = request.params.project_id;
 
         co(function* () {
@@ -27,7 +28,7 @@ var handler = {
             var board = yield Board.forge({id: bid, project_id: pid}).fetch({require: true});
             var options = {};
             if (title !== board.get('title')) {
-                options.title = title;
+                options.title = Hoek.escapeHtml(title);
             }
             yield board.set(options).save();
             var result = yield board.retrieve(Board.getRetrievals().all);

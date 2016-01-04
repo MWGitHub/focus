@@ -3,12 +3,13 @@ var API = require('../lib/api');
 var User = require('../models/user');
 var List = require('../models/list');
 var Boom = require('boom');
+var Hoek = require('hoek');
 var co = require('co');
 var Bookshelf = require('../lib/database').bookshelf;
 
 var handler = {
     create: function(request, reply) {
-        let title = request.payload.title;
+        let title = Hoek.escapeHtml(request.payload.title);
         let boardID = request.params.board_id;
 
         co(function* () {
@@ -28,7 +29,7 @@ var handler = {
             var list = yield List.forge({id: id}).fetch({require: true});
             var options = {};
             if (title !== list.get('title')) {
-                options.title = title;
+                options.title = Hoek.escapeHtml(title);
             }
             yield list.set(options).save();
             var result = yield list.retrieve(List.getRetrievals().all);

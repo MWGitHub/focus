@@ -3,13 +3,14 @@
 var Project = require('../models/project');
 var API = require('../lib/api');
 var Boom = require('boom');
+var Hoek = require('hoek');
 var co = require('co');
 var Permission = require('../permission/permission-model');
 
 var handler = {
     create: function(request, reply) {
-        var title = request.payload['title'];
-        var isPublic = !!request.payload['is_public'];
+        var title = Hoek.escapeHtml(request.payload.title);
+        var isPublic = !!request.payload.is_public;
         var id = request.auth.credentials.id;
 
         return co(function* () {
@@ -34,15 +35,15 @@ var handler = {
     },
 
     update: function(request, reply) {
-        var title = request.payload['title'];
-        var isPublic = request.payload['is_public'];
+        var title = request.payload.title;
+        var isPublic = request.payload.is_public;
         var pid = request.params.id;
 
         return co(function* () {
             var project = yield Project.forge({id: pid}).fetch({require: true});
             var options = {};
             if (title) {
-                options.title = title;
+                options.title = Hoek.escapeHtml(title);
             }
             if (isPublic != null) {
                 options.is_public = isPublic
