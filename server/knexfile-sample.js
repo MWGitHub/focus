@@ -2,6 +2,27 @@
 var path = require('path');
 
 module.exports = {
+    test: {
+        client: 'postgresql',
+        connection: {
+            database: 'test_focus',
+            user:     'postgres',
+            password: ''
+        },
+        pool: {
+            min: 2,
+            max: 4
+        },
+        migrations: {
+            tableName: 'migrations',
+            directory: path.join(__dirname, 'data', 'db', 'migrations')
+        },
+        seeds: {
+            directory: path.join(__dirname, 'data', 'db', 'seeds')
+        },
+        debug: false
+    },
+
     development: {
         client: 'postgresql',
         connection: {
@@ -16,6 +37,9 @@ module.exports = {
         migrations: {
             tableName: 'migrations',
             directory: path.join(__dirname, 'data', 'db', 'migrations')
+        },
+        seeds: {
+            directory: path.join(__dirname, 'data', 'db', 'seeds')
         },
         debug: false
     },

@@ -4,7 +4,7 @@ node_js:
   
 env:
   global:
-    - NODE_ENV=development
+    - NODE_ENV=test
     - CXX=g++-4.8
 
 addons:
@@ -26,7 +26,7 @@ before_script:
   - npm install
   - mv config-sample.json config.json
   - mv knexfile-sample.js knexfile.js
-  - psql -c 'create database dev_focus;' -U postgres
+  - psql -c 'create database test_focus;' -U postgres
   - ./node_modules/.bin/knex migrate:latest
   
 script: npm run test-travis

@@ -4,5 +4,6 @@
   "redisDB": 0,
   "port": 4010,
   "host": "0.0.0.0",
-  "apiRoute": "/api/v1"
+  "apiRoute": "/api/v1",
+  "logLevel": "warn"
 }
