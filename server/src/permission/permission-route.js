@@ -11,7 +11,9 @@ var routes = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin']
+                access: {
+                    scope: ['admin']
+                }
             },
             cors: true,
             validate: {
@@ -33,7 +35,9 @@ var routes = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin', 'member', 'viewer'],
+                access: {
+                    scope: ['admin', 'member', 'viewer']
+                },
                 mode: 'try'
             },
             cors: true,
@@ -55,7 +59,9 @@ var routes = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin']
+                access: {
+                    scope: ['admin']
+                }
             },
             cors: true,
             validate: {
@@ -77,7 +83,9 @@ var routes = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin']
+                access: {
+                    scope: ['admin']
+                }
             },
             cors: true,
             validate: {

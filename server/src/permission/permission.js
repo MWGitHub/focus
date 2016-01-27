@@ -34,7 +34,8 @@ internals.getScope = function(uid, request) {
 
         // console.log('uid: ' + uid + '   id: ' + id + '      type: ' + type);
         let type = internals.types[typeString];
-        let allowsViewers = _.indexOf(request.route.settings.auth.scope, 'viewer') >= 0;
+        let scope = request.route.settings.auth.access[0].scope.selection;
+        let allowsViewers = _.indexOf(scope, 'viewer') >= 0;
         // Check if the table is a base table
         let isBase = !!type.permissionTable;
         // Find the base and the type chain excluding the base

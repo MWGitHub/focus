@@ -1,6 +1,6 @@
 {
   "name": "focus",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {
@@ -13,35 +13,36 @@
     "bcrypt": "*",
     "bookshelf": "*",
     "boom": "*",
-    "bunyan": "^1.5.1",
+    "bunyan": "*",
     "co": "*",
     "commander": "*",
     "eslint-plugin-hapi": "*",
     "good": "*",
     "good-console": "*",
-    "hapi": "^10.4.1",
+    "hapi": "*",
     "hapi-auth-basic": "*",
-    "hapi-auth-jwt2": "^5.1.0",
+    "hapi-auth-jwt2": "*",
     "hiredis": "*",
     "hoek": "*",
-    "joi": "^6.9.0",
-    "jsonwebtoken": "^5.4.0",
+    "joi": "*",
+    "jsonwebtoken": "*",
     "knex": "*",
-    "lab": "^6.2.0",
     "lodash": "*",
     "moment": "*",
-    "moment-timezone": "^0.4.1",
+    "moment-timezone": "*",
     "node-uuid": "*",
     "pg": "*",
-    "redis": "^2.1.0"
+    "redis": "*"
   },
   "devDependencies": {
     "chai": "*",
-    "codeclimate-test-reporter": "^0.1.1",
-    "eslint-plugin-hapi": "^4.0.0",
-    "hoek": "^3.0.4",
-    "istanbul": "^0.4.1",
+    "codeclimate-test-reporter": "*",
+    "eslint-plugin-hapi": "*",
+    "inert": "^3.2.0",
+    "istanbul": "*",
     "lab": "*",
-    "mocha": "^2.3.4"
+    "lout": "*",
+    "mocha": "*",
+    "vision": "^4.0.1"
   }
 }

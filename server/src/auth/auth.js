@@ -37,7 +37,7 @@ internals.validateJWT = function(decoded, request, callback) {
         }
 
         // Check if the scope if required
-        if (request.route.settings.auth.scope) {
+        if (request.route.settings.auth.access) {
             var scope = [];
             if (internals.permission.scope) {
                 scope = yield internals.permission.scope(decoded.id, request);

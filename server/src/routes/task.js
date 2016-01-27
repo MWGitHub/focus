@@ -25,7 +25,9 @@ module.exports = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin', 'member']
+                access: {
+                    scope: ['admin', 'member']
+                }
             },
             cors: true,
             validate: {
@@ -48,7 +50,9 @@ module.exports = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin', 'member']
+                access: {
+                    scope: ['admin', 'member']
+                }
             },
             cors: true,
             validate: {
@@ -73,7 +77,9 @@ module.exports = [
             auth: {
                 strategy: 'jwt',
                 mode: 'try',
-                scope: ['admin', 'member', 'viewer']
+                access: {
+                    scope: ['admin', 'member', 'viewer']
+                }
             },
             cors: true,
             validate: {
@@ -96,7 +102,9 @@ module.exports = [
         config: {
             auth: {
                 strategy: 'jwt',
-                scope: ['admin', 'member']
+                access: {
+                    scope: ['admin', 'member']
+                }
             },
             cors: true,
             validate: {
