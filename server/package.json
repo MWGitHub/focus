@@ -4,6 +4,7 @@
   "description": "A simple productivity helper that automates many techniques for focusing.",
   "main": "index.js",
   "scripts": {
+    "start": "node . | ./node_modules/.bin/bunyan",
     "test": "NODE_ENV=test mocha",
     "test-all": "NODE_ENV=test istanbul cover ./node_modules/.bin/_mocha ./test",
     "test-travis": "NODE_ENV=test istanbul cover ./node_modules/.bin/_mocha ./test"

@@ -132,6 +132,15 @@ class Server {
                             key: 'client'
                         }
                     }
+                },
+                {
+                    register: require('vision')
+                },
+                {
+                    register: require('inert')
+                },
+                {
+                    register: require('lout')
                 }
             ];
             if (config.logLevel == 'debug') {
